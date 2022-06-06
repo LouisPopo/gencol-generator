@@ -8,20 +8,6 @@ nb_cpu = 2
 out_file = open("out", "w")
 out_file.close()
 
-parser = argparse.ArgumentParser()
-
-parser.add_argument('type', type=str)
-
-args = parser.parse_args()
-
-if args.type == 'default':
-    create_defaults_instances()
-elif args.type == 'dual':
-    create_duals_ineq_instances()
-else:
-    print('wrong args')
-
-
 def solve_instances(list_instances):
     list_process = []
     idx_active = []
@@ -94,6 +80,22 @@ def dual_ineq_resolution():
     os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
 
     solve_instances(instances_to_execute)
+
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('type', type=str)
+
+args = parser.parse_args()
+
+if args.type == 'default':
+    default_resolution()
+elif args.type == 'dual':
+    dual_ineq_resolution()
+else:
+    print('wrong args')
+
+
 
         
 
