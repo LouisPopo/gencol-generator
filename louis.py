@@ -96,7 +96,7 @@ def create_duals_ineq_instances():
             dual_variables_file = open('Networks/Network{}/{}'.format(pb_name, dual_variables_file_name), 'r')
 
             with open('duals_inequalities_instances.txt', 'a') as f:
-                f.write('Network{}/{}'.format(pb_name, dual_variables_file_name))
+                f.write('Network{}/{}\n'.format(pb_name, dual_variables_file_name))
 
             nb_valid_dual_variables_values = 0
 
