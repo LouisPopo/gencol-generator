@@ -68,7 +68,7 @@ def create_duals_ineq_instances():
 
     # 2. On va copier les variables duales de ces problèmes. 
     for pb in default_pb_list:
-        shutil.copy('/MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb), 'Networks/Network{}/'.format(pb))
+        shutil.copy('../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb), 'Networks/Network{}/'.format(pb))
 
     # 3. On lit le fichier config.
     with open('configurator.txt', 'r') as f:
