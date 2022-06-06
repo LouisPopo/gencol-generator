@@ -87,7 +87,7 @@ def create_duals_ineq_instances():
 
             dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb_name)
 
-            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0, dual_variables_file_name=dual_variables_file_name, nb_inequalities=1, grp_size=1)
+            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name='', dual_variables_file_name=dual_variables_file_name, nb_inequalities=1, grp_size=1)
 
 
 parser = argparse.ArgumentParser()
