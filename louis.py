@@ -103,9 +103,6 @@ def create_duals_ineq_instances():
 
             dual_variables_file = open('Networks/Network{}/{}'.format(pb_name, dual_variables_file_name), 'r')
 
-            with open('duals_inequalities_instances.txt', 'a') as f:
-                f.write('{}/{}\n'.format(pb_name, dual_variables_file_name))
-
             nb_valid_dual_variables_values = 0
 
             dual_variables_list = dual_variables_file.read().splitlines()
@@ -120,6 +117,12 @@ def create_duals_ineq_instances():
 
             # 10%
             nb_inequalities = int(0.1*nb_valid_dual_variables_values)
+
+            with open('duals_inequalities_instances.txt', 'a') as f:
+                f.write('{}/inputProblem{}_{}_{}\n'.format(pb_name,int(nb_inequalities/nb_inequalities), nb_inequalities))
+
+                # ici, ca devrait pas etre dual_Variables_file name, ca devrait etre le nom de input
+
 
             create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_inequalities, grp_size=nb_inequalities)
 
