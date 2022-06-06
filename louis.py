@@ -87,7 +87,22 @@ def create_duals_ineq_instances():
 
             dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb_name)
 
-            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=1, grp_size=1)
+            nb_valid_dual_variables_values = 0
+
+            dual_variables_list = dual_variables_file_name.read().splitlines()
+            for line in dual_variables_list:
+
+                dual_variable, value = line.split(' ')
+                value = float(value)
+
+                # Pour l'instant on laisse faire les +1000 (cout fixe) et les <0
+                if value > 1 and value < 1000:
+                    nb_valid_dual_variables_values += 1
+
+            # 10%
+            nb_inequalities = int(0.1*nb_valid_dual_variables_values)
+
+            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_inequalities, grp_size=nb_inequalities)
 
 
 parser = argparse.ArgumentParser()
