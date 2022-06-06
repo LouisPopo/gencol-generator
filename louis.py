@@ -42,6 +42,7 @@ def create_defaults_instances():
         configs = f.read().splitlines()
 
     default_pb_list_file = open('default_pb_list_file.txt', 'w')
+    default_pb_list_file.close()
 
     # 2. Pour chaque config : on créer le network et le nb d'instances demandés
     for c in configs:
@@ -56,7 +57,8 @@ def create_defaults_instances():
         pb_list = [str(network_num) + "_" + str(max_minute).replace(".", "p") + "_" + str(i) for i in range(nb_instances)]
 
         for pb in pb_list:
-                default_pb_list_file.write('{}\n'.format(pb))
+            with open('default_pb_list_file.txt', 'a') as f:
+                f.write('{}\n'.format(pb))
             
         create_gencol_file(pb_list, nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0)
 
@@ -74,7 +76,11 @@ def create_duals_ineq_instances():
     with open('configurator.txt', 'r') as f:
         configs = f.read().splitlines()
 
+    duals_inequalities_instances_file = open('duals_inequalities_instances.txt', 'w')
+    duals_inequalities_instances_file.close()
+
     # 4. Pour chaque configuration, on re-creer un fichier gencol avec en entree le fichier de variables duales
+    # On ajoute le nom de ce fichier (et le folder) dans un fichier texte en sortie
     for c in configs:
         nb_instances, network_num, max_minute, nb_borne, nb_veh = c.split(',')
         nb_instances = int(nb_instances)
@@ -88,6 +94,9 @@ def create_duals_ineq_instances():
             dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb_name)
 
             dual_variables_file = open('Networks/Network{}/{}'.format(pb_name, dual_variables_file_name), 'r')
+
+            with open('duals_inequalities_instances.txt', 'a') as f:
+                f.write('Network{}/{}'.format(pb_name, dual_variables_file_name))
 
             nb_valid_dual_variables_values = 0
 
