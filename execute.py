@@ -44,29 +44,28 @@ print('current : {}'.format(os.getcwd()))
 #             if grp_size > nb_in:
 #                 continue
 #             list_pb.append("4b_0_604_{}_GRP_{}_{}_{}".format(nb_in, int(nb_in/grp_size), grp_size, i))
+list_process = []
+idx_active = []
+for i, pb in enumerate(instances_to_execute) :
+    #cpu_free -= 1
+    idx_active.append(i)
+    with open('out'+pb, 'w') as f:
+        list_process.append(subprocess.Popen(['ExecMdevspGencol','Problem'+pb], stdout=f, stderr=f))
+    while len(idx_active)>=nb_cpu:
+        time.sleep(0.1)
+        for j in idx_active:
+            done = list_process[j].poll()
+            if done is not None:
+                idx_active.remove(j)
+                #cpu_free += 1
+                with open('out', 'a') as out:
+                    out.write(f'Done Problem{instances_to_execute[j]} ({len(list_process)-len(idx_active)}/{len(instances_to_execute)})\n')
 
-# list_process = []
-# idx_active = []
-# for i, pb in enumerate(list_pb) :
-#     #cpu_free -= 1
-#     idx_active.append(i)
-#     with open('out'+pb, 'w') as f:
-#         list_process.append(subprocess.Popen(['ExecMdevspGencol','Problem'+pb], stdout=f, stderr=f))
-#     while len(idx_active)>=nb_cpu:
-#         time.sleep(0.1)
-#         for j in idx_active:
-#             done = list_process[j].poll()
-#             if done is not None:
-#                 idx_active.remove(j)
-#                 #cpu_free += 1
-#                 with open('out', 'a') as out:
-#                     out.write(f'Done Problem{list_pb[j]} ({len(list_process)-len(idx_active)}/{len(list_pb)})\n')
-
-# while len(idx_active)>0:
-#     time.sleep(0.1)
-#     for j in idx_active:
-#         done = list_process[j].poll()
-#         if done is not None:
-#             idx_active.remove(j)
-#             with open('out', 'a') as out:
-#                 out.write(f'Done Problem{list_pb[j]} ({len(list_process)-len(idx_active)}/{len(list_pb)})\n') 
+while len(idx_active)>0:
+    time.sleep(0.1)
+    for j in idx_active:
+        done = list_process[j].poll()
+        if done is not None:
+            idx_active.remove(j)
+            with open('out', 'a') as out:
+                out.write(f'Done Problem{instances_to_execute[j]} ({len(list_process)-len(idx_active)}/{len(instances_to_execute)})\n') 
