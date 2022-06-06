@@ -87,9 +87,11 @@ def create_duals_ineq_instances():
 
             dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb_name)
 
+            dual_variables_file = open('Networks/Network{}/{}'.format(pb_name, dual_variables_file_name), 'r')
+
             nb_valid_dual_variables_values = 0
 
-            dual_variables_list = dual_variables_file_name.read().splitlines()
+            dual_variables_list = dual_variables_file.read().splitlines()
             for line in dual_variables_list:
 
                 dual_variable, value = line.split(' ')
