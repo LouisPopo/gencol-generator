@@ -119,7 +119,7 @@ def create_duals_ineq_instances():
             nb_inequalities = int(0.1*nb_valid_dual_variables_values)
 
             with open('duals_inequalities_instances.txt', 'a') as f:
-                f.write('{}/inputProblem{}_{}_{}\n'.format(pb_name,int(nb_inequalities/nb_inequalities), nb_inequalities))
+                f.write('{}/inputProblem{}_{}_{}\n'.format(pb_name,pb_name,int(nb_inequalities/nb_inequalities), nb_inequalities))
 
                 # ici, ca devrait pas etre dual_Variables_file name, ca devrait etre le nom de input
 
