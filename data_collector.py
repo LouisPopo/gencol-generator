@@ -12,11 +12,11 @@ for instance_info in instances_info_list:
     # 'reportProblem{}_default.out'.format(def_info)
     # 'reportProblem{}_{}.out'.format(def_info, ineq_info)
 
-    with open('MdevspGencolTest/reportProblem{}_default.out'.format(def_info)) as f:
+    with open('../MdevspGencolTest/reportProblem{}_default.out'.format(def_info)) as f:
         def_report = f.read().splitlines()
         print(def_report[-1])
 
-    with open('MdevspGencolTest/reportProblem{}_{}.out'.format(def_info, ineq_info)) as f:
+    with open('../MdevspGencolTest/reportProblem{}_{}.out'.format(def_info, ineq_info)) as f:
         ineq_report = f.read().splitlines()
         print(ineq_report[-1])
 
