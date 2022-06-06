@@ -71,7 +71,7 @@ def dual_ineq_resolution():
 
     for instance in duals_ineq_list:
 
-        shutil.copy('gencol_files/{}'.format(instance), '../MdevspGencolTest/')
+        shutil.copy('gencol_files/{}.in'.format(instance), '../MdevspGencolTest/')
 
         # Rajoute le nom pour Exec
         instances_to_execute.append(instance)
