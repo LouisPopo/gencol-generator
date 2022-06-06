@@ -74,7 +74,7 @@ def dual_ineq_resolution():
         shutil.copy('gencol_files/{}.in'.format(instance), '../MdevspGencolTest/')
 
         # Rajoute le nom pour Exec
-        instances_to_execute.append(instance)
+        instances_to_execute.append('{}.in'.format(instance))
 
     # change le working directtory pour execute
     os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
