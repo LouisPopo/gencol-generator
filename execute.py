@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 
@@ -18,9 +19,15 @@ instances_to_execute = []
 
 for pb in default_pb_list:
 
-    shutil.copyfile('gencol_files/{}/inputProblem{}_default.in'.format(pb, pb), '../MdevspGencolTest')
+    shutil.copy('gencol_files/{}/inputProblem{}_default.in'.format(pb, pb), '../MdevspGencolTest/')
 
     instances_to_execute.append('inputProblem{}_default.in'.format(pb))
+
+print('current : {}'.format(os.getcwd()))
+
+os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
+
+print('current : {}'.format(os.getcwd()))
 
 
 
