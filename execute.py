@@ -65,16 +65,17 @@ def dual_ineq_resolution():
     # va ouvrir le fichier des problemes
 
     with open('duals_inequalities_instances.txt', 'r') as f:
-        duals_ineq_list = f.read().splitlines()
+        duals_ineq_path_list = f.read().splitlines()
 
     instances_to_execute = []
 
-    for instance in duals_ineq_list:
+    for instance_path in duals_ineq_path_list:
 
-        shutil.copy('gencol_files/{}.in'.format(instance), '../MdevspGencolTest/')
+        shutil.copy('gencol_files/{}.in'.format(instance_path), '../MdevspGencolTest/')
 
         # Rajoute le nom pour Exec
-        instances_to_execute.append('{}.in'.format(instance))
+        instance_name = instance_path.split('/')[1]
+        instances_to_execute.append('{}.in'.format(instance_name))
 
     # change le working directtory pour execute
     os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
