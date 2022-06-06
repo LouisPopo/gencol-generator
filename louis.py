@@ -4,6 +4,14 @@ import string
 from code_juliette.create_data_trip_shifting import create_network_data
 from create_gencol_input import create_gencol_file
 
+
+# If default : 
+# Read configurator file, create necessary networks and related instances
+
+# If dual :
+# Copy dualvariables files for each instances, and create related instances with dual inequalities
+
+
 def create_network(nb_instances, dataset_num, max_minute, nb_borne):
 
     seed_list = [x for x in range(nb_instances)]
@@ -96,7 +104,7 @@ def create_duals_ineq_instances():
             dual_variables_file = open('Networks/Network{}/{}'.format(pb_name, dual_variables_file_name), 'r')
 
             with open('duals_inequalities_instances.txt', 'a') as f:
-                f.write('Network{}/{}\n'.format(pb_name, dual_variables_file_name))
+                f.write('{}/{}\n'.format(pb_name, dual_variables_file_name))
 
             nb_valid_dual_variables_values = 0
 
@@ -115,7 +123,6 @@ def create_duals_ineq_instances():
 
             create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_inequalities, grp_size=nb_inequalities)
 
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument('type', type=str)
@@ -126,7 +133,6 @@ if args.type == 'default':
     create_defaults_instances()
 elif args.type == 'dual':
     create_duals_ineq_instances()
-    #print('allp')
 else:
     print('wrong args')
 
