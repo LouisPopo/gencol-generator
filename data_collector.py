@@ -1,0 +1,1 @@
+# va lire les fichiers en sortie et parse jusqua trouver le temps de resolution

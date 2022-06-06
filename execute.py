@@ -4,6 +4,8 @@ import shutil
 import subprocess
 
 import time
+
+from numpy import insert
 nb_cpu = 2
 out_file = open("out", "w")
 out_file.close()
@@ -65,17 +67,19 @@ def dual_ineq_resolution():
     # va ouvrir le fichier des problemes
 
     with open('duals_inequalities_instances.txt', 'r') as f:
-        duals_ineq_path_list = f.read().splitlines()
+        duals_ineq_path_info = f.read().splitlines()
 
     instances_to_execute = []
 
-    for instance_path in duals_ineq_path_list:
+    for instance_path_info in duals_ineq_path_info:
 
-        shutil.copy('gencol_files/{}.in'.format(instance_path), '../MdevspGencolTest/')
+        def_info, ineq_info = instance_path_info.split('/')
+
+        shutil.copy('gencol_files/{}/inputProblem{}_{}.in'.format(def_info, def_info, ineq_info), '../MdevspGencolTest/')
 
         # Rajoute le nom pour Exec
-        instance_name = instance_path.split('/')[1].replace('inputProblem', '')
-        instances_to_execute.append(instance_name)
+        # instance_name = instance_path.split('/')[1].replace('inputProblem', '')
+        instances_to_execute.append('{}_{}'.format(def_info, ineq_info))
 
     # change le working directtory pour execute
     os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
