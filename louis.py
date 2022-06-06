@@ -37,12 +37,13 @@ def create_network(nb_instances, dataset_num, max_minute, nb_borne):
 
 def create_defaults_instances():
 
-    # va lire un fichier .txt et génère les networks ainsi que les fichiers d'inputs gencol correspondants
+    # 1. Lit le fichier de configuration
     with open('configurator.txt', 'r') as f:
         configs = f.read().splitlines()
 
     default_pb_list_file = open('default_pb_list_file.txt', 'w')
 
+    # 2. Pour chaque config : on créer le network et le nb d'instances demandés
     for c in configs:
         nb_instances, network_num, max_minute, nb_borne, nb_veh = c.split(',')
         nb_instances = int(nb_instances)
@@ -55,26 +56,38 @@ def create_defaults_instances():
         pb_list = [str(network_num) + "_" + str(max_minute).replace(".", "p") + "_" + str(i) for i in range(nb_instances)]
 
         for pb in pb_list:
-            default_pb_list_file.write('{}\n'.format(pb))
-        
+                default_pb_list_file.write('{}\n'.format(pb))
+            
         create_gencol_file(pb_list, nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0)
 
 def create_duals_ineq_instances():
-    # va chercher les fichiers de variables duales, 
-    # les copies dans le folder network correspondant
-    # run le genereate(avec fichier de dual variables)
+
+    # 1. Va lire les noms des problemes qu'on a résolu
     with open('default_pb_list_file.txt', 'r') as f:
         default_pb_list = f.read().splitlines()
 
+    # 2. On va copier les variables duales de ces problèmes. 
     for pb in default_pb_list:
+        shutil.copy('/MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb), 'Networks/Network{}/'.format(pb))
 
-        print(pb)
+    # 3. On lit le fichier config.
+    with open('configurator.txt', 'r') as f:
+        configs = f.read().splitlines()
 
-        shutil.copy('/MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}.out'.format(pb), 'Networks/Network{}/'.format(pb))
+    # 4. Pour chaque configuration, on re-creer un fichier gencol avec en entree le fichier de variables duales
+    for c in configs:
+        nb_instances, network_num, max_minute, nb_borne, nb_veh = c.split(',')
+        nb_instances = int(nb_instances)
+        max_minute = int(max_minute) if float(max_minute).is_integer() else float(max_minute)
+        nb_borne = int(nb_borne)
+        nb_veh = int(nb_veh)
 
-        print('From : /MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}.out'.format(pb))
-        print('To : Networks/Network{}/'.format(pb))
+        for i in range(nb_instances):
+            pb_name = '{}_{}_{}'.format(network_num, str(max_minute).replace('.', 'p'), i)  
 
+            dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(pb_name)
+
+            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0, dual_variables_file_name=dual_variables_file_name, nb_inequalities=1, grp_size=1)
 
 
 parser = argparse.ArgumentParser()
@@ -86,7 +99,7 @@ args = parser.parse_args()
 if args.type == 'default':
     create_defaults_instances()
 elif args.type == 'dual':
-    create_duals_ineq_instances
+    create_duals_ineq_instances()
     #print('allp')
 else:
     print('wrong args')
