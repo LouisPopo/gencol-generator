@@ -1,3 +1,4 @@
+from ntpath import join
 from code_juliette.create_data_trip_shifting import create_network_data
 from create_gencol_input import create_gencol_file
 
@@ -51,8 +52,9 @@ def create_defaults_instances():
     with open('configurator.txt', 'r') as f:
         configs = f.read().splitlines()
 
+    default_pb_list_file = open('default_pb_list_file.txt', 'w')
+
     for c in configs:
-        print(c)
         nb_instances, network_num, max_minute, nb_borne, nb_veh = c.split(',')
         nb_instances = int(nb_instances)
         max_minute = int(max_minute) if float(max_minute).is_integer() else float(max_minute)
@@ -63,7 +65,8 @@ def create_defaults_instances():
 
         pb_list = [str(network_num) + "_" + str(max_minute).replace(".", "p") + "_" + str(i) for i in range(nb_instances)]
 
-        print(pb_list)
+        for pb in pb_list:
+            default_pb_list_file.write('{}\n'.format(pb))
         
         create_gencol_file(pb_list, nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0)
     # 1. should check if network exists

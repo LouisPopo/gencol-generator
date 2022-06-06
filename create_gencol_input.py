@@ -26,8 +26,6 @@ p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, dual_variables_file_name='', nb_inequalities = 0, grp_size=0, id=''):
 
-    print("Allo")
-
     for pb in list_pb:
 
         network_folder = "Networks/Network" + pb
@@ -134,9 +132,6 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         # if id != '':
         #     output_file_name += "_" + str(id)
         output_file = open(output_file_path + "/" + output_file_name + ".in", "w")
-
-        print(output_file_name)
-
         # step = 1
         # tasks_in_new_inequalities = set()
         # inequalities = []
