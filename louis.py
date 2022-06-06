@@ -67,7 +67,13 @@ def create_duals_ineq_instances():
         default_pb_list = f.read().splitlines()
 
     for pb in default_pb_list:
+
+        print(pb)
+
         shutil.copy('/MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}.out'.format(pb), 'Networks/Network{}/'.format(pb))
+
+        print('From : /MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}.out'.format(pb))
+        print('To : Networks/Network{}/'.format(pb))
 
 
 
