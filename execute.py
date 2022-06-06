@@ -19,9 +19,11 @@ instances_to_execute = []
 
 for pb in default_pb_list:
 
+    # Copy le fle
     shutil.copy('gencol_files/{}/inputProblem{}_default.in'.format(pb, pb), '../MdevspGencolTest/')
 
-    instances_to_execute.append('inputProblem{}_default.in'.format(pb))
+    # Rajoute le nom pour Exec
+    instances_to_execute.append('{}_default'.format(pb))
 
 print('current : {}'.format(os.getcwd()))
 
