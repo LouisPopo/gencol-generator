@@ -1,0 +1,71 @@
+SppModDisjMax = 15; // 10 // 5
+SppModDisjOnly = 1; // 0
+SppFirstMpAlgos = "d";
+SppModMpAlgos = "b"; //p : primal, b : barrière
+SppModMpDynMaxMult = 15; // 10;//5 // 100
+SppModMpDynMinMult = 8; // 5;//2.5 // 70
+SppVerboseSched = 0;
+SppModAddNetMaxMult = 5;
+SppModAddItrMaxMult = 10;
+//SppModAddNetMaxMult = 8;
+//SppModAddItrMaxMult = 8;
+//SppPreKeepC = 1;
+SppPathResKeep = 1;
+
+//SbbSearchPolicy = SbbDEPTH_FIRST;
+SbbAlarmClock = 6h00;
+//SbbCntNodesMax = 10;
+SbbVerboseEvaluation = 1;
+SbbSppCostBoundLowUse = 1; 
+SbbBndVsFeasBestIntolAbs = 0.99;
+
+SbbPerturbationUse = 1; 
+PertScoreMin = 0.5;//0.2
+PertScoreMax = 0.9;//0.2
+PertRemoveProportion = 1;
+
+AfixScoreMin =  0;//0.1
+AfixScoreMax =  0.1;
+AfixTasksOnly = 0;
+
+CfixSelectMin = 1;
+CfixSelectMax = 5;
+CfixSelectThreshold = 0.6; 
+CfixScoreMin = 0.5; // 0.0 ;
+CfixScoreMax = 1.3; // 1.2;//1.1 ;
+
+ItimposeScoreMin = 0;
+ItimposeScoreMax = 1;
+ItimposeSelectThreshold = 0.7;
+ItimposeSelectMin = 1; // 0;
+ItimposeSelectMax = 10; // 5;
+
+MdevspGencolBatteryDischargeResourceName = "r_SoC_Inv";
+
+MdevspGencolModels = {};
+
+MdevspGencolBbMethods = {
+  //"bfix",
+  "afix",
+  //"itfix-one",
+  "cfix",
+  "itfix-impose",
+"pert"
+};
+
+MdevspGencolSolveProblem = yes;
+
+MdevspGencolPrintParameters = yes;
+MdevspGencolPrintInputData = yes;
+
+// j'ai arrondi les minutes puis j'ai cherché quelles
+// étaient les "vraies" valeurs de recharge à ces temps 
+// (sauf pour 91 où j'ai dit que c'était 363)
+// puis j'ai arrondi le slope
+MdevspGencolBatteryRechargedCurve = {
+0, 0,
+0, 55, 5589,
+55, 69, 2599,
+69, 91, 873
+};
+
