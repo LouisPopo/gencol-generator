@@ -115,7 +115,7 @@ def create_duals_ineq_instances():
                 if value > 1 and value < 1000:
                     nb_valid_dual_variables_values += 1
 
-            # 10%
+            # 10%, 20%, 40%, 60%, 80%
             nb_inequalities = int(0.1*nb_valid_dual_variables_values)
 
             with open('duals_inequalities_instances.txt', 'a') as f:
