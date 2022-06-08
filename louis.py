@@ -116,15 +116,18 @@ def create_duals_ineq_instances():
                     nb_valid_dual_variables_values += 1
 
             # 10%, 20%, 40%, 60%, 80%
-            nb_inequalities = int(0.1*nb_valid_dual_variables_values)
 
-            with open('duals_inequalities_instances.txt', 'a') as f:
-                f.write('{}/{}_{}\n'.format(pb_name,int(nb_inequalities/nb_inequalities), nb_inequalities))
+            for i in [0.1, 0.2, 0.4, 0.6, 0.8]:
+
+                nb_ineq = int(0.1*nb_valid_dual_variables_values)
+
+                with open('duals_inequalities_instances.txt', 'a') as f:
+                    f.write('{}/{}_{}\n'.format(pb_name,int(nb_ineq/nb_ineq), nb_ineq))
 
                 # ici, ca devrait pas etre dual_Variables_file name, ca devrait etre le nom de input
 
 
-            create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_inequalities, grp_size=nb_inequalities)
+                create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_ineq, grp_size=nb_ineq)
 
 parser = argparse.ArgumentParser()
 
