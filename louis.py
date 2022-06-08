@@ -119,7 +119,7 @@ def create_duals_ineq_instances():
 
             for i in [0.1, 0.2, 0.4, 0.6, 0.8]:
 
-                nb_ineq = int(0.1*nb_valid_dual_variables_values)
+                nb_ineq = int(i*nb_valid_dual_variables_values)
 
                 with open('duals_inequalities_instances.txt', 'a') as f:
                     f.write('{}/{}_{}\n'.format(pb_name,int(nb_ineq/nb_ineq), nb_ineq))
