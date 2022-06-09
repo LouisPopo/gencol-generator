@@ -24,7 +24,7 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, dual_variables_file_name='', nb_inequalities = 0, grp_size=0, id=''):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, dual_variables_file_name='', nb_inequalities = 0, grp_size=0, id='', random_ineq=False):
 
     for pb in list_pb:
 
@@ -69,40 +69,42 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
         if dual_variables_file_name != '':
             
-            nb_groups = int(nb_inequalities/grp_size)
+            if not random_ineq:
 
-            for g in range(nb_groups):
+                nb_groups = int(nb_inequalities/grp_size)
 
-                s = random.sample(dual_variables, grp_size)
+                for g in range(nb_groups):
 
-                s.sort(key = lambda pair: pair[1], reverse=True)
+                    s = random.sample(dual_variables, grp_size)
 
-                for d in s : dual_variables.remove(d)
+                    s.sort(key = lambda pair: pair[1], reverse=True)
 
-                for i in range(grp_size - 1):
-                    pi_1 = s[i][0]
-                    pi_2 = s[i+1][0]
+                    for d in s : dual_variables.remove(d)
 
-                    tasks_in_new_inequalities.add(pi_1)
-                    tasks_in_new_inequalities.add(pi_2)
-                    inequalities.append((pi_1, pi_2))
+                    for i in range(grp_size - 1):
+                        pi_1 = s[i][0]
+                        pi_2 = s[i+1][0]
 
-            # if not sequencial_inequalities:
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2))
+            
+            else:
 
-            #     for i in range(nb_inequalities):
-            #         d1, d2 = random.sample(dual_variables, 2)
+                for i in range(nb_inequalities):
+                    d1, d2 = random.sample(dual_variables, 2)
 
-            #         if d1[1] < d2[1]:
-            #             pi_1 = d2[0]
-            #             pi_2 = d1[0]
-            #         else:
-            #             pi_1 = d1[0]
-            #             pi_2 = d2[0]
+                    if d1[1] < d2[1]:
+                        pi_1 = d2[0]
+                        pi_2 = d1[0]
+                    else:
+                        pi_1 = d1[0]
+                        pi_2 = d2[0]
                     
-            #         if (pi_1, pi_2) not in inequalities:
-            #             tasks_in_new_inequalities.add(pi_1)
-            #             tasks_in_new_inequalities.add(pi_2)
-            #             inequalities.append((pi_1, pi_2))
+                    if (pi_1, pi_2) not in inequalities:
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2))
 
             # Sequence : 
             # else :
