@@ -117,7 +117,7 @@ def create_duals_ineq_instances():
 
             # 10%, 20%, 40%, 60%, 80%
 
-            for i in [0.1, 0.2, 0.4, 0.6, 0.8]:
+            for i in [0.02, 0.05, 0.1, 0.2, 0.4, 0.8]:
 
                 nb_ineq = int(i*nb_valid_dual_variables_values)
 
