@@ -91,17 +91,31 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
             
             else:
 
-                for i in range(nb_inequalities):
-                    d1, d2 = random.sample(dual_variables, 2)
+                # On ajoute des inégalités "fausses"
 
-                    if d1[1] < d2[1]:
-                        pi_1 = d2[0]
-                        pi_2 = d1[0]
-                    else:
-                        pi_1 = d1[0]
-                        pi_2 = d2[0]
-                    
-                    if (pi_1, pi_2) not in inequalities:
+                nb_groups = int(nb_inequalities/grp_size)
+
+                for g in range(nb_groups):
+
+                    s = random.sample(dual_variables, grp_size)
+
+                    nb_wrong = int(0.33 * len(s)) # le tiers est mauvais
+
+                    for _ in range(nb_wrong):
+
+                        i = random.randrange(0, len(s) - 1)
+                        s[i][1] += random.choice([-5,-4,-3,-2,-1,1,2,3,4,5])
+                        if s[i][1] <= 0:
+                            s[i][1] = 0
+
+                    s.sort(key = lambda pair: pair[1], reverse=True)
+
+                    for d in s : dual_variables.remove(d)
+
+                    for i in range(grp_size - 1):
+                        pi_1 = s[i][0]
+                        pi_2 = s[i+1][0]
+
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
                         inequalities.append((pi_1, pi_2))
@@ -126,7 +140,9 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
         output_file_name = "inputProblem" + pb 
         
-        if nb_inequalities > 0 and grp_size > 0:
+        if random_ineq:
+            output_file_name += "_R_{}".format(nb_inequalities)
+        elif nb_inequalities > 0 and grp_size > 0:
             output_file_name += "_{}_{}".format(int(nb_inequalities/grp_size), grp_size)
         else:
             output_file_name += "_default"
