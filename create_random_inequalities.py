@@ -23,7 +23,7 @@ dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.forma
 
 shutil.copy('../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(problem), 'Networks/Network{}/'.format(problem))
 
-create_gencol_file([problem], nb_veh=int(args.nb_veh), dual_variables_file_name=dual_variables_file_name, nb_inequalities=int(args.nb_ineq), grp_size=1, random_ineq=True)
+create_gencol_file([problem], nb_veh=int(args.nb_veh), dual_variables_file_name=dual_variables_file_name, nb_inequalities=int(args.nb_ineq), grp_size=int(args.nb_ineq), random_ineq=True)
 
 
 # duals_inequalities_instances_file = open('duals_inequalities_instances.txt', 'w')
