@@ -106,9 +106,12 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     for _ in range(nb_wrong):
 
                         i = random.randrange(0, len(s) - 1)
-                        s[i][1] = s[i][1] + random.choice([-5,-4,-3,-2,-1,1,2,3,4,5])
-                        if s[i][1] <= 0:
-                            s[i][1] = 0
+
+                        new_value = s[i][1] + random.choice([-5,-4,-3,-2,-1,1,2,3,4,5])
+                        new_value = max(new_value, 0)
+
+                        s[i] = (s[i][0], new_value)
+                        
 
                     s.sort(key = lambda pair: pair[1], reverse=True)
 
