@@ -115,7 +115,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     s.sort(key = lambda pair: pair[1], reverse=True)
 
-                    for d in s : dual_variables.remove(d)
+                    #for d in s : dual_variables.remove(d)
 
                     for i in range(grp_size - 1):
                         pi_1 = s[i][0]
