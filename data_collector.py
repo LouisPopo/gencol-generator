@@ -126,10 +126,6 @@ def folder_aggregation(folder_path):
             f.write('\n')
     
 
-
-
-
-
     print(folder_path)
 
 parser = argparse.ArgumentParser()
