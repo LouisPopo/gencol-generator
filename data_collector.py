@@ -113,6 +113,8 @@ def folder_aggregation(folder_path):
 
     dt_string = now.strftime("%d_%m_%Y_%H:%M:%S")
 
+    obj_values.sort(key= lambda x: (x[2], x[4]))
+
     with open('objective_values_{}.txt'.format(dt_string), "w") as f:
         for c in obj_values:
             f.write(','.join(c))
