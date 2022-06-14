@@ -122,7 +122,7 @@ def folder_aggregation(folder_path):
 
     with open('objective_values_{}.txt'.format(dt_string), "w") as f:
         for c in obj_values:
-            f.write(','.join(c))
+            f.write(','.join(str(c)))
             f.write('\n')
     
 
