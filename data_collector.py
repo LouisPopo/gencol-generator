@@ -103,7 +103,7 @@ def folder_aggregation(folder_path):
 
         if "default" in file:
             network, mm, seed, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
-            nb_grps = 1
+            nb_grps = '1'
         else:
             network, mm, seed, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
         
@@ -122,7 +122,6 @@ def folder_aggregation(folder_path):
 
     with open('objective_values_{}.txt'.format(dt_string), "w") as f:
         for c in obj_values:
-            print(c)
             f.write(','.join(c))
             f.write('\n')
     
