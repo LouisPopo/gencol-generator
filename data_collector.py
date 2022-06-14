@@ -21,6 +21,14 @@ def find_col_gen_it(report):
                 if s.isdigit():
                     return s
 
+def find_obj_value(report):
+    for line in report:
+        if "Best relaxation cost" in line:
+
+            nb = re.findall("\d+\.\d+", line)[0]
+
+            return nb
+
 def default_aggregation():
 
     with open('duals_inequalities_instances.txt', 'r') as f:
@@ -88,10 +96,32 @@ def default_aggregation():
 
 def folder_aggregation(folder_path):
 
+    obj_values = []
+
     os.chdir(folder_path)
     for file in glob.glob('reportProblem*'):
         network, mm, seed, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
-        print('{} {} {} {} {}'.format(network, mm, seed, nb_grps, grps_size))
+        
+        with open(file) as f:
+            report = f.read().splitlines()
+
+            obj_value = find_obj_value(report)
+
+            obj_values.append([network, mm, seed, nb_grps, grps_size, obj_value])
+
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%Y_%H:%M:%S")
+
+    with open('objective_values_{}.txt'.format(dt_string), "w") as f:
+        for c in obj_values:
+            f.write(','.join(c))
+            f.write('\n')
+    
+
+
+
+
 
     print(folder_path)
 
