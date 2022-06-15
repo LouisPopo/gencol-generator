@@ -1,4 +1,5 @@
 import argparse
+import glob
 import os
 import shutil
 import subprocess
@@ -89,6 +90,32 @@ def dual_ineq_resolution():
 
     solve_instances(instances_to_execute)
 
+def gencol_files_instances():
+
+    pbs = []
+
+    for seed_folder in glob.glob('gencol_files/*/'):
+        
+        instance_name = seed_folder.split('/')[1].replace('/','')
+
+        if '_' not in instance_name:
+            continue
+        
+        for file in glob.glob('{}/*'.format(seed_folder)):
+
+            # copy ce file
+            # garde le nom
+
+            shutil.copy(file, '../MdevspGencolTest/')
+
+            pb_name = file.split('/')[2].replace('inputProblem', '').replace('.in', '')
+            pbs.append(pb_name)
+
+    os.chdir('../MdevspGencolTest')
+
+    solve_instances(pbs)
+
+
 
 parser = argparse.ArgumentParser()
 
@@ -100,6 +127,9 @@ if args.type == 'default':
     default_resolution()
 elif args.type == 'dual':
     dual_ineq_resolution()
+elif args.type == 'gencol_files':
+    # on run juste tout ce qui a dans le folder gencol_files qui represente des instances
+    gencol_files_instances()
 else:
     print('wrong args')
 
