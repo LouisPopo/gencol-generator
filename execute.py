@@ -95,13 +95,17 @@ def gencol_files_instances():
     pbs = []
 
     for seed_folder in glob.glob('gencol_files/*/'):
-        
+
+        print(seed_folder)
+
         instance_name = seed_folder.split('/')[1].replace('/','')
 
         if '_' not in instance_name:
             continue
         
         for file in glob.glob('{}/*'.format(seed_folder)):
+
+            print('   {}'.format(file))
 
             # copy ce file
             # garde le nom
