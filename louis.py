@@ -168,7 +168,10 @@ def create_duals_ineq_instances_with_errors(experience_name):
 
         dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
     
-        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=0.25, nb_grps=1)
+        # 5%, 15% et 25% de ABS(variable duale)
+        for percent in [0.05, 0.15, 0.25]:
+
+            create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=percent, nb_grps=1)
 
 
 
