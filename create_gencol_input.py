@@ -56,7 +56,6 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                 if value > 1 and value < 1000 and not take_absolute_value:
                     dual_variables.append((dual_variable, value))
                 elif value < 1000 and take_absolute_value and "Max" not in dual_variable and "Count" not in dual_variable:
-                    print(dual_variable)
                     dual_variables.append((dual_variable, abs(value)))
 
         dual_variables.sort(key = lambda pair: pair[1], reverse=True)

@@ -152,7 +152,8 @@ def create_duals_ineq_instances_with_errors(experience_name):
                     break
 
             nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
-            print(nb_veh)
+
+        print('{} : {}'.format(instance_name, nb_veh))
 
     os.chdir('../../')
 
@@ -160,15 +161,13 @@ def create_duals_ineq_instances_with_errors(experience_name):
 
     for instance in glob.glob('Networks/{}/*/'.format(experience_name)):
 
-        print(instance)
 
         instance_name = instance.split('/')[2].replace('Network', '').replace('/', '')
         #print(instance_name)
         path_to_networks = 'Networks/{}'.format(experience_name)
 
         dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
-        
-        print('okk')
+    
         create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=0.25, nb_grps=1)
 
 
