@@ -109,9 +109,12 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     for _ in range(nb_wrong):
 
                         i = random.randrange(0, len(s) - 1)
+                        
+                        old_value = s[i][1]
+                        new_value = old_value
 
-                        new_value = s[i][1] + random.choice([-5,-4,-3,-2,-1,1,2,3,4,5])
-                        new_value = max(new_value, 0)
+                        while old_value == new_value:
+                            new_value = random.randrange(0,55)
 
                         s[i] = (s[i][0], new_value)
                         
@@ -149,9 +152,9 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         output_file_name = "inputProblem" + pb 
         
         if random_ineq:
-            output_file_name += "_R_{}".format(nb_inequalities)
+            output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         elif nb_inequalities > 0 and grp_size > 0:
-            output_file_name += "_{}_{}".format(int(nb_inequalities/grp_size), grp_size)
+            output_file_name += "_{}_{}".format(int(nb_grps), grp_size)
         else:
             output_file_name += "_default"
             
