@@ -24,11 +24,11 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, dual_variables_file_name='', nb_inequalities = 0, grp_size=0, id='', random_ineq=False):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, random_ineq=False, percentage_wrong = 0):
 
     for pb in list_pb:
 
-        network_folder = "Networks/Network" + pb
+        network_folder = '{}/Network{}'.format(path_to_networks, pb)
 
         trips_file = open(network_folder + "/voyages.txt", "r")
         trips_list = trips_file.readlines()
@@ -53,10 +53,14 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                 value = float(value)
 
                 # Pour l'instant on laisse faire les +1000 (cout fixe) et les <0
-                if value > 1 and value < 1000:
+                if value > 1 and value < 1000 and not take_absolute_value:
                     dual_variables.append((dual_variable, value))
+                elif value < 1000 and take_absolute_value and "Max" not in dual_variable and "Count" not in dual_variable:
+                    print(dual_variable)
+                    dual_variables.append((dual_variable, abs(value)))
 
         dual_variables.sort(key = lambda pair: pair[1], reverse=True)
+        nb_dual_variables = len(dual_variables)
 
         # On créé les inégalités
         # 
@@ -69,11 +73,13 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
         if dual_variables_file_name != '':
             
+            nb_inequalities = int(percentage_ineq * nb_dual_variables)
+
+            grp_size = int(nb_inequalities/nb_grps)
+
             if not random_ineq:
 
-                nb_groups = int(nb_inequalities/grp_size)
-
-                for g in range(nb_groups):
+                for g in range(nb_grps):
 
                     s = random.sample(dual_variables, grp_size)
 
@@ -93,13 +99,11 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                 # On ajoute des inégalités "fausses"
 
-                nb_groups = int(nb_inequalities/grp_size)
-
-                for g in range(nb_groups):
+                for g in range(nb_grps):
 
                     s = random.sample(dual_variables, grp_size)
 
-                    nb_wrong = int(0.33 * len(s)) # le tiers est mauvais
+                    nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
 
                     print("number of wrong ineq : {}".format(nb_wrong))
 

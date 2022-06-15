@@ -1,8 +1,10 @@
 import argparse
+import glob
 import shutil
 import string
 from code_juliette.create_data_trip_shifting import create_network_data
 from create_gencol_input import create_gencol_file
+import os
 
 
 # If default : 
@@ -129,9 +131,56 @@ def create_duals_ineq_instances():
 
                 create_gencol_file([pb_name], nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, nb_inequalities=nb_ineq, grp_size=nb_ineq)
 
+def create_duals_ineq_instances_with_errors(experience_name):
+
+    # 1. va chercher le inputProblem... dans gencol_files/{EXP}/...
+
+    os.chdir('gencol_files/{}'.format(experience_name))
+    
+    for instance in glob.glob('*/'):
+
+        instance_name = instance.replace('/', '')
+        
+        with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
+            input_problem = f.read().splitlines()
+            
+            vehicule_i = 0
+
+            for i, line in enumerate(input_problem):
+                if "Columns" in line:
+                    vehicule_i = i + 2
+                    break
+
+            nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
+            print(nb_veh)
+
+    os.chdir('../../')
+
+    print(os.getcwd())
+
+    for instance in glob.glob('Networks/{}/*/'.format(experience_name)):
+
+        print(instance)
+
+        instance_name = instance.split('/')[2].replace('Network', '').replace('/', '')
+        #print(instance_name)
+        path_to_networks = 'Networks/{}'.format(experience_name)
+
+        dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
+        
+        print('okk')
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=0.25, nb_grps=1)
+
+
+
+        
+            
+
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument('type', type=str)
+parser.add_argument('experience_name', nargs='?', default='')
 
 args = parser.parse_args()
 
@@ -139,6 +188,8 @@ if args.type == 'default':
     create_defaults_instances()
 elif args.type == 'dual':
     create_duals_ineq_instances()
+elif args.type == 'errors':
+    create_duals_ineq_instances_with_errors(args.experience_name)
 else:
     print('wrong args')
 
