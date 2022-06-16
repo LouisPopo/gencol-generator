@@ -119,7 +119,8 @@ def create_duals_ineq_instances():
 
             # 10%, 20%, 40%, 60%, 80%
 
-            for i in [0.02, 0.05, 0.1, 0.2, 0.4, 0.8]:
+            #for i in [0.02, 0.05, 0.1, 0.2, 0.4, 0.8]:
+            for i in [0.05, 0.1, 0.15, 0.25, 0.4, 0.5]:    
 
                 nb_ineq = int(i*nb_valid_dual_variables_values)
 
@@ -175,9 +176,9 @@ def create_duals_ineq_instances_with_errors(experience_name):
 
         # 5%, 10%, 25% des inegalités
         # avec 5%, 10%, 25% d'erreurs
-        for percent_ineq in [0.05, 0.1, 0.25]:
-            for percent_wrong in [0.05, 0.1, 0.25]:
-                create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=percent_ineq, random_ineq=True, percentage_wrong=percent_wrong, nb_grps=1)
+        for percent_ineq in [0.05, 0.1, 0.25, 0.5]:
+            for percent_wrong in [0.05, 0.1, 0.25, 0.5]:
+                create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=True, percentage_wrong=percent_wrong, nb_grps=1)
             
 
 
