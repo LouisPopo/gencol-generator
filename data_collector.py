@@ -47,7 +47,7 @@ def default_aggregation_wrong_ineq():
 
             data.append([network, mm, seed, nb_ineq, nb_wrong, computing_time, col_gen_it, obj_val])
     
-    data.sort(key = lambda x : (x[2], x[4], x[6])) # seed, nb_ineq, nb_wrong
+    data.sort(key = lambda x : (x[2], x[3], x[4])) # seed, nb_ineq, nb_wrong
 
     now = datetime.now()
 
