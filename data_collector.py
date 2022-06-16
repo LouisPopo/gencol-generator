@@ -33,12 +33,10 @@ def default_aggregation_wrong_ineq():
 
     os.chdir('../MdevspGencolTest')
 
+    data = []
+
     for file in glob.glob('report*'):
         network, mm, seed, nb_grp, nb_ineq, w, nb_wrong = file.replace('reportProblem', '').replace('.out', '').split('_')
-
-        print(file)
-
-        data = []
 
         with open(file, 'r') as f:
             r = f.read().splitlines()
