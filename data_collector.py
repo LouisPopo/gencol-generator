@@ -29,6 +29,36 @@ def find_obj_value(report):
 
             return nb
 
+def default_aggregation_wrong_ineq():
+
+    os.chdir('../MdevspGencolTest')
+
+    for file in glob.glob('report*'):
+        network, mm, seed, nb_grp, nb_ineq, w, nb_wrong = file.replace('reportProblem', '').replace('.out', '').split('_')
+       
+        data = []
+
+        with open(file, 'r') as f:
+            r = f.read().splitlines()
+
+            computing_time = find_computing_time(r[-1])
+            col_gen_it = find_col_gen_it(r)
+            obj_val = find_obj_value(r)
+
+            data.append([network, mm, seed, nb_ineq, nb_wrong, computing_time, col_gen_it, obj_val])
+    
+    data.sort(key = lambda x : (x[2], x[4], x[6])) # seed, nb_ineq, nb_wrong
+
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%Y_%H:%M:%S")
+
+    with open('infos_{}.txt'.format(dt_string), 'w') as f:
+        for c in data:
+            f.write(','.join(c))
+            f.write('\n')
+
+
 def default_aggregation():
 
     with open('duals_inequalities_instances.txt', 'r') as f:
@@ -130,11 +160,14 @@ def folder_aggregation(folder_path):
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument('ineq', type=str)
 parser.add_argument('folder_path', type=str, nargs='?', default='')
 
 args = parser.parse_args()
 
-if args.folder_path == '':
+if args.ineq == 'wrong':
+    default_aggregation_wrong_ineq()
+elif args.folder_path == '':
     default_aggregation()
 elif args.folder_path != '':
     folder_aggregation(args.folder_path)
