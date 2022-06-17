@@ -179,7 +179,53 @@ def create_duals_ineq_instances_with_errors(experience_name):
         for percent_ineq in [0.05, 0.1, 0.25, 0.5]:
             for percent_wrong in [0.05, 0.1, 0.25, 0.5]:
                 create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=True, percentage_wrong=percent_wrong, nb_grps=1)
+
+def create_duals_ineq_instances_pairwise(experience_name):
+    # 1. va chercher le inputProblem... dans gencol_files/{EXP}/...
+
+    os.chdir('gencol_files/{}'.format(experience_name))
+    
+    for instance in glob.glob('*/'):
+
+        instance_name = instance.replace('/', '')
+        
+        with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
+            input_problem = f.read().splitlines()
             
+            vehicule_i = 0
+
+            for i, line in enumerate(input_problem):
+                if "Columns" in line:
+                    vehicule_i = i + 2
+                    break
+
+            nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
+
+        print('{} : {}'.format(instance_name, nb_veh))
+
+    os.chdir('../../')
+
+    print(os.getcwd())
+
+    for instance in glob.glob('Networks/{}/*/'.format(experience_name)):
+
+
+        instance_name = instance.split('/')[2].replace('Network', '').replace('/', '')
+        #print(instance_name)
+        path_to_networks = 'Networks/{}'.format(experience_name)
+
+        dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
+    
+        # 5%, 15% et 25% de ABS(variable duale)
+        # for percent in [0.05, 0.15, 0.25]:
+
+        #     create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=percent, nb_grps=1)
+
+        # 5%, 10%, 25% des inegalités
+        # avec 5%, 10%, 25% d'erreurs
+        for percent_ineq in [0.05, 0.1, 0.25, 0.5]:
+            create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=True, nb_grps=1)
+
 
 
 parser = argparse.ArgumentParser()
@@ -195,6 +241,8 @@ elif args.type == 'dual':
     create_duals_ineq_instances()
 elif args.type == 'errors':
     create_duals_ineq_instances_with_errors(args.experience_name)
+elif args.type == 'pairwise':
+    create_duals_ineq_instances_pairwise(args.experience_name)
 else:
     print('wrong args')
 

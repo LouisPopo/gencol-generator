@@ -1,6 +1,7 @@
 from asyncio import tasks
 from datetime import datetime
 import enum
+import grp
 from math import ceil
 import os
 import random
@@ -99,37 +100,59 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                 # On ajoute des inégalités "fausses"
 
                 for g in range(nb_grps):
+                    
+                    # SEQUENTIAL INEQUIALITIES
 
-                    s = random.sample(dual_variables, grp_size)
+                    # s = random.sample(dual_variables, grp_size)
 
                     nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
 
-                    print("number of wrong ineq : {}".format(nb_wrong))
+                    # print("number of wrong ineq : {}".format(nb_wrong))
 
-                    for _ in range(nb_wrong):
+                    # for _ in range(nb_wrong):
 
-                        i = random.randrange(0, len(s) - 1)
+                    #     i = random.randrange(0, len(s) - 1)
                         
-                        old_value = s[i][1]
-                        new_value = old_value
+                    #     old_value = s[i][1]
+                    #     new_value = old_value
 
-                        while old_value == new_value:
-                            new_value = random.randrange(0,55)
+                    #     while old_value == new_value:
+                    #         new_value = random.randrange(0,55)
 
-                        s[i] = (s[i][0], new_value)
+                    #     s[i] = (s[i][0], new_value)
                         
 
-                    s.sort(key = lambda pair: pair[1], reverse=True)
+                    # s.sort(key = lambda pair: pair[1], reverse=True)
 
-                    #for d in s : dual_variables.remove(d)
+                    # #for d in s : dual_variables.remove(d)
 
-                    for i in range(grp_size - 1):
-                        pi_1 = s[i][0]
-                        pi_2 = s[i+1][0]
+                    # for i in range(grp_size - 1):
+                    #     pi_1 = s[i][0]
+                    #     pi_2 = s[i+1][0]
 
-                        tasks_in_new_inequalities.add(pi_1)
-                        tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2))
+                    #     tasks_in_new_inequalities.add(pi_1)
+                    #     tasks_in_new_inequalities.add(pi_2)
+                    #     inequalities.append((pi_1, pi_2))
+
+                    # PAIRWISE INEQUALITIES
+
+                    i = 0
+                    while i < grp_size:
+
+                        r = random.sample(dual_variables, 2)
+
+                        if r[0][1] >= r[1][1]:
+                            pi_1 = r[0][0]
+                            pi_2 = r[1][0]
+                        else:
+                            pi_1 = r[1][0]
+                            pi_2 = r[0][0]
+
+                        if (pi_1, pi_2) not in inequalities:
+                            tasks_in_new_inequalities.add(pi_1)
+                            tasks_in_new_inequalities.add(pi_2)
+                            inequalities.append((pi_1, pi_2))
+                            i += 1
 
             # Sequence : 
             # else :
@@ -152,7 +175,10 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         output_file_name = "inputProblem" + pb 
         
         if random_ineq:
-            output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
+            if percentage_wrong > 0:
+                output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
+            else:
+                output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
         elif nb_inequalities > 0 and grp_size > 0:
             output_file_name += "_{}_{}".format(int(nb_grps), grp_size)
         else:
