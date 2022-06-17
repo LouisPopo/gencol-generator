@@ -224,7 +224,7 @@ def create_duals_ineq_instances_pairwise(experience_name):
         # 5%, 10%, 25% des inegalités
         # avec 5%, 10%, 25% d'erreurs
         for percent_ineq in [0.05, 0.1, 0.25, 0.5]:
-            create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=True, nb_grps=1)
+            create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=False, nb_grps=1)
 
 def create_duals_ineq_instantes_seq_grps(experience_name):
 
@@ -273,7 +273,7 @@ def create_duals_ineq_instantes_seq_grps(experience_name):
         for percent_ineq in [0.05, 0.1, 0.25, 0.5]:
             for nb_grps in [2, 5, 10, 20]:
                 create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=percent_ineq, random_ineq=True, nb_grps=nb_grps)
-                
+
 
 
 
