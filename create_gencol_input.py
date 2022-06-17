@@ -103,9 +103,9 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     
                     # SEQUENTIAL INEQUIALITIES
 
-                    # s = random.sample(dual_variables, grp_size)
+                    s = random.sample(dual_variables, grp_size)
 
-                    nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
+                    # nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
 
                     # print("number of wrong ineq : {}".format(nb_wrong))
 
@@ -122,37 +122,37 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     #     s[i] = (s[i][0], new_value)
                         
 
-                    # s.sort(key = lambda pair: pair[1], reverse=True)
+                    s.sort(key = lambda pair: pair[1], reverse=True)
 
                     # #for d in s : dual_variables.remove(d)
 
-                    # for i in range(grp_size - 1):
-                    #     pi_1 = s[i][0]
-                    #     pi_2 = s[i+1][0]
+                    for i in range(grp_size - 1):
+                        pi_1 = s[i][0]
+                        pi_2 = s[i+1][0]
 
-                    #     tasks_in_new_inequalities.add(pi_1)
-                    #     tasks_in_new_inequalities.add(pi_2)
-                    #     inequalities.append((pi_1, pi_2))
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2))
 
                     # PAIRWISE INEQUALITIES
 
-                    i = 0
-                    while i < grp_size:
+                    # i = 0
+                    # while i < grp_size:
 
-                        r = random.sample(dual_variables, 2)
+                    #     r = random.sample(dual_variables, 2)
 
-                        if r[0][1] >= r[1][1]:
-                            pi_1 = r[0][0]
-                            pi_2 = r[1][0]
-                        else:
-                            pi_1 = r[1][0]
-                            pi_2 = r[0][0]
+                    #     if r[0][1] >= r[1][1]:
+                    #         pi_1 = r[0][0]
+                    #         pi_2 = r[1][0]
+                    #     else:
+                    #         pi_1 = r[1][0]
+                    #         pi_2 = r[0][0]
 
-                        if (pi_1, pi_2) not in inequalities:
-                            tasks_in_new_inequalities.add(pi_1)
-                            tasks_in_new_inequalities.add(pi_2)
-                            inequalities.append((pi_1, pi_2))
-                            i += 1
+                    #     if (pi_1, pi_2) not in inequalities:
+                    #         tasks_in_new_inequalities.add(pi_1)
+                    #         tasks_in_new_inequalities.add(pi_2)
+                    #         inequalities.append((pi_1, pi_2))
+                    #         i += 1
 
             # Sequence : 
             # else :
