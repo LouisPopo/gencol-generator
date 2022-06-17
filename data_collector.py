@@ -131,11 +131,17 @@ def folder_aggregation(folder_path):
     os.chdir(folder_path)
     for file in glob.glob('reportProblem*'):
 
+        print(file)
+
         if "default" in file:
             network, mm, seed, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
             nb_grps = '1'
         else:
-            network, mm, seed, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
+
+            if '_P_' in file:
+                network, mm, seed, p, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
+            else:
+                network, mm, seed, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
         
         with open(file) as f:
             report = f.read().splitlines()
