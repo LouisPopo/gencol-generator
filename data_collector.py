@@ -161,7 +161,41 @@ def default_folder_aggregation(folder_path):
         for c in data:
             f.write(','.join(c))
             f.write('\n')
+
+def series_folder_aggregation(folder_path):
+    os.chdir(folder_path)
+
+    data = []
+
+    for file in glob.glob('reportProblem*'):
+        
+        if "default" in file:
+            network, mm, seed, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
+            nb_grps = '1'
+        else:
+
+            network, mm, seed, nb_grps, grps_size = file.replace('reportProblem', '').replace('.out', '').split('_')
+        
+        with open(file) as f:
+            report = f.read().splitlines()
+
+            obj_value = find_obj_value(report)
+
+            computing_time = find_computing_time(report[-1])
+            col_gen_it = find_col_gen_it(report)
+
+            data.append([network, mm, seed, nb_grps, grps_size, computing_time, col_gen_it, obj_value])
     
+    now = datetime.now()
+
+    dt_string = now.strftime("%d_%m_%Y_%H:%M:%S")
+
+    data.sort(key= lambda x: (x[2], x[4]))
+
+    with open('infos_{}.txt'.format(dt_string), "w") as f:
+        for c in data:
+            f.write(','.join(c))
+            f.write('\n')
 
 def folder_aggregation(folder_path):
 
@@ -218,5 +252,7 @@ elif args.ineq == 'obj' and args.folder_path != '':
     folder_aggregation(args.folder_path)
 elif args.ineq == 'default' and args.folder_path != '':
     default_folder_aggregation(args.folder_path)
+elif args.ineq == 'series' and args.folder_path != '':
+    series_folder_aggregation(args.folder_path)
 else:
     print('wrong args')
