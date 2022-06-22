@@ -83,6 +83,18 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     s = random.sample(dual_variables, grp_size)
 
+                    if percentage_wrong > 0:
+                        nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
+
+                        for _ in range(nb_wrong):
+                            i = random.randrange(0, len(s) - 1)
+                            old_value = s[i][1]
+                            new_value = old_value
+                            while abs(old_value - new_value) <= 1:
+                                new_value = random.randrange(0,55)
+
+                            s[i] = (s[i][0], new_value)
+
                     s.sort(key = lambda pair: pair[1], reverse=True)
 
                     for d in s : dual_variables.remove(d)
