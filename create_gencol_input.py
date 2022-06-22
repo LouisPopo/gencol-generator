@@ -25,7 +25,7 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, random_ineq=False, percentage_wrong = 0):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0):
 
     for pb in list_pb:
 
@@ -77,23 +77,13 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
             grp_size = int(nb_inequalities/nb_grps)
 
-            if not random_ineq:
+            if percentage_wrong == 0:
+
+                nb_wrong = 0
 
                 for g in range(nb_grps):
 
                     s = random.sample(dual_variables, grp_size)
-
-                    if percentage_wrong > 0:
-                        nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
-
-                        for _ in range(nb_wrong):
-                            i = random.randrange(0, len(s) - 1)
-                            old_value = s[i][1]
-                            new_value = old_value
-                            while abs(old_value - new_value) <= 1:
-                                new_value = random.randrange(0,55)
-
-                            s[i] = (s[i][0], new_value)
 
                     s.sort(key = lambda pair: pair[1], reverse=True)
 
@@ -117,21 +107,21 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     s = random.sample(dual_variables, grp_size)
 
-                    # nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
+                    nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
 
-                    # print("number of wrong ineq : {}".format(nb_wrong))
+                    print("number of wrong ineq : {}".format(nb_wrong))
 
-                    # for _ in range(nb_wrong):
+                    for _ in range(nb_wrong):
 
-                    #     i = random.randrange(0, len(s) - 1)
+                        i = random.randrange(0, len(s) - 1)
                         
-                    #     old_value = s[i][1]
-                    #     new_value = old_value
+                        old_value = s[i][1]
+                        new_value = old_value
 
-                    #     while old_value == new_value:
-                    #         new_value = random.randrange(0,55)
+                        while old_value == new_value:
+                            new_value = random.randrange(0,55)
 
-                    #     s[i] = (s[i][0], new_value)
+                        s[i] = (s[i][0], new_value)
                         
 
                     s.sort(key = lambda pair: pair[1], reverse=True)
@@ -186,13 +176,12 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
         output_file_name = "inputProblem" + pb 
         
-        if random_ineq:
-            if percentage_wrong > 0:
-                output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
-            else:
-                output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
-        elif nb_inequalities > 0 and grp_size > 0:
-            output_file_name += "_{}_{}".format(int(nb_grps), grp_size)
+        # if percentage_wrong > 0:
+        #     output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
+        # else:
+        #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
+        if nb_inequalities > 0 and grp_size > 0:
+            output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         else:
             output_file_name += "_default"
             
