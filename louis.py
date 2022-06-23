@@ -317,7 +317,7 @@ def create_one_dual_ineq(experience_name):
 
         # 5%, 10%, 25% des inegalités
         # avec 5%, 10%, 25% d'erreurs
-        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=1, percentage_wrong=0, nb_grps=1)
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=0.01, percentage_wrong=0, nb_grps=1)
 
 
 
