@@ -54,7 +54,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                 value = float(value)
 
                 # Pour l'instant on laisse faire les +1000 (cout fixe) et les <0
-                if value > 1 and value < 850 and not take_absolute_value:
+                # Finalement on garde le < 0
+                if value < 850 and not take_absolute_value:
                     dual_variables.append((dual_variable, value))
                 elif value < 850 and take_absolute_value and "Max" not in dual_variable and "Count" not in dual_variable:
                     dual_variables.append((dual_variable, abs(value)))
