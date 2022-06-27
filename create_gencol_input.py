@@ -72,6 +72,9 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         tasks_in_new_inequalities = set()
         inequalities = []
 
+        nb_inequalities = 0
+        grp_size = 0
+
         if dual_variables_file_name != '':
             
             nb_inequalities = int(percentage_ineq * nb_dual_variables)
