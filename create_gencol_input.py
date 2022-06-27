@@ -25,7 +25,7 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True, test_new_grp = False):
 
     for pb in list_pb:
 
@@ -85,21 +85,48 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                 nb_wrong = 0
 
-                for g in range(nb_grps):
+                if test_new_grp:
 
                     s = random.sample(dual_variables, grp_size)
 
-                    s.sort(key = lambda pair: pair[1], reverse=True)
+                    min_val = s[0][1]
+                    max_val = s[-1][1]
 
-                    for d in s : dual_variables.remove(d)
+                    ineq_groups = []
+                    current_group = 0
 
-                    for i in range(grp_size - 1):
-                        pi_1 = s[i][0]
-                        pi_2 = s[i+1][0]
+                    ineq_groups.append([])
 
-                        tasks_in_new_inequalities.add(pi_1)
-                        tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2))
+                    current_min_val = min_val
+
+                    for i,d in enumerate(s):
+
+                        if d[1] <= current_min_val:
+                            ineq_groups[current_group].append(d)
+                        else:
+                            current_group += 1
+                            ineq_groups.append([])
+                            current_min_val += 6
+
+                    print(ineq_groups)
+
+                else:
+
+                    for g in range(nb_grps):
+
+                        s = random.sample(dual_variables, grp_size)
+
+                        s.sort(key = lambda pair: pair[1], reverse=True)
+
+                        for d in s : dual_variables.remove(d)
+
+                        for i in range(grp_size - 1):
+                            pi_1 = s[i][0]
+                            pi_2 = s[i+1][0]
+
+                            tasks_in_new_inequalities.add(pi_1)
+                            tasks_in_new_inequalities.add(pi_2)
+                            inequalities.append((pi_1, pi_2))
             
             else:
 
