@@ -88,6 +88,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                 if test_new_grp:
 
                     s = random.sample(dual_variables, grp_size)
+                    s.sort(key = lambda pair: pair[1], reverse=True)
 
                     min_val = s[0][1]
                     max_val = s[-1][1]
