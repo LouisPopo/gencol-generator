@@ -25,7 +25,7 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True):
 
     for pb in list_pb:
 
@@ -276,12 +276,12 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         for trip in range(nb_trip):
             row_name = "Cover_T" + str(trip)
 
-            rows_string += row_name + " =1"
-            
-            # TEST, NO STRONG
-            # rows_string += row_name + " >= 1"
-            if row_name not in tasks_in_new_inequalities:
-                rows_string += " TaskStrong"
+            if use_strong_task:
+                rows_string += row_name + " =1"
+                if row_name not in tasks_in_new_inequalities:
+                    rows_string += " TaskStrong"
+            else:
+                rows_string += row_name + " >= 1"
             
             rows_string += ";\n"
 
@@ -305,7 +305,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
             tasks_string += "t_T" + str(trip) + " " + row_name
             
             # TEST NO STRONG
-            if row_name not in tasks_in_new_inequalities:
+            if row_name not in tasks_in_new_inequalities and use_strong_task:
                 tasks_string += " Strong"
             
             tasks_string += ";\n"

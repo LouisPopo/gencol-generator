@@ -365,6 +365,53 @@ def create_all_ineq(experience_name):
 
         create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=1, percentage_wrong=0, nb_grps=1)
 
+def create_new_default(experience_name):
+
+    # 1. va chercher le inputProblem... dans gencol_files/{EXP}/...
+
+    os.chdir('gencol_files/{}'.format(experience_name))
+    
+    for instance in glob.glob('*/'):
+
+        instance_name = instance.replace('/', '')
+        
+        with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
+            input_problem = f.read().splitlines()
+            
+            vehicule_i = 0
+
+            for i, line in enumerate(input_problem):
+                if "Columns" in line:
+                    vehicule_i = i + 2
+                    break
+
+            nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
+
+        print('{} : {}'.format(instance_name, nb_veh))
+
+    os.chdir('../../')
+
+    print(os.getcwd())
+
+    for instance in glob.glob('Networks/{}/*/'.format(experience_name)):
+
+
+        instance_name = instance.split('/')[2].replace('Network', '').replace('/', '')
+        #print(instance_name)
+        path_to_networks = 'Networks/{}'.format(experience_name)
+
+        #dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
+    
+        # 5%, 15% et 25% de ABS(variable duale)
+        # for percent in [0.05, 0.15, 0.25]:
+
+        #     create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=True, percentage_ineq=percent, nb_grps=1)
+
+        # 5%, 10%, 25% des inegalités
+        # avec 5%, 10%, 25% d'erreurs
+
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, take_absolute_value=False, percentage_ineq=0, percentage_wrong=0, nb_grps=0, use_strong_task=False)
+
 
 
 parser = argparse.ArgumentParser()
@@ -388,6 +435,8 @@ elif args.type == 'one':
     create_one_dual_ineq(args.experience_name)
 elif args.type == 'all':
     create_all_ineq(args.experience_name)
+elif args.type == 'new_def':
+    create_new_default(args.experience_name)
 else:
     print('wrong args')
 
