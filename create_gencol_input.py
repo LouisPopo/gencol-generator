@@ -25,7 +25,7 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True, test_new_grp = False):
+def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True, test_new_grp = False, new_grp_val_range = 0):
 
     for pb in list_pb:
 
@@ -102,18 +102,32 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     for i,d in enumerate(s):
 
-                        if d[1] <= current_min_val:
+                        if d[1] <= current_min_val + new_grp_val_range:
                             current_group.append(d)
                         else:
                             ineq_groups.append(current_group)
                             current_group = []
                             
-                            while d[1] > current_min_val:
-                                current_min_val += 6
+                            while d[1] > current_min_val + new_grp_val_range:
+                                current_min_val += new_grp_val_range
                             
                             current_group.append(d)
 
-                    print(ineq_groups)
+                    # On reverse la liste pour avoir les plus grosses valeurs en debut de liste
+                    ineq_groups.reverse()
+
+                    for g1 in range(len(ineq_groups) - 1):
+                        # On prend une var duale du g1+1, et chaque var duale du g1 >= celle random
+
+                        g2_dual_var = random.sample(ineq_groups[g1+1], 1)
+                        pi_2 = g2_dual_var[0]
+                        tasks_in_new_inequalities.add(pi_2)
+
+                        for g1_dual_var in ineq_groups[g1]:
+                            pi_1 = g1_dual_var[0]
+                            tasks_in_new_inequalities.add(pi_1)
+                            inequalities.append((pi_1, pi_2))
+                            
 
                 else:
 
