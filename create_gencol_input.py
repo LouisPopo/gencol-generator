@@ -126,8 +126,6 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         for g1_dual_var in ineq_groups[g1]:
                             pi_1 = g1_dual_var[0]
 
-                            print('{} >= {}'.format(pi_1, pi_2))
-
                             tasks_in_new_inequalities.add(pi_1)
                             inequalities.append((pi_1, pi_2))
                             
@@ -233,7 +231,10 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         #     output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         # else:
         #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
-        if nb_inequalities > 0 and grp_size > 0:
+        
+        if test_new_grp:
+            output_file_name += "_{}_{}".format(nb_inequalities, new_grp_val_range)
+        elif nb_inequalities > 0 and grp_size > 0:
             output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         else:
             output_file_name += "_default"
