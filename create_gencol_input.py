@@ -95,20 +95,23 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     max_val = s[-1][1]
 
                     ineq_groups = []
-                    current_group = 0
-
-                    ineq_groups.append([])
 
                     current_min_val = min_val
+
+                    current_group = []
 
                     for i,d in enumerate(s):
 
                         if d[1] <= current_min_val:
-                            ineq_groups[current_group].append(d)
+                            current_group.append(d)
                         else:
-                            current_group += 1
-                            ineq_groups.append([])
-                            current_min_val += 6
+                            ineq_groups.append(current_group)
+                            current_group = []
+                            
+                            while d[1] > current_min_val:
+                                current_min_val += 6
+                            
+                            current_group.append(d)
 
                     print(ineq_groups)
 
