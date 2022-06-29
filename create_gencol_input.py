@@ -123,7 +123,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         min_val_g = min(g, key = lambda x : x[1])
                         max_val_g = max(g, key = lambda x : x[1])
 
-                        line += '[ {} - ( {} ) - {} ] '.format(min_val_g, len(g), max_val_g)
+                        line += '[ {} - ( {} ) - {} ] '.format(max_val_g, len(g), min_val_g)
                     
                     print(line)
                         
@@ -155,8 +155,6 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                                 ineq_groups[i].remove(dual_var)
 
                         if len(serie) > 1:
-
-                            print(len(serie))
 
                             for d in range(len(serie) - 1):
 
