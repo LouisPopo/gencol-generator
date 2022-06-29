@@ -116,20 +116,58 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # On reverse la liste pour avoir les plus grosses valeurs en debut de liste
                     ineq_groups.reverse()
 
-                    for g1 in range(len(ineq_groups) - 1):
+                    # On test des inge du genre : 
+                    # [pi1, pi2, pi3], [pi4, pi5], [pi6]
+                    # pi1 >= pi4 >= pi6
+                    # pi2 >= pi5
+
+                    min_nb_dual_var = min(len(x) for x in ineq_groups)
+                    max_nb_dual_var = max(len(x) for x in ineq_groups)
+
+                    for _ in range(max_nb_dual_var):
+                        # on va chercher une variable duale par groupe non vide, ca nous fait notre liste
                         
+                        serie = []
+                        
+                        for i, g in enumerate(ineq_groups):
 
-                        for g1_dual_var in ineq_groups[g1]:
-                            
-                            pi_1 = g1_dual_var[0]
-                            tasks_in_new_inequalities.add(pi_1)
+                            if len(g) > 0:
 
-                            for g2_dual_var in ineq_groups[g1 + 1]:
+                                dual_var = random.sample(g, 1)[0]
+                                serie.append(dual_var)
 
-                                pi_2 = g2_dual_var[0]
+                                ineq_groups[i].remove(dual_var)
+
+                        if len(serie) > 1:
+
+                            print(serie)
+
+                            for d in range(len(serie)):
+
+                                pi_1 = serie[d][0]
+                                pi_2 = serie[d + 1][0]
+
+                                tasks_in_new_inequalities.add(pi_1)
                                 tasks_in_new_inequalities.add(pi_2)
 
                                 inequalities.append((pi_1, pi_2))
+
+
+
+                    # for g1 in range(len(ineq_groups) - 1):
+                        
+
+                    #     for g1_dual_var in ineq_groups[g1]:
+                            
+                    #         pi_1 = g1_dual_var[0]
+                    #         tasks_in_new_inequalities.add(pi_1)
+
+                    #         for g2_dual_var in ineq_groups[g1 + 1]:
+
+                    #             pi_2 = g2_dual_var[0]
+                    #             tasks_in_new_inequalities.add(pi_2)
+
+                    #             inequalities.append((pi_1, pi_2))
 
                         # On prend une var duale du g1+1, et chaque var duale du g1 >= celle random
                         # g2_dual_var = random.sample(ineq_groups[g1+1], 1)[0]
