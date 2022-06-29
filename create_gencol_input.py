@@ -129,7 +129,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                             tasks_in_new_inequalities.add(pi_1)
                             inequalities.append((pi_1, pi_2))
 
-                    print('[ {} ] '.format(len(x)) for x in ineq_groups)
+                    print(", ".join([len(x) for x in ineq_groups]))
                     
                             
 
