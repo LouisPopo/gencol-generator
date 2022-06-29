@@ -116,6 +116,20 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # On reverse la liste pour avoir les plus grosses valeurs en debut de liste
                     ineq_groups.reverse()
 
+                    line = ''
+
+                    for g in ineq_groups:
+
+                        min_val_g = min(g, key = lambda x : x[1])
+                        max_val_g = max(g, key = lambda x : x[1])
+
+                        line += '[ {} - ( {} ) - {} ] '.format(min_val_g, len(g), max_val_g)
+                    
+                    print(line)
+                        
+
+
+
                     # On test des inge du genre : 
                     # [pi1, pi2, pi3], [pi4, pi5], [pi6]
                     # pi1 >= pi4 >= pi6
