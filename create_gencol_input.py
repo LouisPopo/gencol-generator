@@ -123,7 +123,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         min_val_g = min(g, key = lambda x : x[1])
                         max_val_g = max(g, key = lambda x : x[1])
 
-                        line += '[ {} - ( {} ) - {} ] '.format(max_val_g, len(g), min_val_g)
+                        line += '[ {} - ( {} ) - {} ] '.format(max_val_g[1], len(g), min_val_g[1])
                     
                     print(line)
                         
