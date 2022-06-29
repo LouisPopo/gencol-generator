@@ -121,6 +121,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # pi1 >= pi4 >= pi6
                     # pi2 >= pi5
 
+                    print(", ".join([str(len(x)) for x in ineq_groups]))
+
                     min_nb_dual_var = min(len(x) for x in ineq_groups)
                     max_nb_dual_var = max(len(x) for x in ineq_groups)
 
@@ -181,7 +183,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         #     inequalities.append((pi_1, pi_2))
 
                     print('{} ineq in total'.format(len(inequalities)))
-                    print(", ".join([str(len(x)) for x in ineq_groups]))
+                    
                     
                             
 
