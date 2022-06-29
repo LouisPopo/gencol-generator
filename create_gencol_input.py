@@ -142,7 +142,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                             print(serie)
 
-                            for d in range(len(serie)):
+                            for d in range(len(serie) - 1):
 
                                 pi_1 = serie[d][0]
                                 pi_2 = serie[d + 1][0]
