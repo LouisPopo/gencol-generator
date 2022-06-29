@@ -117,18 +117,32 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     ineq_groups.reverse()
 
                     for g1 in range(len(ineq_groups) - 1):
-                        # On prend une var duale du g1+1, et chaque var duale du g1 >= celle random
-
-                        g2_dual_var = random.sample(ineq_groups[g1+1], 1)[0]
-                        pi_2 = g2_dual_var[0]
-                        tasks_in_new_inequalities.add(pi_2)
+                        
 
                         for g1_dual_var in ineq_groups[g1]:
+                            
                             pi_1 = g1_dual_var[0]
-
                             tasks_in_new_inequalities.add(pi_1)
-                            inequalities.append((pi_1, pi_2))
 
+                            for g2_dual_var in ineq_groups[g1 + 1]:
+
+                                pi_2 = g2_dual_var[0]
+                                tasks_in_new_inequalities.add(pi_2)
+
+                                inequalities.append((pi_1, pi_2))
+
+                        # On prend une var duale du g1+1, et chaque var duale du g1 >= celle random
+                        # g2_dual_var = random.sample(ineq_groups[g1+1], 1)[0]
+                        # pi_2 = g2_dual_var[0]
+                        # tasks_in_new_inequalities.add(pi_2)
+
+                        # for g1_dual_var in ineq_groups[g1]:
+                        #     pi_1 = g1_dual_var[0]
+
+                        #     tasks_in_new_inequalities.add(pi_1)
+                        #     inequalities.append((pi_1, pi_2))
+
+                    print('{} ineq in total'.format(len(inequalities)))
                     print(", ".join([str(len(x)) for x in ineq_groups]))
                     
                             
