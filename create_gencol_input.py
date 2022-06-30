@@ -178,7 +178,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                             line = ''
                             for e in serie:
                                 line += '{} >= '.format(e[1])
-                            print(line)
+                            #print(line)
                         
                         else:
                             break
@@ -324,6 +324,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
             output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         else:
             output_file_name += "_default"
+
+        print(output_file_name)
             
         # if id != '':
         #     output_file_name += "_" + str(id)
