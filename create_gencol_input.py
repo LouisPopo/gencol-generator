@@ -125,14 +125,14 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         min_val_g = min(g, key = lambda x : x[1])
                         max_val_g = max(g, key = lambda x : x[1])
 
-                        for v in g:
+                        #for v in g:
 
-                            if (v[1] >= 0 and v[1] < 1) or (v[1] <= 0 and v[1] > -1):
-                                print(v)
+                            # if (v[1] >= 0 and v[1] < 1) or (v[1] <= 0 and v[1] > -1):
+                            #    print(v)
 
-                        line += '[ {} - ( {} ) - {} ] '.format(max_val_g[1], len(g), min_val_g[1])
+                        #line += '[ {} - ( {} ) - {} ] '.format(max_val_g[1], len(g), min_val_g[1])
                     
-                    print(line)
+                    #print(line)
                         
 
 
@@ -142,7 +142,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # pi1 >= pi4 >= pi6
                     # pi2 >= pi5
 
-                    print(", ".join([str(len(x)) for x in ineq_groups]))
+                    #print(", ".join([str(len(x)) for x in ineq_groups]))
 
                     min_nb_dual_var = min(len(x) for x in ineq_groups)
                     max_nb_dual_var = max(len(x) for x in ineq_groups)
@@ -174,6 +174,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                                 tasks_in_new_inequalities.add(pi_2)
 
                                 inequalities.append((pi_1, pi_2))
+
+                            print(' {} > '.format(x[1]) for x in serie)
                         
                         else:
                             break
