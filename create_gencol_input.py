@@ -156,11 +156,16 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         
                         for i, g in enumerate(ineq_groups):
 
-                            if len(g) > 1:
+                            if len(g) > 0:
+
+                                nb_values_take = min(len(g), 5)
 
                                 #dual_var = random.sample(g, 1)[0]
-                                
-                                dual_vars = random.sample(g, 2)
+                                # On prend 5 valeurs par groupes 
+                                dual_vars = random.sample(g, nb_values_take)
+                                # On les classe, 
+                                dual_vars.sort(key=lambda x : x[1])
+                                # Et on rajoute une inegalite entre eux aussi
                                 for d in dual_vars:
 
                                     serie.append(d)
