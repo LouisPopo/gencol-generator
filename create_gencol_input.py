@@ -175,7 +175,10 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                                 inequalities.append((pi_1, pi_2))
 
-                            print(' {} > '.format(x[1]) for x in serie)
+                            line = ''
+                            for e in serie:
+                                line += '{} >= '.format(e[1])
+                            print(line)
                         
                         else:
                             break
