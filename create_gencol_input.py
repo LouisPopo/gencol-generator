@@ -149,6 +149,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     nb_groups = len(ineq_groups)
 
+                    nb_series = 0
+
                     for _ in range(max_nb_dual_var):
                         # on va chercher une variable duale par groupe non vide, ca nous fait notre liste
                         
@@ -173,6 +175,8 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                                     ineq_groups[i].remove(d)
 
                         if len(serie) > int(0.5*nb_groups):
+
+                            nb_series += 1
 
                             for d in range(len(serie) - 1):
 
@@ -328,7 +332,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
         
         if test_new_grp:
-            output_file_name += "_{}_{}".format(len(inequalities), new_grp_val_range)
+            output_file_name += "_{}_{}".format(len(inequalities), nb_series)
         elif nb_inequalities > 0 and grp_size > 0:
             output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         else:
