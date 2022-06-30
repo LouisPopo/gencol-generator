@@ -457,7 +457,7 @@ def create_new_grps_ineq(experience_name):
         # 5%, 10%, 25% des inegalités
         # avec 5%, 10%, 25% d'erreurs
 
-        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=0.65, percentage_wrong=0, nb_grps=1, use_strong_task=True, test_new_grp = True, new_grp_val_range=3)
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, take_absolute_value=False, percentage_ineq=0.85, percentage_wrong=0, nb_grps=1, use_strong_task=True, test_new_grp = True, new_grp_val_range=3)
 
 
 parser = argparse.ArgumentParser()
