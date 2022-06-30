@@ -156,12 +156,16 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         
                         for i, g in enumerate(ineq_groups):
 
-                            if len(g) > 0:
+                            if len(g) > 1:
 
-                                dual_var = random.sample(g, 1)[0]
-                                serie.append(dual_var)
+                                #dual_var = random.sample(g, 1)[0]
+                                
+                                dual_vars = random.sample(g, 2)
+                                for d in dual_vars:
 
-                                ineq_groups[i].remove(dual_var)
+                                    serie.append(d)
+
+                                    ineq_groups[i].remove(d)
 
                         if len(serie) > int(0.5*nb_groups):
 
