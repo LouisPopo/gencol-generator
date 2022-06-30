@@ -319,7 +319,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
         
         if test_new_grp:
-            output_file_name += "_{}_{}".format(nb_inequalities, new_grp_val_range)
+            output_file_name += "_{}_{}".format(len(inequalities), new_grp_val_range)
         elif nb_inequalities > 0 and grp_size > 0:
             output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
         else:
