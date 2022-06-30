@@ -178,6 +178,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         line = ''
                         for s in serie :
                             line += '{} '.format(s[1])
+                        print(line)
 
                         if len(serie) > int(0.5*nb_groups):
 
