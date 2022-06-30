@@ -107,9 +107,11 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         else:
                             ineq_groups.append(current_group)
                             current_group = []
+
+                            current_min_val = d[1]
                             
-                            while d[1] > current_min_val + new_grp_val_range:
-                                current_min_val += new_grp_val_range
+                            #while d[1] > current_min_val + new_grp_val_range:
+                            #    current_min_val += new_grp_val_range
                             
                             current_group.append(d)
 
