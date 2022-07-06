@@ -165,6 +165,9 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                             pi_1 = serie[d][0]
                             pi_2 = serie[d+1][0]
 
+                            if pi_1 < pi_2:
+                                print('pi_1 : {} - pi_2 : {}'.format(pi_1, pi_2))
+
                             tasks_in_new_inequalities.add(pi_1)
                             tasks_in_new_inequalities.add(pi_2)
 
