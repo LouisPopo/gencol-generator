@@ -151,7 +151,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                             if len(s) > 0:
 
-                                ineq_series[i].append(s)
+                                ineq_series[i].extend(s)
 
                     
 
