@@ -156,11 +156,26 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     
 
                     for serie in ineq_series:
-                        print("-----")
-                        line = ''
-                        for d in serie:
-                            line += ' ( {}, {} ), '.format(d[0], d[1])
-                        print(line)
+
+
+                        for d in range(len(serie) - 1):
+
+                            pi_1 = serie[d][0]
+                            pi_2 = serie[d+1][0]
+
+                            tasks_in_new_inequalities.add(pi_1)
+                            tasks_in_new_inequalities.add(pi_2)
+
+                            inequalities.append((pi_1, pi_2))
+
+
+
+
+                        # print("-----")
+                        # line = ''
+                        # for d in serie:
+                        #     line += ' ( {}, {} ), '.format(d[0], d[1])
+                        # print(line)
                             
 
                         
@@ -174,63 +189,63 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                     #print(", ".join([str(len(x)) for x in ineq_groups]))
 
-                    min_nb_dual_var = min(len(x) for x in ineq_groups)
-                    max_nb_dual_var = max(len(x) for x in ineq_groups)
+                    # min_nb_dual_var = min(len(x) for x in ineq_groups)
+                    # max_nb_dual_var = max(len(x) for x in ineq_groups)
 
-                    nb_groups = len(ineq_groups)
+                    # nb_groups = len(ineq_groups)
 
-                    nb_series = 0
+                    # nb_series = 0
 
-                    for _ in range(max_nb_dual_var):
-                        # on va chercher une variable duale par groupe non vide, ca nous fait notre liste
+                    # for _ in range(max_nb_dual_var):
+                    #     # on va chercher une variable duale par groupe non vide, ca nous fait notre liste
                         
-                        serie = []
+                    #     serie = []
                         
-                        for i, g in enumerate(ineq_groups):
+                    #     for i, g in enumerate(ineq_groups):
 
-                            if len(g) > 0:
+                    #         if len(g) > 0:
 
-                                nb_values_take = min(len(g), 9)
+                    #             nb_values_take = min(len(g), 9)
 
-                                #dual_var = random.sample(g, 1)[0]
-                                # On prend 5 valeurs par groupes 
-                                dual_vars = random.sample(g, nb_values_take)
-                                # On les classe, 
-                                #dual_vars.sort(key=lambda x : x[1], reverse=True)
-                                # Et on rajoute une inegalite entre eux aussi
-                                for d in dual_vars:
+                    #             #dual_var = random.sample(g, 1)[0]
+                    #             # On prend 5 valeurs par groupes 
+                    #             dual_vars = random.sample(g, nb_values_take)
+                    #             # On les classe, 
+                    #             #dual_vars.sort(key=lambda x : x[1], reverse=True)
+                    #             # Et on rajoute une inegalite entre eux aussi
+                    #             for d in dual_vars:
 
-                                    serie.append(d)
+                    #                 serie.append(d)
 
-                                    ineq_groups[i].remove(d)
+                    #                 ineq_groups[i].remove(d)
 
 
-                        line = ''
-                        for s in serie :
-                            line += '{} '.format(s[1])
-                        print(line)
+                    #     line = ''
+                    #     for s in serie :
+                    #         line += '{} '.format(s[1])
+                    #     print(line)
 
-                        if len(serie) > int(0.5*nb_groups):
+                    #     if len(serie) > int(0.5*nb_groups):
 
-                            nb_series += 1
+                    #         nb_series += 1
 
-                            for d in range(len(serie) - 1):
+                    #         for d in range(len(serie) - 1):
 
-                                pi_1 = serie[d][0]
-                                pi_2 = serie[d + 1][0]
+                    #             pi_1 = serie[d][0]
+                    #             pi_2 = serie[d + 1][0]
 
-                                tasks_in_new_inequalities.add(pi_1)
-                                tasks_in_new_inequalities.add(pi_2)
+                    #             tasks_in_new_inequalities.add(pi_1)
+                    #             tasks_in_new_inequalities.add(pi_2)
 
-                                inequalities.append((pi_1, pi_2))
+                    #             inequalities.append((pi_1, pi_2))
 
-                            line = ''
-                            for e in serie:
-                                line += '{} >= '.format(e[1])
-                            #print(line)
+                    #         line = ''
+                    #         for e in serie:
+                    #             line += '{} >= '.format(e[1])
+                    #         #print(line)
                         
-                        else:
-                            break
+                    #     else:
+                    #         break
 
 
 
