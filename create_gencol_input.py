@@ -139,13 +139,15 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # TEST LA NOUVELLE HYPOTHESE DISTRIBUTION
                     # ON VEUT CRÉER 4 GROUPS D'INÉGALITÉS 
 
-                    ineq_series = [list(), list(), list(), list()]
+                    nb_series = 4
 
+                    ineq_series = [list() for _ in range(nb_series)]
 
+                    
 
                     for i, g in enumerate(ineq_groups):
                         
-                        sm_grps = np.array_split(g, 4)
+                        sm_grps = np.array_split(g, nb_series)
 
                         for i, s in enumerate(sm_grps):
 
