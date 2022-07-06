@@ -5,7 +5,8 @@ import grp
 from math import ceil
 import os
 import random
-from re import S
+
+import numpy as np
 
 random.seed(datetime.now())
 
@@ -133,6 +134,35 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                         #line += '[ {} - ( {} ) - {} ] '.format(max_val_g[1], len(g), min_val_g[1])
                     
                     #print(line)
+                        
+
+                    # TEST LA NOUVELLE HYPOTHESE DISTRIBUTION
+                    # ON VEUT CRÉER 4 GROUPS D'INÉGALITÉS 
+
+                    ineq_series = [list(), list(), list(), list()]
+
+
+
+                    for i, g in enumerate(ineq_groups):
+                        
+                        sm_grps = np.array_split(g, 4)
+
+                        for i, s in enumerate(sm_grps):
+
+                            if len(s) > 0:
+
+                                ineq_series[i].append(s)
+
+                    
+
+                    for serie in ineq_series:
+                        print("-----")
+                        line = ''
+                        for d in serie:
+                            line += ' ( {}, {} ), '.format(d[0], d[1])
+                        print(line)
+                            
+
                         
 
 
