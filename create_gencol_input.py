@@ -139,7 +139,7 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
                     # TEST LA NOUVELLE HYPOTHESE DISTRIBUTION
                     # ON VEUT CRÉER 4 GROUPS D'INÉGALITÉS 
 
-                    nb_series = 8
+                    nb_series = 15
 
                     ineq_series = [list() for _ in range(nb_series)]
 
