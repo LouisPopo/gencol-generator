@@ -115,15 +115,11 @@ def create_gencol_file(
                 # sort du plus grand au plus petit
                 s.sort(key=lambda pair: pair[1], reverse=True)
 
-                print(len(s))
-
                 for i in range(len(s) - 1):
 
                     for j in range(i + 1, len(s)):
 
                         # unique paire : s[i] - s[j]
-
-                        print('{} - {}'.format(i, j))
 
                         diff = abs(s[i][1] - s[j][1])
 
