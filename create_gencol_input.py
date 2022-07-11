@@ -297,12 +297,9 @@ def create_gencol_file(
         for trip in range(nb_trip):
             row_name = "Cover_T" + str(trip)
 
-            if use_strong_task:
-                rows_string += row_name + " =1"
-                if row_name not in tasks_in_new_inequalities:
-                    rows_string += " TaskStrong"
-            else:
-                rows_string += row_name + " >= 1"
+            rows_string += row_name + " =1"
+            if row_name not in tasks_in_new_inequalities:
+                rows_string += " TaskStrong"
             
             rows_string += ";\n"
 
