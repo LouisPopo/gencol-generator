@@ -142,6 +142,7 @@ def create_gencol_file(
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
                         
+                        # techniquement non, on ajoute pas la, on note les relations
                         inequalities.append((pi_1, pi_2))
 
                         # compute odds of having wrong inequality
@@ -154,8 +155,8 @@ def create_gencol_file(
                 # sort du plus grand au plus petit
                 s.sort(key = lambda pair: pair[1], reverse=True)
 
-                max_val = s[0][1]
-                min_val = s[-1][1]
+                max_val = int(s[0][1])
+                min_val = int(s[-1][1])
 
                 group_range = 6 # VARIABLE
 
