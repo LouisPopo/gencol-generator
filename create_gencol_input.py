@@ -11,6 +11,26 @@ import numpy as np
 random.seed(datetime.now())
 
 
+class TwoWayDict:
+
+    def __init__(self):
+
+        self.indice_to_dual_var = []
+        self.dual_var_to_indice = {}
+
+    def add_dual_var(self, dual_var):
+        
+        self.indice_to_dual_var.append(dual_var)
+        self.dual_var_to_indice[dual_var] = len(self.indice_to_dual_var)
+
+    def get_dual_var_indice(self, dual_var):
+        return self.dual_var_to_indice[dual_var]
+
+    def get_indice_dual_var(self, indice):
+        return self.indice_to_dual_var[indice]
+
+
+
 fixed_cost = 1000       # Cout d'un vehicule
 nb_veh = 20             # Nb. de vehicules disponibles a un depot
 
@@ -103,21 +123,56 @@ def create_gencol_file(
         tasks_in_new_inequalities = set()
         inequalities = []
 
-        nb_inequalities = 0
+        nb_dual_vars_found = 0
 
         if dual_variables_file_name != '':
             
-            nb_inequalities = int(percentage_ineq * nb_dual_variables)
+            nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
 
             if add_pairwise_inequalities:
 
-                s = random.sample(dual_variables, nb_inequalities)
+                two_way_dict = TwoWayDict()
+
+                s = random.sample(dual_variables, nb_dual_vars_found)
                 # sort du plus grand au plus petit
                 s.sort(key=lambda pair: pair[1], reverse=True)
 
-                for i in range(len(s) - 1):
+                # Matrice carrée 
+                adj_matrix = np.zeros( (nb_dual_vars_found, nb_dual_vars_found))
 
+                for dual_var in s:
+                    two_way_dict.add_dual_var(dual_var[0])
+
+
+                for i in range(len(s) - 1):
                     for j in range(i + 1, len(s)):
+
+                        # On check si s[i] >= s[j] ??
+                        # On check la difference
+                        # On ajoute une probabilité d'erreur
+
+                        i_indice = two_way_dict.get_dual_var_indice(s[i][0])
+                        j_indice = two_way_dict.get_dual_var_indice(s[j][0])
+
+                        if s[i][0] >= s[j][0]:
+                            
+                            # pi_i >= pi_j
+
+                            adj_matrix[i_indice][j_indice] = 1
+                            adj_matrix[j_indice][i_indice] = 0
+                        
+                        else:
+                            
+                            # pi_j > pi_i
+
+                            adj_matrix[i_indice][j_indice] = 0
+                            adj_matrix[j_indice][i_indice] = 1
+
+                        # Notre matrice adjc est complète
+
+
+                        print(adj_matrix)
+
 
                         # unique paire : s[i] - s[j]
 
@@ -150,7 +205,7 @@ def create_gencol_file(
             else:
 
                 # on groupe les variables duales
-                s = random.sample(dual_variables, nb_inequalities)
+                s = random.sample(dual_variables, nb_dual_variables)
 
                 # sort du plus grand au plus petit
                 s.sort(key = lambda pair: pair[1], reverse=True)
