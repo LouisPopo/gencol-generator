@@ -171,6 +171,8 @@ def create_gencol_file(
 
                     # on les groupe, mais certaines variables duales devraient êtres placés de façon aléatoire (plus de chances d'être
                     # dans un groupe proche)
+
+                print(ineq_groups)
                 
                 # Groupes sont en ordre du plus grand au plus petit
                 ineq_groups = [g for g in ineq_groups if g != []]
