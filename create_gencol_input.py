@@ -203,7 +203,7 @@ def create_gencol_file(
 
                         # compute odds of having wrong inequality
                 
-                print(adj_matrix)
+                print(np.matrix(adj_matrix))
 
             else:
 
