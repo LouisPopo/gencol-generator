@@ -20,8 +20,9 @@ class TwoWayDict:
 
     def add_dual_var(self, dual_var):
         
-        self.indice_to_dual_var.append(dual_var)
         self.dual_var_to_indice[dual_var] = len(self.indice_to_dual_var)
+        self.indice_to_dual_var.append(dual_var)
+        
 
     def get_dual_var_indice(self, dual_var):
         return self.dual_var_to_indice[dual_var]
@@ -171,7 +172,7 @@ def create_gencol_file(
                         # Notre matrice adjc est complète
 
 
-                        print(adj_matrix)
+                       
 
 
                         # unique paire : s[i] - s[j]
@@ -201,6 +202,8 @@ def create_gencol_file(
                         inequalities.append((pi_1, pi_2))
 
                         # compute odds of having wrong inequality
+                
+                print(adj_matrix)
 
             else:
 
