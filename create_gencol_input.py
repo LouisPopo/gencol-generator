@@ -164,7 +164,7 @@ def create_gencol_file(
 
                 for i in range(max_val, min_val, -group_range):
                     
-                    group = [x for x in s if (i < x[1]) and (x[1] <= i - group_range)]
+                    group = [x for x in s if (i >= x[1]) and (x[1] > i - group_range)]
 
                     ineq_groups.append(group)
 
