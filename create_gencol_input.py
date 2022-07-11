@@ -216,7 +216,7 @@ def create_gencol_file(
         if add_pairwise_inequalities:
             output_file_name += "_P_{}".format(len(inequalities))
         else:
-            output_file_name += "_G_{}_{}".format(len(inequalities, group_range))
+            output_file_name += "_G_{}_{}".format(len(inequalities), group_range))
 
         #output_file_name += "_default"
 
