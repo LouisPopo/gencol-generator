@@ -26,7 +26,37 @@ delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un a
 p = 15                  # Nb. de periodes d'echantillonage pour la recharge
 
 
-def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, speed=18/60, enrgy_km=1050, enrgy_w=11000/60, cost_w=2, cost_t=4, delta=45, p=15, recharge=15, path_to_networks = 'Networks', dual_variables_file_name='', percentage_ineq = 0, nb_grps = 0, take_absolute_value = False, percentage_wrong = 0, use_strong_task = True, test_new_grp = False, new_grp_val_range = 0):
+def create_gencol_file(
+    list_pb, 
+    fixed_cost=1000, 
+    nb_veh=20, 
+    sigma_max=363000, 
+    speed=18/60, 
+    enrgy_km=1050, 
+    enrgy_w=11000/60, 
+    cost_w=2, 
+    cost_t=4, 
+    delta=45, 
+    p=15, 
+    recharge=15, 
+
+    ## 
+    path_to_networks = 'Networks', 
+    dual_variables_file_name='', 
+    percentage_ineq = 0,    # Le pourcentage d'inégalités qu'on aurait "trouvé", donc qu'on est un peu confiant, mais on 
+                            # on peut quand même faire des erreurs
+    
+    #nb_grps = 0, 
+    #take_absolute_value = False, 
+    
+    #percentage_wrong = 0,
+    add_pairwise_inequalities = True 
+    #use_strong_task = True, 
+    #test_new_grp = False, 
+    #new_grp_val_range = 0
+    ##
+
+    ):
 
     for pb in list_pb:
 
@@ -56,20 +86,20 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
 
                 # Pour l'instant on laisse faire les +1000 (cout fixe) et les <0
                 # Finalement on garde le < 0
-                if value < 850 and not take_absolute_value and "Max" not in dual_variable and "Count" not in dual_variable:
+                if value < 850 and "Max" not in dual_variable and "Count" not in dual_variable:
                     dual_variables.append((dual_variable, value))
-                elif value < 850 and take_absolute_value and "Max" not in dual_variable and "Count" not in dual_variable:
-                    dual_variables.append((dual_variable, abs(value)))
 
         dual_variables.sort(key = lambda pair: pair[1], reverse=True)
         nb_dual_variables = len(dual_variables)
 
-        # On créé les inégalités
-        # 
-        # Random : on créer X inégalités en sélectionnant deux variables duales aléatoires
-        # Order : on selection X+1 variables duales en ordre de façon aléatoire et on créé X inégalités entre elles.
+        # On créé les inégalités duales : 
 
-        # Random :
+        # 1) On évalue chaque paire de variables duales, on définit une relation >=, on trouve une ou plusieurs séries (assez longue)
+        # et ça donne notre ou nos séries d'inégalités
+
+        # 2) On groupes les variables duales (en range de 0 à 4, 4 à 8, etc.) et de la on est capable d'établir des inégalités ENTRE
+        # groupes. 
+
         tasks_in_new_inequalities = set()
         inequalities = []
 
@@ -80,303 +110,90 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
             
             nb_inequalities = int(percentage_ineq * nb_dual_variables)
 
-            grp_size = int(nb_inequalities/nb_grps)
+            if add_pairwise_inequalities:
 
-            if percentage_wrong == 0:
+                # prend chaque combinaison unique de variables duales, créer une relation, la store d'une certaine facon
+                 
+                # ...
 
-                nb_wrong = 0
+                x = 0
 
-                if test_new_grp:
-
-                    s = random.sample(dual_variables, grp_size)
-                    # On sort du plus petit au plus grand!
-                    s.sort(key = lambda pair: pair[1])
-
-                    min_val = s[0][1]
-                    max_val = s[-1][1]
-
-                    ineq_groups = []
-
-                    current_min_val = min_val
-
-                    current_group = []
-
-                    for i,d in enumerate(s):
-
-                        if d[1] <= current_min_val + new_grp_val_range:
-                            current_group.append(d)
-                        else:
-                            ineq_groups.append(current_group)
-                            current_group = []
-
-                            current_min_val = d[1]
-                            
-                            #while d[1] > current_min_val + new_grp_val_range:
-                            #    current_min_val += new_grp_val_range
-                            
-                            current_group.append(d)
-
-                    # On reverse la liste pour avoir les plus grosses valeurs en debut de liste
-                    ineq_groups.reverse()
-
-                    line = ''
-
-                    for g in ineq_groups:
-
-                        min_val_g = min(g, key = lambda x : x[1])
-                        max_val_g = max(g, key = lambda x : x[1])
-
-                        #for v in g:
-
-                            # if (v[1] >= 0 and v[1] < 1) or (v[1] <= 0 and v[1] > -1):
-                            #    print(v)
-
-                        #line += '[ {} - ( {} ) - {} ] '.format(max_val_g[1], len(g), min_val_g[1])
-                    
-                    #print(line)
-                        
-
-                    # TEST LA NOUVELLE HYPOTHESE DISTRIBUTION
-                    # ON VEUT CRÉER 4 GROUPS D'INÉGALITÉS 
-
-                    nb_series = 15
-
-                    ineq_series = [list() for _ in range(nb_series)]
-
-                    
-
-                    for i, g in enumerate(ineq_groups):
-                        
-                        sm_grps = np.array_split(g, nb_series)
-
-                        for i, s in enumerate(sm_grps):
-
-                            # ici, s n'est pas nécessairement ordonné!!!
-
-                            if len(s) > 0:
-
-                                ineq_series[i].extend(s)
-
-                    
-
-                    for serie in ineq_series:
-
-
-                        for d in range(len(serie) - 1):
-
-                            pi_1 = serie[d][0]
-                            pi_2 = serie[d+1][0]
-
-                            if serie[d][1] < serie[d+1][1]:
-                                print('pi_1 : {} - pi_2 : {}'.format(serie[d][1], serie[d+1][1]))
-
-                            tasks_in_new_inequalities.add(pi_1)
-                            tasks_in_new_inequalities.add(pi_2)
-
-                            inequalities.append((pi_1, pi_2))
-
-
-
-
-                        # print("-----")
-                        # line = ''
-                        # for d in serie:
-                        #     line += ' ( {}, {} ), '.format(d[0], d[1])
-                        # print(line)
-                            
-
-                        
-
-
-
-                    # On test des inge du genre : 
-                    # [pi1, pi2, pi3], [pi4, pi5], [pi6]
-                    # pi1 >= pi4 >= pi6
-                    # pi2 >= pi5
-
-                    #print(", ".join([str(len(x)) for x in ineq_groups]))
-
-                    # min_nb_dual_var = min(len(x) for x in ineq_groups)
-                    # max_nb_dual_var = max(len(x) for x in ineq_groups)
-
-                    # nb_groups = len(ineq_groups)
-
-                    # nb_series = 0
-
-                    # for _ in range(max_nb_dual_var):
-                    #     # on va chercher une variable duale par groupe non vide, ca nous fait notre liste
-                        
-                    #     serie = []
-                        
-                    #     for i, g in enumerate(ineq_groups):
-
-                    #         if len(g) > 0:
-
-                    #             nb_values_take = min(len(g), 9)
-
-                    #             #dual_var = random.sample(g, 1)[0]
-                    #             # On prend 5 valeurs par groupes 
-                    #             dual_vars = random.sample(g, nb_values_take)
-                    #             # On les classe, 
-                    #             #dual_vars.sort(key=lambda x : x[1], reverse=True)
-                    #             # Et on rajoute une inegalite entre eux aussi
-                    #             for d in dual_vars:
-
-                    #                 serie.append(d)
-
-                    #                 ineq_groups[i].remove(d)
-
-
-                    #     line = ''
-                    #     for s in serie :
-                    #         line += '{} '.format(s[1])
-                    #     print(line)
-
-                    #     if len(serie) > int(0.5*nb_groups):
-
-                    #         nb_series += 1
-
-                    #         for d in range(len(serie) - 1):
-
-                    #             pi_1 = serie[d][0]
-                    #             pi_2 = serie[d + 1][0]
-
-                    #             tasks_in_new_inequalities.add(pi_1)
-                    #             tasks_in_new_inequalities.add(pi_2)
-
-                    #             inequalities.append((pi_1, pi_2))
-
-                    #         line = ''
-                    #         for e in serie:
-                    #             line += '{} >= '.format(e[1])
-                    #         #print(line)
-                        
-                    #     else:
-                    #         break
-
-
-
-                    # for g1 in range(len(ineq_groups) - 1):
-                        
-
-                    #     for g1_dual_var in ineq_groups[g1]:
-                            
-                    #         pi_1 = g1_dual_var[0]
-                    #         tasks_in_new_inequalities.add(pi_1)
-
-                    #         for g2_dual_var in ineq_groups[g1 + 1]:
-
-                    #             pi_2 = g2_dual_var[0]
-                    #             tasks_in_new_inequalities.add(pi_2)
-
-                    #             inequalities.append((pi_1, pi_2))
-
-                        # On prend une var duale du g1+1, et chaque var duale du g1 >= celle random
-                        # g2_dual_var = random.sample(ineq_groups[g1+1], 1)[0]
-                        # pi_2 = g2_dual_var[0]
-                        # tasks_in_new_inequalities.add(pi_2)
-
-                        # for g1_dual_var in ineq_groups[g1]:
-                        #     pi_1 = g1_dual_var[0]
-
-                        #     tasks_in_new_inequalities.add(pi_1)
-                        #     inequalities.append((pi_1, pi_2))
-
-                    print('{} ineq in total'.format(len(inequalities)))
-                    
-                    
-                            
-
-                else:
-
-                    for g in range(nb_grps):
-
-                        s = random.sample(dual_variables, grp_size)
-
-                        s.sort(key = lambda pair: pair[1], reverse=True)
-
-                        for d in s : dual_variables.remove(d)
-
-                        for i in range(grp_size - 1):
-                            pi_1 = s[i][0]
-                            pi_2 = s[i+1][0]
-
-                            tasks_in_new_inequalities.add(pi_1)
-                            tasks_in_new_inequalities.add(pi_2)
-                            inequalities.append((pi_1, pi_2))
-            
             else:
 
-                # On ajoute des inégalités "fausses"
+                # on groupe les variables duales
+                s = random.sample(dual_variables, grp_size)
 
-                for g in range(nb_grps):
+                # sort du plus grand au plus petit
+                s.sort(key = lambda pair: pair[1], reverse=True)
+
+                max_val = s[0][1]
+                min_val = s[-1][1]
+
+                current_group = []
+
+                group_range = 6 # VARIABLE
+
+                for i in range(min_val, max_val, group_range):
                     
-                    # SEQUENTIAL INEQUIALITIES
+                    ineq_groups.append(filter(lambda x: i < x <= i + group_range, s))
 
-                    s = random.sample(dual_variables, grp_size)
+                    # on les groupe, mais certaines variables duales devraient êtres placés de façon aléatoire (plus de chances d'être
+                    # dans un groupe proche)
+                
+                # On doit creer des inegalites entre les groupes et inter-groupes ici
+                # !!!
+                ineq_groups = [g for g in ineq_groups if g != []]
 
-                    nb_wrong = int(percentage_wrong * grp_size) # le tiers est mauvais
+                # create_group_inequalities()
 
-                    print("number of wrong ineq : {}".format(nb_wrong))
 
-                    for _ in range(nb_wrong):
+                    # nb_series = 15
 
-                        i = random.randrange(0, len(s) - 1)
+                    # ineq_series = [list() for _ in range(nb_series)]
+
+                    
+
+                    # for i, g in enumerate(ineq_groups):
                         
-                        old_value = s[i][1]
-                        new_value = old_value
+                    #     sm_grps = np.array_split(g, nb_series)
 
-                        while old_value == new_value:
-                            new_value = random.randrange(0,55)
+                    #     for i, s in enumerate(sm_grps):
 
-                        s[i] = (s[i][0], new_value)
-                        
+                    #         # ici, s n'est pas nécessairement ordonné!!!
 
-                    s.sort(key = lambda pair: pair[1], reverse=True)
+                    #         if len(s) > 0:
 
-                    # #for d in s : dual_variables.remove(d)
+                    #             ineq_series[i].extend(s)
 
-                    for i in range(grp_size - 1):
-                        pi_1 = s[i][0]
-                        pi_2 = s[i+1][0]
+                    
 
-                        tasks_in_new_inequalities.add(pi_1)
-                        tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2))
+                    # for serie in ineq_series:
 
-                    # PAIRWISE INEQUALITIES
 
-                    # i = 0
-                    # while i < grp_size:
+                    #     for d in range(len(serie) - 1):
 
-                    #     r = random.sample(dual_variables, 2)
+                    #         pi_1 = serie[d][0]
+                    #         pi_2 = serie[d+1][0]
 
-                    #     if r[0][1] >= r[1][1]:
-                    #         pi_1 = r[0][0]
-                    #         pi_2 = r[1][0]
-                    #     else:
-                    #         pi_1 = r[1][0]
-                    #         pi_2 = r[0][0]
+                    #         if serie[d][1] < serie[d+1][1]:
+                    #             print('pi_1 : {} - pi_2 : {}'.format(serie[d][1], serie[d+1][1]))
 
-                    #     if (pi_1, pi_2) not in inequalities:
                     #         tasks_in_new_inequalities.add(pi_1)
                     #         tasks_in_new_inequalities.add(pi_2)
+
                     #         inequalities.append((pi_1, pi_2))
-                    #         i += 1
 
-            # Sequence : 
-            # else :
-            #     sub_list = random.sample(dual_variables, nb_inequalities+1)
-            #     sub_list.sort(key = lambda pair: pair[1], reverse=True)
+                    
+                    
+                        
+                            # pi_1 = s[i][0]
+                            # pi_2 = s[i+1][0]
 
-            #     for i in range(nb_inequalities):
-            #         pi_1 = sub_list[i][0]
-            #         pi_2 = sub_list[i+1][0]
-
-            #         tasks_in_new_inequalities.add(pi_1)
-            #         tasks_in_new_inequalities.add(pi_2)
-            #         inequalities.append((pi_1, pi_2))
-
+                            # tasks_in_new_inequalities.add(pi_1)
+                            # tasks_in_new_inequalities.add(pi_2)
+                            # inequalities.append((pi_1, pi_2))
+            
+            
 
         output_file_path = "gencol_files/" + pb
         if not os.path.exists(output_file_path):
@@ -389,31 +206,18 @@ def create_gencol_file(list_pb, fixed_cost=1000, nb_veh=20, sigma_max=363000, sp
         # else:
         #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
         
-        if test_new_grp:
-            output_file_name += "_{}_{}".format(len(inequalities), nb_series)
-        elif nb_inequalities > 0 and grp_size > 0:
-            output_file_name += "_{}_{}_W_{}".format(int(nb_grps), grp_size, nb_wrong)
+        if add_pairwise_inequalities:
+            output_file_name += "_P_{}".format(len(inequalities))
         else:
-            output_file_name += "_default"
+            output_file_name += "_G_{}_{}".format(len(inequalities, group_range))
+
+        #output_file_name += "_default"
 
         print(output_file_name)
             
-        # if id != '':
-        #     output_file_name += "_" + str(id)
         output_file = open(output_file_path + "/" + output_file_name + ".in", "w")
-        # step = 1
-        # tasks_in_new_inequalities = set()
-        # inequalities = []
-        # for i in range(0, nb_inequalities*step, step):
-        #     pi_1 = dual_variables[i][0]
-        #     pi_2 = dual_variables[i+1][0]
-        #     print("{} >= {}".format(pi_1, pi_2))
-        #     inequalities.append((pi_1, pi_2))
-        #     tasks_in_new_inequalities.add(pi_1)
-        #     tasks_in_new_inequalities.add(pi_2)
-        # print(tasks_in_new_inequalities)
         
-        
+    
 
         # Get le nb de periodes necessaires
 
