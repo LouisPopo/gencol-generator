@@ -270,10 +270,13 @@ def create_gencol_file(
         # else:
         #     output_file_name += '_P_{}_{}'.format(int(nb_grps), grp_size)
         
-        if add_pairwise_inequalities:
-            output_file_name += "_P_{}".format(len(inequalities))
-        else:
-            output_file_name += "_G_{}_{}".format(len(inequalities), group_range)
+        if percentage_ineq == 0:
+            output_file_name += "_default"
+        else :
+            if add_pairwise_inequalities:
+                output_file_name += "_P_{}".format(len(inequalities))
+            else:
+                output_file_name += "_G_{}_{}".format(len(inequalities), group_range)
 
         #output_file_name += "_default"
 
