@@ -164,7 +164,7 @@ def create_gencol_file(
 
                 for i in range(max_val, min_val, -group_range):
                     
-                    ineq_groups.append(filter(lambda x: i < x <= i - group_range, s))
+                    ineq_groups.append(list(filter(lambda x: i < x <= i - group_range, s)))
 
                     # on les groupe, mais certaines variables duales devraient êtres placés de façon aléatoire (plus de chances d'être
                     # dans un groupe proche)
