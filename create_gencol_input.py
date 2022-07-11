@@ -190,8 +190,6 @@ def create_gencol_file(
                         tasks_in_new_inequalities.add(pi_2)
                         inequalities.append((pi_1, pi_2))
 
-                        print(" [{}][{}] >= [{}][{}]".format(group[i][0], group[i][1], group[i+1][0], group[i+1][1]))
-
                     # pour les n-1 groupes (sauf le dernier)
                     if g < len(ineq_groups) - 1:
 
@@ -199,7 +197,7 @@ def create_gencol_file(
 
                         # le dernier du drenier groupe
                         pi_1 = group[-1][0]
-                        pi_2 = ineq_groups[g + 1][0]
+                        pi_2 = ineq_groups[g + 1][0][0]
                         # le premier du prochain groupe
 
                         inequalities.append((pi_1, pi_2))
