@@ -155,6 +155,8 @@ def create_gencol_file(
                 # sort du plus grand au plus petit
                 s.sort(key = lambda pair: pair[1], reverse=True)
 
+                ineq_groups = []
+
                 max_val = int(s[0][1])
                 min_val = int(s[-1][1])
 
