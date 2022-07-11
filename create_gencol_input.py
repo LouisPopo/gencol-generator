@@ -319,7 +319,7 @@ def create_gencol_file(
             tasks_string += "t_T" + str(trip) + " " + row_name
             
             # TEST NO STRONG
-            if row_name not in tasks_in_new_inequalities and use_strong_task:
+            if row_name not in tasks_in_new_inequalities:
                 tasks_string += " Strong"
             
             tasks_string += ";\n"
