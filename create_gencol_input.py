@@ -104,7 +104,6 @@ def create_gencol_file(
         inequalities = []
 
         nb_inequalities = 0
-        grp_size = 0
 
         if dual_variables_file_name != '':
             
@@ -112,16 +111,45 @@ def create_gencol_file(
 
             if add_pairwise_inequalities:
 
-                # prend chaque combinaison unique de variables duales, créer une relation, la store d'une certaine facon
-                 
-                # ...
+                s = random.sample(dual_variables, nb_inequalities)
+                # sort du plus grand au plus petit
+                s.sort(key=lambda pair: pair[1], reverse=True)
 
-                x = 0
+                for i in range(len(s) - 1):
+
+                    for j in (i + 1, len(s)):
+
+                        # unique paire : s[i] - s[j]
+
+                        diff = abs(s[i][1] - s[j][1])
+
+                        # on sait que s[i] >= s[j], mais en fonction de la différence, on calcul une probabilité de se tromper
+
+                        v = random.random() # return a value between [0,1) 1 never there
+                        
+                        treshold = 1 # en fonction de la diff
+
+                        if v <= treshold:
+                            # ok
+                            pi_1 = s[i][0]
+                            pi_2 = s[j][0]
+
+                        else:
+                            # mauvaise inegalite
+                            pi_1 = s[j][0]
+                            pi_2 = s[i][0]    
+
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        
+                        inequalities.append((pi_1, pi_2))
+
+                        # compute odds of having wrong inequality
 
             else:
 
                 # on groupe les variables duales
-                s = random.sample(dual_variables, grp_size)
+                s = random.sample(dual_variables, nb_inequalities)
 
                 # sort du plus grand au plus petit
                 s.sort(key = lambda pair: pair[1], reverse=True)
@@ -129,69 +157,42 @@ def create_gencol_file(
                 max_val = s[0][1]
                 min_val = s[-1][1]
 
-                current_group = []
-
                 group_range = 6 # VARIABLE
 
-                for i in range(min_val, max_val, group_range):
+                for i in range(max_val, min_val, -group_range):
                     
-                    ineq_groups.append(filter(lambda x: i < x <= i + group_range, s))
+                    ineq_groups.append(filter(lambda x: i < x <= i - group_range, s))
 
                     # on les groupe, mais certaines variables duales devraient êtres placés de façon aléatoire (plus de chances d'être
                     # dans un groupe proche)
                 
-                # On doit creer des inegalites entre les groupes et inter-groupes ici
-                # !!!
+                # Groupes sont en ordre du plus grand au plus petit
                 ineq_groups = [g for g in ineq_groups if g != []]
 
-                # create_group_inequalities()
+                for g, group in enumerate(ineq_groups):
 
-
-                    # nb_series = 15
-
-                    # ineq_series = [list() for _ in range(nb_series)]
-
-                    
-
-                    # for i, g in enumerate(ineq_groups):
+                    for i in range(len(group) - 1) : 
                         
-                    #     sm_grps = np.array_split(g, nb_series)
+                        # Ici, c'est les inégalités "inter groupes"
 
-                    #     for i, s in enumerate(sm_grps):
+                        pi_1 = group[i][0]
+                        pi_2 = group[i+1][0]
 
-                    #         # ici, s n'est pas nécessairement ordonné!!!
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2))
 
-                    #         if len(s) > 0:
+                    # pour les n-1 groupes (sauf le dernier)
+                    if g < len(ineq_groups) - 1:
 
-                    #             ineq_series[i].extend(s)
+                        # on rajoute l'inégalité entre-groupes
 
-                    
+                        # le dernier du drenier groupe
+                        pi_1 = group[-1][0]
+                        pi_2 = ineq_groups[g + 1][0]
+                        # le premier du prochain groupe
 
-                    # for serie in ineq_series:
-
-
-                    #     for d in range(len(serie) - 1):
-
-                    #         pi_1 = serie[d][0]
-                    #         pi_2 = serie[d+1][0]
-
-                    #         if serie[d][1] < serie[d+1][1]:
-                    #             print('pi_1 : {} - pi_2 : {}'.format(serie[d][1], serie[d+1][1]))
-
-                    #         tasks_in_new_inequalities.add(pi_1)
-                    #         tasks_in_new_inequalities.add(pi_2)
-
-                    #         inequalities.append((pi_1, pi_2))
-
-                    
-                    
-                        
-                            # pi_1 = s[i][0]
-                            # pi_2 = s[i+1][0]
-
-                            # tasks_in_new_inequalities.add(pi_1)
-                            # tasks_in_new_inequalities.add(pi_2)
-                            # inequalities.append((pi_1, pi_2))
+                        inequalities.append((pi_1, pi_2))
             
             
 

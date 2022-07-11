@@ -162,6 +162,42 @@ def create_pairwise_inequalities(folder_name):
 
         create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, percentage_ineq=0.65, add_pairwise_inequalities=True)
 
+def create_groups_inequalities(folder_name):
+
+    # folder_name : nom du folder ou les instances sont storés
+
+    os.chdir('gencol_files/{}'.format(folder_name))
+    
+    for instance in glob.glob('*/'):
+
+        instance_name = instance.replace('/', '')
+        
+        with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
+            input_problem = f.read().splitlines()
+            
+            vehicule_i = 0
+
+            for i, line in enumerate(input_problem):
+                if "Columns" in line:
+                    vehicule_i = i + 2
+                    break
+
+            nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
+
+    # ici, on assume que toutes les instances dans le répertoire ont le même nombre de véhicules
+
+    os.chdir('../../')
+
+    for instance in glob.glob('Networks/{}/*/'.format(folder_name)):
+
+        instance_name = instance.split('/')[2].replace('Network', '').replace('/', '')
+
+        path_to_networks = 'Networks/{}'.format(folder_name)
+
+        dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
+
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, percentage_ineq=0.65, add_pairwise_inequalities=False)
+   
 parser = argparse.ArgumentParser()
 
 parser.add_argument('type', type=str)
@@ -175,6 +211,8 @@ elif args.type == 'dual':
     create_duals_ineq_instances()
 elif args.type == 'pairwise':
     create_pairwise_inequalities(args.experience_name)
+elif args.type == 'groups':
+    create_groups_inequalities(args.experience_name)
 else:
     print('wrong args')
 
