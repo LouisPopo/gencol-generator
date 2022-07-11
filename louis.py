@@ -64,7 +64,7 @@ def create_defaults_instances():
             with open('default_pb_list_file.txt', 'a') as f:
                 f.write('{}\n'.format(pb))
             
-        create_gencol_file(pb_list, nb_veh=nb_veh, dual_variables_file_name='', nb_inequalities=0)
+        create_gencol_file(pb_list, nb_veh=nb_veh, dual_variables_file_name='', percentage_ineq=0)
 
 def create_duals_ineq_instances():
 
