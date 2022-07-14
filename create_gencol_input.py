@@ -1,4 +1,5 @@
 from audioop import avg
+from cmath import inf
 from datetime import datetime
 from math import ceil
 
@@ -49,15 +50,28 @@ class IneqGraph:
     def get_node_name_from_indice(self, indice):
         return self.indice_to_node_name[indice]
 
-    def bellman_ford(self):
+    def get_serie_from_scipy_bellman_ford(self):
 
         self.sparce_graph = csgraph_from_dense(self.adj_matrix, null_value=np.inf)
 
         dist_matrix, predecesors = bellman_ford(csgraph=self.sparce_graph, directed=True, indices=0, return_predecessors=True)
 
-        print(dist_matrix)
-        print(predecesors)
+        v = self.node_name_to_indice['Sink']
+        serie = ['Sink']
 
+        while self.indice_to_node_name[v] != 'Source':
+                
+            v = predecesors[v]
+
+            if v > -1:
+                # No parent and we didn't reach source. No more paths
+                break
+
+            serie.append(self.indice_to_node_name[v])
+            
+        serie.reverse()
+
+        return False, serie
 
     def find_negative_cycle(self):
 
@@ -139,6 +153,48 @@ class IneqGraph:
 
             return False, serie
 
+
+    def get_ineq_series_from_scipy(self):
+
+        # 1. Retirer tous les circuits de somme negatives
+        # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
+        #       2.1. Trouver le chemin le plus court
+        #       2.2. Le retirer du graphe
+        # 3. Retourner tous les plus courts chemins : ce sont les inegalites a imposer. 
+
+        ineq_series = []
+
+        while(True):
+
+            #print(' ======= ')
+            
+            has_neg, l = self.get_serie_from_scipy_bellman_ford()
+
+            print('Found {} seires'.format(len(ineq_series) + 1))
+
+            if not has_neg:
+
+                if len(l) <= 3:
+                    break
+
+                #print('No negative serie : ')
+                #print(l)
+
+                ineq_series.append(l)
+
+                # REMOVE ARCS
+
+                for i in range(len(l) - 1):
+
+                    u = l[i]
+                    v = l[i+1]
+
+                    if u == 'Source' or v == 'Sink':
+                        continue
+                    
+                    self.adj_matrix[self.node_name_to_indice[u]][self.node_name_to_indice[v]] = np.inf
+        
+        return ineq_series
 
     def get_ineq_series(self):
 
@@ -430,10 +486,10 @@ def create_gencol_file(
 
                 # print(s)
 
-                ineq_graph.bellman_ford()
+                #ineq_graph.bellman_ford()
 
-                ineq_series = ineq_graph.get_ineq_series()
-
+                #ineq_series = ineq_graph.get_ineq_series()
+                ineq_series = ineq_graph.get_ineq_series_from_scipy()
                 #ing ineq series:')
 
                 print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
