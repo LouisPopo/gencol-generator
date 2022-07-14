@@ -280,7 +280,7 @@ def create_gencol_file(
         if dual_variables_file_name != '':
             
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
-            nb_dual_vars_found = 30
+            #nb_dual_vars_found = 30
 
 
             if add_pairwise_inequalities:
@@ -353,8 +353,8 @@ def create_gencol_file(
                         #v = random.random() # return a value between [0,1) 1 never there
                         treshold = a*diff + min_odds
                         # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        v = random.random()
-                        # v = 0
+                        # v = random.random()
+                        v = 0
                         #print('         {}'.format(treshold))   
 
                         if pi_i_value >= pi_j_value: # AND RANDOM 
