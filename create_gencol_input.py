@@ -7,7 +7,7 @@ import sys
 import random
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 NAME = 0
 VALUE = 1
@@ -52,6 +52,9 @@ class IneqGraph:
         dist = [np.inf] * ( self.graph.number_of_nodes())
         parent = [-1] * ( self.graph.number_of_nodes())
         dist[self.node_name_to_indice['Source']] = 0
+
+        print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
+        print('Number of edges : {}'.format(self.graph.number_of_edges()))
 
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
