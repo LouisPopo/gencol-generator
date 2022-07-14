@@ -9,6 +9,10 @@ import numpy as np
 import networkx as nx
 #import matplotlib.pyplot as plt
 
+from scipy.sparse import csc_matrix
+from scipy.sparse.csgraph import csgraph_from_dense
+from scipy.sparse.csgraph import bellman_ford
+
 NAME = 0
 VALUE = 1
 
@@ -22,6 +26,8 @@ class IneqGraph:
         self.node_name_to_indice = {}
 
         self.graph = nx.DiGraph()
+
+        self.adj_matrix = np.ones((nb_nodes, nb_nodes)) * np.inf
     
 
     def add_node(self, node_name):
@@ -35,11 +41,23 @@ class IneqGraph:
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
+        self.adj_matrix[self.node_name_to_indice[from_node_name]][self.node_name_to_indice[to_node_name]] = value
+
     def get_indice_from_node_name(self, node_name):
         return self.node_name_to_indice[node_name]
 
     def get_node_name_from_indice(self, indice):
         return self.indice_to_node_name[indice]
+
+    def bellman_ford(self):
+
+        self.sparce_graph = csgraph_from_dense(self.adj_matrix, null_value=np.inf)
+
+        dist_matrix, predecesors = bellman_ford(csgraph=self.sparce_graph, directed=True, indices=0, return_predecessors=True)
+
+        print(dist_matrix)
+        print(predecesors)
+
 
     def find_negative_cycle(self):
 
@@ -407,6 +425,8 @@ def create_gencol_file(
                 # ineq_graph.get_longues_ineq_serie()
 
                 # print(s)
+
+                ineq_graph.bellman_ford()
 
                 ineq_series = ineq_graph.get_ineq_series()
 
