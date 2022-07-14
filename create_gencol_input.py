@@ -170,9 +170,11 @@ class IneqGraph:
             
             has_neg, l = self.get_serie_from_scipy_bellman_ford()
 
-            print('Found {} seires'.format(len(ineq_series) + 1))
+            print('Found {} series of len : {}'.format(len(ineq_series) + 1, len(l)))
 
             if not has_neg:
+
+                print('No neg')
 
                 if len(l) <= 3:
                     break
