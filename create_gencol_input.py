@@ -86,6 +86,8 @@ class IneqGraph:
                     dist[v] = dist[u] + w
                     parent[v] = u
 
+        print('Finished STEP 2')
+
         # STEP 3 : Check for negative weight cycle
         C = -1
         for e in list(self.graph.edges):
@@ -97,6 +99,8 @@ class IneqGraph:
             if dist[u] != np.inf and dist[u] + w < dist[v]:
                 C = v
                 break
+
+        print('Finished STEP 3')
 
         # STEP 4 : Construct the negative cycle or shortest path to return
         if C != -1:
