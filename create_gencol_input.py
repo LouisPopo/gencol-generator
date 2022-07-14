@@ -59,6 +59,9 @@ class IneqGraph:
         print('Length of predecessors : {}'.format(len(predecesors)))
 
         v = self.node_name_to_indice['Sink']
+
+        print('Sink is : {}'.format(v))
+        
         serie = ['Sink']
 
         while self.indice_to_node_name[v] != 'Source':
