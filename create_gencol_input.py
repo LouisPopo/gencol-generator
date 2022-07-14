@@ -56,6 +56,8 @@ class IneqGraph:
 
         dist_matrix, predecesors = bellman_ford(csgraph=self.sparce_graph, directed=True, indices=0, return_predecessors=True)
 
+        print('Length of predecessors : {}'.format(len(predecesors)))
+
         v = self.node_name_to_indice['Sink']
         serie = ['Sink']
 
