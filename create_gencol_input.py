@@ -61,14 +61,14 @@ class IneqGraph:
         v = self.node_name_to_indice['Sink']
 
         print('Sink is : {}'.format(v))
-        
+
         serie = ['Sink']
 
         while self.indice_to_node_name[v] != 'Source':
                 
             v = predecesors[v]
 
-            if v > -1:
+            if v < 0:
                 # No parent and we didn't reach source. No more paths
                 break
 
