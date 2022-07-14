@@ -1,35 +1,182 @@
-from asyncio import tasks
+from audioop import avg
 from datetime import datetime
-import enum
-import grp
 from math import ceil
-import os
-import random
 
+import os
+import sys
+import random
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
+NAME = 0
+VALUE = 1
 
 random.seed(datetime.now())
 
+class IneqGraph:
 
-class TwoWayDict:
+    def __init__(self, nb_nodes):
 
-    def __init__(self):
+        self.indice_to_node_name = []
+        self.node_name_to_indice = {}
 
-        self.indice_to_dual_var = []
-        self.dual_var_to_indice = {}
+        self.graph = nx.DiGraph()
+    
 
-    def add_dual_var(self, dual_var):
+    def add_node(self, node_name):
+
+        self.node_name_to_indice[node_name] = len(self.indice_to_node_name)
+        self.indice_to_node_name.append(node_name)
+
+        self.graph.add_node(node_name)
+
+    def add_edge(self, from_node_name, to_node_name, value, prob_right):
+
+        self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
+
+    def get_indice_from_node_name(self, node_name):
+        return self.node_name_to_indice[node_name]
+
+    def get_node_name_from_indice(self, indice):
+        return self.indice_to_node_name[indice]
+
+    def find_negative_cycle(self):
+
+        # Ford-Bellman algorithm : 
+        # Trouve le "shortest path" from source -> sink
+        # Si circuit (negatif) est trouve, on retourne True + le circuit
+        # Sinon, on retourne False + le plus court chemin entre source -> sink (la plus longue serie)
+
+        # STEP 1 : Initialize distances and parents
+        dist = [np.inf] * ( self.graph.number_of_nodes())
+        parent = [-1] * ( self.graph.number_of_nodes())
+        dist[self.node_name_to_indice['Source']] = 0
+
+        # STEP 2 : Commpute shortest distances (?)
+        for _ in range(self.graph.number_of_nodes() - 1):
+            for e in list(self.graph.edges):
+
+                u = self.node_name_to_indice[e[0]]
+                v = self.node_name_to_indice[e[1]]
+                w = self.graph.get_edge_data(e[0], e[1])['weight']
+
+                if dist[u] != np.inf and dist[u] + w < dist[v]:
+                    dist[v] = dist[u] + w
+                    parent[v] = u
+
+        # STEP 3 : Check for negative weight cycle
+        C = -1
+        for e in list(self.graph.edges):
+
+            u = self.node_name_to_indice[e[0]]
+            v = self.node_name_to_indice[e[1]]
+            w = self.graph.get_edge_data(e[0], e[1])['weight']
+
+            if dist[u] != np.inf and dist[u] + w < dist[v]:
+                C = v
+                break
+
+        # STEP 4 : Construct the negative cycle or shortest path to return
+        if C != -1:
+
+            for _ in range(self.graph.number_of_nodes() - 1):
+                C = parent[C]
+
+            cycle = []
+            v = C
+
+            while(True):
+                cycle.append(self.indice_to_node_name[v])
+                if (v == C and len(cycle) > 1):
+                    break
+                v = parent[v]
+
+            cycle.reverse()
+
+            return True, cycle 
+        else:
+
+            v = self.node_name_to_indice['Sink']
+            serie = ['Sink']
+
+            while self.indice_to_node_name[v] != 'Source':
+                
+                v = parent[v]
+
+                if v == -1:
+                    # No parent and we didn't reach source. No more paths
+                    break
+
+                serie.append(self.indice_to_node_name[v])
+            
+            serie.reverse()
+
+            return False, serie
+
+
+    def get_ineq_series(self):
+
+        # 1. Retirer tous les circuits de somme negatives
+        # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
+        #       2.1. Trouver le chemin le plus court
+        #       2.2. Le retirer du graphe
+        # 3. Retourner tous les plus courts chemins : ce sont les inegalites a imposer. 
+
+        ineq_series = []
+
+        while(True):
+
+            #print(' ======= ')
+            
+            has_neg, l = self.find_negative_cycle()
+
+            if not has_neg:
+
+                if len(l) <= 3:
+                    break
+
+                #print('No negative serie : ')
+                #print(l)
+
+                ineq_series.append(l)
+
+                for i in range(len(l) - 1):
+
+                    u = l[i]
+                    v = l[i+1]
+
+                    if u == 'Source' or v == 'Sink':
+                        continue
+                    
+                    #print("Removing {} -> {}".format(u, v))
+                    self.graph.remove_edge(u, v)
+
+            else:
+            
+                #print('Negative serie : ')
+                #print(l)
+
+                u, v = None, None
+                s = 100
+
+                for i in range(len(l) - 1):
+                    p = self.graph.get_edge_data(l[i], l[i+1])['prob']
+                    #print(p)
+
+                    #print(' {} -> {} ({})'.format(l[i], l[i+1], p))
+                    if p < s:
+                        s = p
+                        u = l[i]
+                        v = l[i+1]
+
+                # we remove this edge
+                # print('Removing : {} -> {}'.format(u, v))
+                self.graph.remove_edge(u, v)
+                # for each edge in l, find smallest right_prob
+
         
-        self.dual_var_to_indice[dual_var] = len(self.indice_to_dual_var)
-        self.indice_to_dual_var.append(dual_var)
-        
-
-    def get_dual_var_indice(self, dual_var):
-        return self.dual_var_to_indice[dual_var]
-
-    def get_indice_dual_var(self, indice):
-        return self.indice_to_dual_var[indice]
-
+        return ineq_series
 
 
 fixed_cost = 1000       # Cout d'un vehicule
@@ -112,6 +259,7 @@ def create_gencol_file(
 
         dual_variables.sort(key = lambda pair: pair[1], reverse=True)
         nb_dual_variables = len(dual_variables)
+        
 
         # On créé les inégalités duales : 
 
@@ -129,81 +277,159 @@ def create_gencol_file(
         if dual_variables_file_name != '':
             
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
+            nb_dual_vars_found = 30
+
 
             if add_pairwise_inequalities:
 
-                two_way_dict = TwoWayDict()
+                ineq_graph = IneqGraph(nb_dual_vars_found + 2)
 
+                dual_var_name_to_value = {}
+
+                
                 s = random.sample(dual_variables, nb_dual_vars_found)
+                
                 # sort du plus grand au plus petit
-                s.sort(key=lambda pair: pair[1], reverse=True)
+                s.sort(key=lambda pair: pair[VALUE], reverse=True)
 
-                # Matrice carrée 
-                adj_matrix = np.zeros( (nb_dual_vars_found, nb_dual_vars_found))
+                max_diff = abs(s[0][VALUE] - s[-1][VALUE])
+                # max_diff : 95% sur
+                # <1 diff : 65% sur
+                # on create une fonction
+                max_odds = 0.99
+                min_odds = 0.80
+                # odds = a*diff + b
+
+                a = (max_odds-min_odds)/max_diff
+
+                ineq_graph.add_node('Source')
+
+                edge_value = -1
 
                 for dual_var in s:
-                    two_way_dict.add_dual_var(dual_var[0])
 
+                    dual_var_name_to_value[dual_var[NAME]] = dual_var[VALUE]
+
+                    ineq_graph.add_node(dual_var[NAME])
+                    # Source -> VD (0)
+                    ineq_graph.add_edge('Source', dual_var[NAME], 0, 1)
+                    #ineq_graph.add_edge(dual_var[NAME], 'Sink', -1)
+
+                ineq_graph.add_node('Sink')
+                for dual_var in s:
+
+                    # VD -> Sink (0)
+                    ineq_graph.add_edge(dual_var[NAME], 'Sink', 0, 1)
+
+                
 
                 for i in range(len(s) - 1):
+                    #print('s[i]({}) = {}'.format(s[i][0], s[i][1]))
+
+                    pi_i_name = s[i][NAME]
+                    pi_i_value = s[i][VALUE]
+
+                    #print('{} : {} '.format(pi_i_name, pi_i_value))
+
+                    #print('si > 10 ?? : {}'.format(s[i][1] > 10))
                     for j in range(i + 1, len(s)):
+
+                        pi_j_name = s[j][NAME]
+                        pi_j_value = s[j][VALUE]
+
+                        #print('     {} : {} '.format(pi_j_name, pi_j_value))
 
                         # On check si s[i] >= s[j] ??
                         # On check la difference
                         # On ajoute une probabilité d'erreur
 
-                        i_indice = two_way_dict.get_dual_var_indice(s[i][0])
-                        j_indice = two_way_dict.get_dual_var_indice(s[j][0])
-
-                        if s[i][0] >= s[j][0]:
-                            
-                            # pi_i >= pi_j
-
-                            adj_matrix[i_indice][j_indice] = 1
-                            adj_matrix[j_indice][i_indice] = 0
-                        
-                        else:
-                            
-                            # pi_j > pi_i
-
-                            adj_matrix[i_indice][j_indice] = 0
-                            adj_matrix[j_indice][i_indice] = 1
-
-                        # Notre matrice adjc est complète
-
-
-                       
-
-
-                        # unique paire : s[i] - s[j]
+                        # ON AJOUTE ICI DU RANDOM
 
                         diff = abs(s[i][1] - s[j][1])
-
                         # on sait que s[i] >= s[j], mais en fonction de la différence, on calcul une probabilité de se tromper
+                        #v = random.random() # return a value between [0,1) 1 never there
+                        treshold = a*diff + min_odds
+                        # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
+                        v = random.random()
+                        # v = 0
+                        #print('         {}'.format(treshold))   
 
-                        v = random.random() # return a value between [0,1) 1 never there
-                        
-                        treshold = 1 # en fonction de la diff
+                        if pi_i_value >= pi_j_value: # AND RANDOM 
 
-                        if v <= treshold:
-                            # ok
-                            pi_1 = s[i][0]
-                            pi_2 = s[j][0]
+                            #print('         i >= j')
+
+                            if v <= treshold:
+                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
+                                #ineq_graph.add_edge(pi_j_name, pi_i_name, 0)
+                            else:
+                                #print('         but add error')
+                                #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
+                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold)
 
                         else:
-                            # mauvaise inegalite
-                            pi_1 = s[j][0]
-                            pi_2 = s[i][0]    
+
+                            #print('         j <  i')
+
+                            if v <= treshold:
+                                #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
+                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold) 
+                            else:
+                                # add error
+                                #print('        but add error')
+                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
+                                #ineq_graph.add_edge(pi_j_name, pi_i_name, 0) 
+
+                        # tasks_in_new_inequalities.add(pi_1)
+                        # tasks_in_new_inequalities.add(pi_2)
+                        
+                        # # techniquement non, on ajoute pas la, on note les relations
+                        # inequalities.append((pi_1, pi_2))
+
+                        # compute odds of having wrong inequality
+
+                #ineq_graph.update_csgraph()
+
+                # print(ineq_graph.graph)
+
+                # print('Source : {}'.format(ineq_graph.get_indice_from_node_name('Source')))
+                # print('Sink : {}'.format(ineq_graph.get_indice_from_node_name('Sink')))
+
+                # dist_matrix, predecessors = bellman_ford(ineq_graph.graph, directed=True, indices=0, return_predecessors=True)
+
+                # with predecessors, find the dual variables values
+
+                # print(dist_matrix)
+                # print(predecessors)
+
+                # ineq_graph.get_longues_ineq_serie()
+
+                # print(s)
+
+                ineq_series = ineq_graph.get_ineq_series()
+
+                #ing ineq series:')
+
+                print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
+                for s in ineq_series:
+
+                    # ICI ON AJOUTE LES SERIES D'INEGALITES
+
+                    # [Source, VD1, ... , VDN, Sink]
+                    for i in range(1, len(s) - 2):
+                        
+                        pi_1 = s[i]
+                        pi_2 = s[i+1]
 
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
-                        
-                        # techniquement non, on ajoute pas la, on note les relations
                         inequalities.append((pi_1, pi_2))
 
-                        # compute odds of having wrong inequality
-                
-                print(np.matrix(adj_matrix))
+
+                    #print(s)
+
+                #nx.draw(ineq_graph.graph, with_labels=True)
+
+                #plt.show()
 
             else:
 
@@ -237,7 +463,7 @@ def create_gencol_file(
 
                 for g, group in enumerate(ineq_groups):
 
-                    for i in range(len(group) - 1) : 
+                    for i in range(len(group) - 1 ) : 
                         
                         # Ici, c'est les inégalités "inter groupes"
 

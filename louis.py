@@ -6,6 +6,7 @@ from code_juliette.create_data_trip_shifting import create_network_data
 from create_gencol_input import create_gencol_file
 import os
 
+
 # Sert a prendre un folder avec des réseaux et créer des input files
 
 def create_network(nb_instances, dataset_num, max_minute, nb_borne):
