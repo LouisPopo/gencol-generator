@@ -1,5 +1,6 @@
 from datetime import datetime
 from math import ceil
+from operator import mod
 
 import os
 import sys
@@ -103,10 +104,14 @@ class IneqGraph:
         nb_total_iter = 0
         nb_nodes_iter = 0
 
-        print('Step1')
+        #print('Step1')
+
+        iter = 0
 
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
+
+            iter += 1
 
             has_change = False
 
@@ -126,12 +131,14 @@ class IneqGraph:
                     has_change = True
 
 
+            if iter % 1000 == 0:
+                print(iter)
 
             if not has_change:
                 break
             
             #rint(has_change)
-        print('Step2')
+        #print('Step2')
         #print('Nb nodes iters : {}'.format(nb_nodes_iter))
         #print('Nb total iters : {}'.format(nb_total_iter))
         #print('----')
