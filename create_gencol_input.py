@@ -6,6 +6,7 @@ from math import ceil
 import os
 import sys
 import random
+from attr import has
 import numpy as np
 import networkx as nx
 #import matplotlib.pyplot as plt
@@ -30,7 +31,6 @@ class IneqGraph:
 
         self.adj_matrix = np.ones((nb_nodes, nb_nodes)) * np.inf
     
-
     def add_node(self, node_name):
 
         self.node_name_to_indice[node_name] = len(self.indice_to_node_name)
@@ -50,17 +50,25 @@ class IneqGraph:
     def get_node_name_from_indice(self, indice):
         return self.indice_to_node_name[indice]
 
-    def get_serie_from_scipy_bellman_ford(self):
+    def remove_edge_libr(self, u , v):
+        self.adj_matrix[self.node_name_to_indice[u]][self.node_name_to_indice[v]] = np.inf
+
+    def remove_edge_hand(self, u, v):
+        self.graph.remove_edge(u, v)
+
+    def bellman_ford_libr(self):
+
+        # Algo de la librairie
 
         self.sparce_graph = csgraph_from_dense(self.adj_matrix, null_value=np.inf)
 
         dist_matrix, predecesors = bellman_ford(csgraph=self.sparce_graph, directed=True, indices=0, return_predecessors=True)
 
-        print('Length of predecessors : {}'.format(len(predecesors)))
+        #print('Length of predecessors : {}'.format(len(predecesors)))
 
         v = self.node_name_to_indice['Sink']
 
-        print('Sink is : {}'.format(v))
+        #print('Sink is : {}'.format(v))
 
         serie = ['Sink']
 
@@ -78,7 +86,9 @@ class IneqGraph:
 
         return False, serie
 
-    def find_negative_cycle(self):
+    def bellman_ford_hand(self):
+
+        # Algo. implémenté à la main
 
         # Ford-Bellman algorithm : 
         # Trouve le "shortest path" from source -> sink
@@ -93,9 +103,19 @@ class IneqGraph:
         print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
         print('Number of edges : {}'.format(self.graph.number_of_edges()))
 
+        nb_total_iter = 0
+        nb_nodes_iter = 0
+
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
+
+            has_change = False
+
+            nb_nodes_iter += 1
+
             for e in list(self.graph.edges):
+
+                nb_total_iter += 1
 
                 u = self.node_name_to_indice[e[0]]
                 v = self.node_name_to_indice[e[1]]
@@ -104,8 +124,18 @@ class IneqGraph:
                 if dist[u] != np.inf and dist[u] + w < dist[v]:
                     dist[v] = dist[u] + w
                     parent[v] = u
+                    has_change = True
 
-        print('Finished STEP 2')
+            if not has_change:
+                break
+            
+            #rint(has_change)
+
+        print('Nb nodes iters : {}'.format(nb_nodes_iter))
+        print('Nb total iters : {}'.format(nb_total_iter))
+        print('----')
+
+        #print('Finished STEP 2')
 
         # STEP 3 : Check for negative weight cycle
         C = -1
@@ -119,7 +149,7 @@ class IneqGraph:
                 C = v
                 break
 
-        print('Finished STEP 3')
+        #print('Finished STEP 3')
 
         # STEP 4 : Construct the negative cycle or shortest path to return
         if C != -1:
@@ -158,8 +188,9 @@ class IneqGraph:
 
             return False, serie
 
+    def get_ineq_series_libr(self):
 
-    def get_ineq_series_from_scipy(self):
+        # Utilise une matrice adjacence, utilise un algo de librairie
 
         # 1. Retirer tous les circuits de somme negatives
         # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
@@ -173,13 +204,14 @@ class IneqGraph:
 
             #print(' ======= ')
             
-            has_neg, l = self.get_serie_from_scipy_bellman_ford()
+            #has_neg, l = self.get_serie_from_scipy_bellman_ford()
+            has_neg, l = self.bellman_ford_libr()
 
-            print('Found {} series of len : {}'.format(len(ineq_series) + 1, len(l)))
+            #print('Found {} series of len : {}'.format(len(ineq_series) + 1, len(l)))
 
             if not has_neg:
 
-                print('No neg')
+                #print('No neg')
 
                 if len(l) <= 3:
                     break
@@ -199,11 +231,11 @@ class IneqGraph:
                     if u == 'Source' or v == 'Sink':
                         continue
                     
-                    self.adj_matrix[self.node_name_to_indice[u]][self.node_name_to_indice[v]] = np.inf
-        
-        return ineq_series
+                    self.remove_edge_libr(u, v)
 
-    def get_ineq_series(self):
+    def get_ineq_series_hand(self):
+
+        # Utilise graph networks, fait l'algo à la main
 
         # 1. Retirer tous les circuits de somme negatives
         # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
@@ -217,11 +249,12 @@ class IneqGraph:
 
             #print(' ======= ')
             
-            has_neg, l = self.find_negative_cycle()
+            has_neg, l = self.bellman_ford_hand()
 
             if not has_neg:
 
                 if len(l) <= 3:
+                    print('break')
                     break
 
                 #print('No negative serie : ')
@@ -238,7 +271,7 @@ class IneqGraph:
                         continue
                     
                     #print("Removing {} -> {}".format(u, v))
-                    self.graph.remove_edge(u, v)
+                    self.remove_edge_hand(u, v)
 
             else:
             
@@ -260,7 +293,8 @@ class IneqGraph:
 
                 # we remove this edge
                 # print('Removing : {} -> {}'.format(u, v))
-                self.graph.remove_edge(u, v)
+                self.remove_edge_hand(u, v)
+
                 # for each edge in l, find smallest right_prob
 
         
@@ -496,7 +530,12 @@ def create_gencol_file(
                 #ineq_graph.bellman_ford()
 
                 #ineq_series = ineq_graph.get_ineq_series()
-                ineq_series = ineq_graph.get_ineq_series_from_scipy()
+                
+                
+                ineq_series = ineq_graph.get_ineq_series_hand()
+                
+                
+
                 #ing ineq series:')
 
                 print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
