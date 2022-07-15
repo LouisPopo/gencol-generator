@@ -103,7 +103,7 @@ class IneqGraph:
         nb_total_iter = 0
         nb_nodes_iter = 0
 
-        no_change_in_row = 0
+        print('Step1')
 
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
@@ -128,15 +128,10 @@ class IneqGraph:
 
 
             if not has_change:
-                no_change_in_row += 1
-            else:
-                no_change_in_row = 0
-
-            if no_change_in_row == 5:
                 break
             
             #rint(has_change)
-
+        print('Step2')
         #print('Nb nodes iters : {}'.format(nb_nodes_iter))
         #print('Nb total iters : {}'.format(nb_total_iter))
         #print('----')
@@ -310,6 +305,8 @@ class IneqGraph:
                     break
 
             else:
+
+                print('Got cycle')
 
                 nb_cycles += 1
             
