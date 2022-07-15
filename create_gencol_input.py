@@ -98,8 +98,8 @@ class IneqGraph:
         parent = [-1] * ( self.graph.number_of_nodes())
         dist[self.node_name_to_indice['Source']] = 0
 
-        #print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
-        #print('Number of edges : {}'.format(self.graph.number_of_edges()))
+        print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
+        print('Number of edges : {}'.format(self.graph.number_of_edges()))
 
         nb_total_iter = 0
         nb_nodes_iter = 0
@@ -131,7 +131,7 @@ class IneqGraph:
                     has_change = True
 
 
-                if iter % 1000 == 0:
+                if iter % 1000000 == 0:
                     print(iter)
 
             if not has_change:
