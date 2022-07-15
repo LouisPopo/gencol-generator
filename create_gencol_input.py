@@ -251,13 +251,17 @@ class IneqGraph:
 
         ineq_series = []
 
+        nb_cycles = 0
+
+        first_no_cycle = True
+
         while(True):
 
             #print(' ======= ')
             
             has_neg, l = self.bellman_ford_hand()
 
-            print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
+            #print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
             
             # TEST
             #has_neg_l, l_l = self.bellman_ford_libr()
@@ -270,9 +274,17 @@ class IneqGraph:
 
             if not has_neg:
 
+                if first_no_cycle:
+                    print('After removing cycle : {}'.format(self.graph.number_of_edges()))
+                    first_no_cycle = False
+
+
+
                 if len(l) <= 3:
                     print('break')
                     break
+
+                print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
 
                 #print('No negative serie : ')
                 #print(l)
@@ -298,6 +310,8 @@ class IneqGraph:
                     break
 
             else:
+
+                nb_cycles += 1
             
                 #print('Negative serie : ')
                 #print(l)
@@ -316,12 +330,14 @@ class IneqGraph:
                         v = l[i+1]
 
                 # we remove this edge
-                # print('Removing : {} -> {}'.format(u, v))
+                #print('Removing : {} -> {}'.format(u, v))
                 self.remove_edge_hand(u, v)
 
                 # for each edge in l, find smallest right_prob
 
         
+        print('{} cycles found'.format(nb_cycles))
+
         return ineq_series
 
 
@@ -425,6 +441,8 @@ def create_gencol_file(
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
             #nb_dual_vars_found = 30
 
+            print('Dual variables : {}'.format(nb_dual_vars_found))
+
 
             if add_pairwise_inequalities:
 
@@ -442,9 +460,11 @@ def create_gencol_file(
                 # max_diff : 95% sur
                 # <1 diff : 65% sur
                 # on create une fonction
-                max_odds = 0.99
-                min_odds = 0.80
+                max_odds = 0.999
+                min_odds = 0.75
                 # odds = a*diff + b
+
+                nb_wrong = 0
 
                 a = (max_odds-min_odds)/max_diff
 
@@ -496,8 +516,8 @@ def create_gencol_file(
                         #v = random.random() # return a value between [0,1) 1 never there
                         treshold = a*diff + min_odds
                         # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        # v = random.random()
-                        v = 0
+                        v = random.uniform(0, 1)
+                        #v = 0
                         #print('         {}'.format(treshold))   
 
                         if pi_i_value >= pi_j_value: # AND RANDOM 
@@ -510,6 +530,9 @@ def create_gencol_file(
                             else:
                                 #print('         but add error')
                                 #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
+
+                                nb_wrong += 1
+
                                 ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold)
 
                         else:
@@ -520,6 +543,8 @@ def create_gencol_file(
                                 #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
                                 ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold) 
                             else:
+
+                                nb_wrong += 1
                                 # add error
                                 #print('        but add error')
                                 ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
@@ -532,6 +557,8 @@ def create_gencol_file(
                         # inequalities.append((pi_1, pi_2))
 
                         # compute odds of having wrong inequality
+
+                print('nb wrongs : {}'.format(nb_wrong))
 
                 #ineq_graph.update_csgraph()
 
@@ -555,8 +582,16 @@ def create_gencol_file(
 
                 #ineq_series = ineq_graph.get_ineq_series()
                 
+
+                print('Edges before : {}'.format(ineq_graph.graph.number_of_edges()))
+
+                #nx.draw(ineq_graph.graph, with_labels=True)
+
+                #plt.show()
                 
                 ineq_series = ineq_graph.get_ineq_series_hand()
+
+                print('Edges after : {}'.format(ineq_graph.graph.number_of_edges()))
                 
                 
 
@@ -580,7 +615,7 @@ def create_gencol_file(
 
                     #print(s)
 
-                #nx.draw(ineq_graph.graph, with_labels=True)
+                nx.draw(ineq_graph.graph, with_labels=True)
 
                 #plt.show()
 
