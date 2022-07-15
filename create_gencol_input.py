@@ -38,6 +38,13 @@ class IneqGraph:
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
 
+        # on ajoute u->v seulement s'il n'existe pas un i t.q. u->i->v existe
+
+        for middle_node in self.graph.nodes:
+
+            if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
+                return
+
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
         self.adj_matrix[self.node_name_to_indice[from_node_name]][self.node_name_to_indice[to_node_name]] = value
@@ -115,7 +122,7 @@ class IneqGraph:
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
 
-            print('Nb affected nodes : {}'.format(len(affected_nodes)))
+            #print('Nb affected nodes : {}'.format(len(affected_nodes)))
 
             edges_to_iter.clear()
             for node in affected_nodes:
@@ -129,7 +136,7 @@ class IneqGraph:
 
             affected_nodes.clear()
 
-            print('Number of edges to iter : {}'.format(len(edges_to_iter)))
+            #print('Number of edges to iter : {}'.format(len(edges_to_iter)))
 
             for e in edges_to_iter:
             #for e in list(self.graph.edges):
@@ -333,7 +340,7 @@ class IneqGraph:
 
             else:
 
-                print('Got cycle')
+                #print('Got cycle')
 
                 nb_cycles += 1
             
