@@ -100,11 +100,13 @@ class IneqGraph:
         parent = [-1] * ( self.graph.number_of_nodes())
         dist[self.node_name_to_indice['Source']] = 0
 
-        print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
-        print('Number of edges : {}'.format(self.graph.number_of_edges()))
+        #print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
+        #print('Number of edges : {}'.format(self.graph.number_of_edges()))
 
         nb_total_iter = 0
         nb_nodes_iter = 0
+
+        no_change_in_row = 0
 
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
@@ -126,14 +128,21 @@ class IneqGraph:
                     parent[v] = u
                     has_change = True
 
+
+
             if not has_change:
+                no_change_in_row += 1
+            else:
+                no_change_in_row = 0
+
+            if no_change_in_row == 5:
                 break
             
             #rint(has_change)
 
-        print('Nb nodes iters : {}'.format(nb_nodes_iter))
-        print('Nb total iters : {}'.format(nb_total_iter))
-        print('----')
+        #print('Nb nodes iters : {}'.format(nb_nodes_iter))
+        #print('Nb total iters : {}'.format(nb_total_iter))
+        #print('----')
 
         #print('Finished STEP 2')
 
@@ -250,6 +259,15 @@ class IneqGraph:
             #print(' ======= ')
             
             has_neg, l = self.bellman_ford_hand()
+            
+            # TEST
+            #has_neg_l, l_l = self.bellman_ford_libr()
+            # TEST
+
+            #print(l)
+            #print(l_l)
+            # if l != l_l:
+            #     print('WOWOOO NOT Both algo same')
 
             if not has_neg:
 
@@ -272,6 +290,13 @@ class IneqGraph:
                     
                     #print("Removing {} -> {}".format(u, v))
                     self.remove_edge_hand(u, v)
+
+                    # TEST
+                    #self.remove_edge_libr(u, v)
+                    # TEST
+
+                if len(ineq_series) > 100:
+                    break
 
             else:
             
