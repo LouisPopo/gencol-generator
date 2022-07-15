@@ -109,6 +109,7 @@ class IneqGraph:
         iter = 0
 
         affected_nodes = set(self.graph.nodes)
+        edges_to_iter = set()
         #print(affected_nodes)
 
         # STEP 2 : Commpute shortest distances (?)
@@ -116,11 +117,13 @@ class IneqGraph:
 
             print('Nb affected nodes : {}'.format(len(affected_nodes)))
 
-            edges_to_iter = []
+            edges_to_iter.clear()
             for node in affected_nodes:
                 #print(node)
-                edges_to_iter.extend(list(self.graph.in_edges(node)))
-                edges_to_iter.extend(list(self.graph.out_edges(node)))
+                for e in list(self.graph.in_edges(node)):
+                    edges_to_iter.add(e)
+                for e in list(self.graph.out_edges(node)):
+                    edges_to_iter.add(e)
             
             has_change = False
 
