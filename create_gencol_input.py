@@ -108,16 +108,28 @@ class IneqGraph:
 
         iter = 0
 
+        affected_nodes = set(self.graph.nodes)
+        #print(affected_nodes)
+
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
 
-            
+            print('Nb affected nodes : {}'.format(len(affected_nodes)))
 
+            edges_to_iter = []
+            for node in affected_nodes:
+                #print(node)
+                edges_to_iter.extend(list(self.graph.in_edges(node)))
+                edges_to_iter.extend(list(self.graph.out_edges(node)))
+            
             has_change = False
 
-            nb_nodes_iter += 1
+            affected_nodes.clear()
 
-            for e in list(self.graph.edges):
+            print('Number of edges to iter : {}'.format(len(edges_to_iter)))
+
+            for e in edges_to_iter:
+            #for e in list(self.graph.edges):
                 
                 iter += 1
 
@@ -129,12 +141,15 @@ class IneqGraph:
                     dist[v] = dist[u] + w
                     parent[v] = u
                     has_change = True
+                    affected_nodes.add(self.indice_to_node_name[v])
+                    #affected_nodes.append(self.indice_to_node_name[v])
 
+                
+            
+                # if iter % 1000000 == 0:
+                #     print(iter)
 
-                if iter % 1000000 == 0:
-                    print(iter)
-
-            if not has_change:
+            if len(affected_nodes) == 0:
                 break
             
             #rint(has_change)
@@ -214,6 +229,8 @@ class IneqGraph:
             
             #has_neg, l = self.get_serie_from_scipy_bellman_ford()
             has_neg, l = self.bellman_ford_libr()
+
+            print('==========')
 
             #print('Found {} series of len : {}'.format(len(ineq_series) + 1, len(l)))
 
