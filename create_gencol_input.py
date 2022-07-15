@@ -1,12 +1,9 @@
-from audioop import avg
-from cmath import inf
 from datetime import datetime
 from math import ceil
 
 import os
 import sys
 import random
-from attr import has
 import numpy as np
 import networkx as nx
 #import matplotlib.pyplot as plt
@@ -259,6 +256,8 @@ class IneqGraph:
             #print(' ======= ')
             
             has_neg, l = self.bellman_ford_hand()
+
+            print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
             
             # TEST
             #has_neg_l, l_l = self.bellman_ford_libr()
