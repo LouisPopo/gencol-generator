@@ -111,15 +111,15 @@ class IneqGraph:
         # STEP 2 : Commpute shortest distances (?)
         for _ in range(self.graph.number_of_nodes() - 1):
 
-            iter += 1
+            
 
             has_change = False
 
             nb_nodes_iter += 1
 
             for e in list(self.graph.edges):
-
-                nb_total_iter += 1
+                
+                iter += 1
 
                 u = self.node_name_to_indice[e[0]]
                 v = self.node_name_to_indice[e[1]]
@@ -131,8 +131,8 @@ class IneqGraph:
                     has_change = True
 
 
-            if iter % 1000 == 0:
-                print(iter)
+                if iter % 1000 == 0:
+                    print(iter)
 
             if not has_change:
                 break
