@@ -275,6 +275,9 @@ class IneqGraph:
                 
                 ineq_series.append(serie)
 
+                if len(ineq_series) >= 100:
+                    break
+
 
         print(" Found all series in {} seconds".format(time.time() - start_time))          
         return ineq_series
