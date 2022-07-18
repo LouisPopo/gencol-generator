@@ -81,7 +81,7 @@ class IneqGraph:
                 min_odds_right = 100
                 edge_to_remove = None
                 
-                print(cycle)
+                #print(cycle)
 
                 for e in cycle:
                     
