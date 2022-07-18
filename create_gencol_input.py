@@ -43,6 +43,9 @@ class IneqGraph:
         # for middle_node in self.graph.nodes:
 
         #     if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
+                
+        #         print('Allo')
+
         #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
@@ -526,6 +529,7 @@ def create_gencol_file(
 
                 edge_value = -1
 
+
                 for dual_var in s:
 
                     dual_var_name_to_value[dual_var[NAME]] = dual_var[VALUE]
@@ -574,8 +578,8 @@ def create_gencol_file(
                         #v = random.random() # return a value between [0,1) 1 never there
                         treshold = a*diff + min_odds
                         # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        # v = random.uniform(0, 1)
-                        v = 0
+                        v = random.uniform(0, 1)
+                        # v = 0
                         #print('         {}'.format(treshold))   
 
                         if pi_i_value >= pi_j_value: # AND RANDOM 
