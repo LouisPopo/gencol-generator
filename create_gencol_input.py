@@ -95,6 +95,7 @@ class IneqGraph:
                         min_odds_right = p
 
                 self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+            
             except NetworkXNoCycle:
 
                 #print('Cycles found : {}'.format(nb_cycles))
@@ -682,6 +683,11 @@ def create_gencol_file(
                 #ing ineq series:')
 
                 print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
+                
+                wrong_ineq = 0
+
+                print(dual_variables)
+
                 for s in ineq_series:
 
                     # ICI ON AJOUTE LES SERIES D'INEGALITES
@@ -692,12 +698,20 @@ def create_gencol_file(
                         pi_1 = s[i]
                         pi_2 = s[i+1]
 
+                        pi_1_real_value = [(name, value) for name, value in dual_variables if name == pi_1][0][1]
+                        pi_2_real_value = [(name, value) for name, value in dual_variables if name == pi_2][0][1]
+
+                        if pi_2_real_value > pi_1_real_value:
+                            wrong_ineq += 1
+
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
                         inequalities.append((pi_1, pi_2))
 
 
                     #print(s)
+                print('Wrong ineq : {}'.format(wrong_ineq))
+                print('Total ineq : {}'.format(len(inequalities)))
 
                 #nx.draw(ineq_graph.graph, with_labels=True)
 
