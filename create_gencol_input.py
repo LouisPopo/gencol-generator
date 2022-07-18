@@ -327,9 +327,9 @@ class IneqGraph:
             #has_neg, l = self.bellman_ford_hand()
             #print(has_path())
             c = find_cycle(G=self.graph, source='Source')
-            print(c)
+            #print(c)
             p = bellman_ford_path(self.graph, 'Source', 'Sink')
-            print(p)
+            #print(p)
 
             #print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
             
@@ -685,8 +685,6 @@ def create_gencol_file(
                 print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
                 
                 wrong_ineq = 0
-
-                print(dual_variables)
 
                 for s in ineq_series:
 
