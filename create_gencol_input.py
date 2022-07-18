@@ -66,21 +66,39 @@ class IneqGraph:
 
     def remove_cycles_libr(self):
         
+        nb_cycles = 0
 
         while (True) :
 
             try: 
                 cycle =  find_cycle(self.graph, source='Source')
 
+                #nb_cycles += 1
+
                 # print('Found cycle')
                 # print(cycle)
+
+                min_odds_right = 100
+                edge_to_remove = None
+                
+                print(cycle)
 
                 for e in cycle:
                     
                     # On devrait choisir le quel on enleve!
-                    self.graph.remove_edge(e[0], e[1])
-            
+                    # self.graph.remove_edge(e[0], e[1])
+
+                    p = self.graph.get_edge_data(e[0], e[1])['prob']
+        
+                    if p < min_odds_right:
+                        edge_to_remove = e
+                        min_odds_right = p
+
+                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
             except NetworkXNoCycle:
+
+                #print('Cycles found : {}'.format(nb_cycles))
+
                 break
 
         
@@ -588,6 +606,7 @@ def create_gencol_file(
 
                             if v <= treshold:
                                 ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
+
                                 #ineq_graph.add_edge(pi_j_name, pi_i_name, 0)
                             else:
                                 #print('         but add error')
