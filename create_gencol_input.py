@@ -86,15 +86,15 @@ class IneqGraph:
                 for e in cycle:
                     
                     # On devrait choisir le quel on enleve!
-                    self.graph.remove_edge(e[0], e[1])
+                    #self.graph.remove_edge(e[0], e[1])
 
-                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
+                    p = self.graph.get_edge_data(e[0], e[1])['prob']
         
-                #     if p < min_odds_right:
-                #         edge_to_remove = e
-                #         min_odds_right = p
+                    if p < min_odds_right:
+                        edge_to_remove = e
+                        min_odds_right = p
 
-                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
             
             except NetworkXNoCycle:
 
