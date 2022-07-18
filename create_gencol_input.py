@@ -40,14 +40,14 @@ class IneqGraph:
 
         # on ajoute u->v seulement s'il n'existe pas un i t.q. u->i->v existe
 
-        for middle_node in self.graph.nodes:
+        # for middle_node in self.graph.nodes:
 
-            if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
-                return
+        #     if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
+        #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
-        self.adj_matrix[self.node_name_to_indice[from_node_name]][self.node_name_to_indice[to_node_name]] = value
+        #self.adj_matrix[self.node_name_to_indice[from_node_name]][self.node_name_to_indice[to_node_name]] = value
 
     def get_indice_from_node_name(self, node_name):
         return self.node_name_to_indice[node_name]
@@ -571,8 +571,8 @@ def create_gencol_file(
                         #v = random.random() # return a value between [0,1) 1 never there
                         treshold = a*diff + min_odds
                         # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        v = random.uniform(0, 1)
-                        #v = 0
+                        # v = random.uniform(0, 1)
+                        v = 0
                         #print('         {}'.format(treshold))   
 
                         if pi_i_value >= pi_j_value: # AND RANDOM 
