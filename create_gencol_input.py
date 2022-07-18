@@ -40,10 +40,10 @@ class IneqGraph:
 
         # on ajoute u->v seulement s'il n'existe pas un i t.q. u->i->v existe
 
-        for middle_node in self.graph.nodes:
+        # for middle_node in self.graph.nodes:
 
-            if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
-                return
+        #     if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
+        #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
