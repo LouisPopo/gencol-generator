@@ -96,7 +96,7 @@ class IneqGraph:
 
                 self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
             
-            print(self.graph.number_of_edges())
+                print(self.graph.number_of_edges())
 
             except NetworkXNoCycle:
 
