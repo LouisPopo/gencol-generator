@@ -4,7 +4,6 @@ from math import ceil
 from operator import mod
 
 import os
-import sys
 import random
 import numpy as np
 import networkx as nx
@@ -12,9 +11,6 @@ import networkx as nx
 
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle
 
-from scipy.sparse import csc_matrix
-from scipy.sparse.csgraph import csgraph_from_dense
-from sympy import python
 
 NAME = 0
 VALUE = 1
