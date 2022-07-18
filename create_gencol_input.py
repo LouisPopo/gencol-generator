@@ -1,4 +1,5 @@
 from datetime import datetime
+from itertools import cycle
 from math import ceil
 from operator import mod
 
@@ -9,9 +10,11 @@ import numpy as np
 import networkx as nx
 #import matplotlib.pyplot as plt
 
+from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle
+
 from scipy.sparse import csc_matrix
 from scipy.sparse.csgraph import csgraph_from_dense
-from scipy.sparse.csgraph import bellman_ford
+from sympy import python
 
 NAME = 0
 VALUE = 1
@@ -61,35 +64,35 @@ class IneqGraph:
     def remove_edge_hand(self, u, v):
         self.graph.remove_edge(u, v)
 
-    def bellman_ford_libr(self):
+    def remove_cycles_libr(self):
 
-        # Algo de la librairie
+        print('================')
+        print('Before Removing cycles: {}'.format(self.graph.number_of_edges()))
 
-        self.sparce_graph = csgraph_from_dense(self.adj_matrix, null_value=np.inf)
+        while (True) :
 
-        dist_matrix, predecesors = bellman_ford(csgraph=self.sparce_graph, directed=True, indices=0, return_predecessors=True)
+            try: 
+                cycle =  find_cycle(self.graph, source='Source')
 
-        #print('Length of predecessors : {}'.format(len(predecesors)))
+                # print('Found cycle')
+                # print(cycle)
 
-        v = self.node_name_to_indice['Sink']
-
-        #print('Sink is : {}'.format(v))
-
-        serie = ['Sink']
-
-        while self.indice_to_node_name[v] != 'Source':
-                
-            v = predecesors[v]
-
-            if v < 0:
-                # No parent and we didn't reach source. No more paths
+                for e in cycle:
+                    
+                    # On devrait choisir le quel on enleve!
+                    self.graph.remove_edge(e[0], e[1])
+            
+            except NetworkXNoCycle:
+                print('After : {}'.format(self.graph.number_of_edges()))
+                print('No more cycles')
                 break
 
-            serie.append(self.indice_to_node_name[v])
-            
-        serie.reverse()
+        
+    def bellman_ford_libr(self):
 
-        return False, serie
+        path = bellman_ford_path(self.graph, source='Source', target='Sink')
+
+        return False, path
 
     def bellman_ford_hand(self):
 
@@ -233,14 +236,17 @@ class IneqGraph:
 
         ineq_series = []
 
+        self.remove_cycles_libr()
+
+        print('==========')
+        print('Finding Series')
+
         while(True):
 
             #print(' ======= ')
             
             #has_neg, l = self.get_serie_from_scipy_bellman_ford()
-            has_neg, l = self.bellman_ford_libr()
-
-            print('==========')
+            has_neg, path = self.bellman_ford_libr()
 
             #print('Found {} series of len : {}'.format(len(ineq_series) + 1, len(l)))
 
@@ -248,25 +254,24 @@ class IneqGraph:
 
                 #print('No neg')
 
-                if len(l) <= 3:
+                if len(path) <= 3:
                     break
 
                 #print('No negative serie : ')
                 #print(l)
 
-                ineq_series.append(l)
+                serie = path[1:-1]
 
-                # REMOVE ARCS
+                for i in range(len(serie)):
 
-                for i in range(len(l) - 1):
+                    u = path[i]
+                    v = path[i+1]
 
-                    u = l[i]
-                    v = l[i+1]
-
-                    if u == 'Source' or v == 'Sink':
-                        continue
+                    self.graph.remove_edge(u, v)
+                
+                ineq_series.append(serie)
                     
-                    self.remove_edge_libr(u, v)
+        return ineq_series
 
     def get_ineq_series_hand(self):
 
@@ -288,7 +293,12 @@ class IneqGraph:
 
             #print(' ======= ')
             
-            has_neg, l = self.bellman_ford_hand()
+            #has_neg, l = self.bellman_ford_hand()
+            #print(has_path())
+            c = find_cycle(G=self.graph, source='Source')
+            print(c)
+            p = bellman_ford_path(self.graph, 'Source', 'Sink')
+            print(p)
 
             #print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
             
@@ -370,6 +380,8 @@ class IneqGraph:
         print('{} cycles found'.format(nb_cycles))
 
         return ineq_series
+
+
 
 
 fixed_cost = 1000       # Cout d'un vehicule
@@ -547,8 +559,8 @@ def create_gencol_file(
                         #v = random.random() # return a value between [0,1) 1 never there
                         treshold = a*diff + min_odds
                         # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        v = random.uniform(0, 1)
-                        #v = 0
+                        #v = random.uniform(0, 1)
+                        v = 0
                         #print('         {}'.format(treshold))   
 
                         if pi_i_value >= pi_j_value: # AND RANDOM 
@@ -620,7 +632,7 @@ def create_gencol_file(
 
                 #plt.show()
                 
-                ineq_series = ineq_graph.get_ineq_series_hand()
+                ineq_series = ineq_graph.get_ineq_series_libr()
 
                 print('Edges after : {}'.format(ineq_graph.graph.number_of_edges()))
                 
