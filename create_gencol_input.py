@@ -7,6 +7,7 @@ import os
 import random
 import numpy as np
 import networkx as nx
+import time
 #import matplotlib.pyplot as plt
 
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle
@@ -61,9 +62,7 @@ class IneqGraph:
         self.graph.remove_edge(u, v)
 
     def remove_cycles_libr(self):
-
-        print('================')
-        print('Before Removing cycles: {}'.format(self.graph.number_of_edges()))
+        
 
         while (True) :
 
@@ -79,8 +78,6 @@ class IneqGraph:
                     self.graph.remove_edge(e[0], e[1])
             
             except NetworkXNoCycle:
-                print('After : {}'.format(self.graph.number_of_edges()))
-                print('No more cycles')
                 break
 
         
@@ -230,11 +227,22 @@ class IneqGraph:
         #       2.2. Le retirer du graphe
         # 3. Retourner tous les plus courts chemins : ce sont les inegalites a imposer. 
 
+        start_time = time.time()
+
         ineq_series = []
 
+        print('Before Removing cycles: {}'.format(self.graph.number_of_edges()))
+
+        print(" === ")
+        print("Removing cycles")
         self.remove_cycles_libr()
 
-        print('==========')
+        print('Removed cycles in {} seconds'.format(time.time() - start_time))
+        print('After Removing cycles: {}'.format(self.graph.number_of_edges()))
+        
+
+        print(" === ")
+        
         print('Finding Series')
 
         while(True):
@@ -266,7 +274,9 @@ class IneqGraph:
                     self.graph.remove_edge(u, v)
                 
                 ineq_series.append(serie)
-                    
+
+
+        print(" Found all series in {} seconds".format(time.time() - start_time))          
         return ineq_series
 
     def get_ineq_series_hand(self):
@@ -475,6 +485,8 @@ def create_gencol_file(
 
         nb_dual_vars_found = 0
 
+        start_time = time.time()
+
         if dual_variables_file_name != '':
             
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
@@ -519,6 +531,10 @@ def create_gencol_file(
                     # Source -> VD (0)
                     ineq_graph.add_edge('Source', dual_var[NAME], 0, 1)
                     #ineq_graph.add_edge(dual_var[NAME], 'Sink', -1)
+
+                print(' === ')
+
+                print("Added nodes in {} sec".format(time.time() - start_time))
 
                 ineq_graph.add_node('Sink')
                 for dual_var in s:
@@ -597,6 +613,9 @@ def create_gencol_file(
 
                         # compute odds of having wrong inequality
 
+                print(" === ")
+                print('Added Edges in {} secs'.format(time.time() - start_time))
+
                 print('nb wrongs : {}'.format(nb_wrong))
 
                 #ineq_graph.update_csgraph()
@@ -654,7 +673,7 @@ def create_gencol_file(
 
                     #print(s)
 
-                nx.draw(ineq_graph.graph, with_labels=True)
+                #nx.draw(ineq_graph.graph, with_labels=True)
 
                 #plt.show()
 
