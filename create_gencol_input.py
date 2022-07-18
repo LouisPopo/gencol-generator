@@ -537,7 +537,7 @@ def create_gencol_file(
                 # <1 diff : 65% sur
                 # on create une fonction
                 max_odds = 0.999
-                min_odds = 0.75
+                min_odds = 0.90
                 # odds = a*diff + b
 
                 nb_wrong = 0
