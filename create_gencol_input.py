@@ -403,8 +403,8 @@ def create_gencol_file(
                             1
                         )
 
-                        # r = random.uniform(0,1)
-                        r = 0
+                        r = random.uniform(0,1)
+                        # r = 0
 
                         if pi_i_value >= pi_j_value:
 
@@ -453,9 +453,9 @@ def create_gencol_file(
 
                 print("=====")
 
-                # print('Removing triangle ineq')
-                # ineq_graph.remove_triangles_ineq()
-                # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
+                print('Removing triangle ineq')
+                ineq_graph.remove_triangles_ineq()
+                print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
                 
                 print('Removing cycles')
                 ineq_graph.remove_cycles_libr()
