@@ -39,16 +39,16 @@ class IneqGraph:
 
         # add a -> c if no b such that a->b and b-> exists
 
-        for n in self.graph.neighbors(from_node_name):
+        # for n in self.graph.neighbors(from_node_name):
 
-            if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+        #     if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
 
-                # Sauf qu'on augmente quand même les degres
+        #         # Sauf qu'on augmente quand même les degres
 
-                self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
-                self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
 
-                return
+        #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
@@ -449,12 +449,12 @@ def create_gencol_file(
                 # ineq_graph.remove_triangles_ineq()
                 # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
                 
-                print(" === ")
-                print('Validating edges ... ')
-                start_time = time.time()
-                ineq_graph.validate_edges(dual_variables)
-                print('DONE     {} secs'.format(time.time() - start_time))
-                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+                # print(" === ")
+                # print('Validating edges ... ')
+                # start_time = time.time()
+                # ineq_graph.validate_edges(dual_variables)
+                # print('DONE     {} secs'.format(time.time() - start_time))
+                # print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
 
                 
