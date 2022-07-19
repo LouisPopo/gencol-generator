@@ -200,10 +200,7 @@ class IneqGraph:
 
                 # 2.1. Sinon, on enleve tout le cycle : 
 
-
-                for e in cycle:
-
-                    self.graph.remove_edge(e[0], e[1])
+                self.graph.remove_nodes_from(cycle)
                 
                 #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
