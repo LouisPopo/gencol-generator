@@ -161,7 +161,7 @@ def create_pairwise_inequalities(folder_name):
 
         dual_variables_file_name = 'dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name)
 
-        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, percentage_ineq=100, add_pairwise_inequalities=True)
+        create_gencol_file([instance_name], path_to_networks=path_to_networks,nb_veh=nb_veh, dual_variables_file_name=dual_variables_file_name, percentage_ineq=1, add_pairwise_inequalities=True)
 
 def create_groups_inequalities(folder_name):
 
