@@ -6,7 +6,6 @@ from operator import mod
 
 import os
 import random
-from aem import con
 import numpy as np
 import networkx as nx
 import time
