@@ -227,7 +227,7 @@ class IneqGraph:
 
         path = bellman_ford_path(self.graph, source='Source', target='Sink')
 
-        print("Found path in {} seconds".format(time.time() - s_time))
+        print("Found path of len {} in {} seconds".format(len(path), time.time() - s_time))
 
         return False, path
 
