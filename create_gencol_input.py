@@ -37,18 +37,18 @@ class IneqGraph:
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
 
-        #add a -> c if no b such that a->b and b-> exists
+        # add a -> c if no b such that a->b and b-> exists
 
-        # for n in self.graph.neighbors(from_node_name):
+        for n in self.graph.neighbors(from_node_name):
 
-        #     if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+            if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
 
-        #         # Sauf qu'on augmente quand même les degres
+                # Sauf qu'on augmente quand même les degres
 
-        #         self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
-        #         self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+                self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+                self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
 
-        #         return
+                return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
@@ -132,11 +132,13 @@ class IneqGraph:
                 # for e in cycle:
                 #     in_degree = self.graph.in_degree(e[0])
                 #     out_degree = self.graph.out_degree(e[0])
-                #     print('{} : in = {}, out = {}'.format(e[0], in_degree, out_degree))
+                #     deg = in_degree - out_degree
+                #     print('{} : degree = {}'.format(e[0], deg))
                 # l_element = cycle[-1][1]
                 # in_degree = self.graph.in_degree(l_element)
                 # out_degree = self.graph.out_degree(l_element)
-                # print('{} : in = {}, out = {}'.format(l_element, in_degree, out_degree))
+                # deg = in_degree - out_degree
+                # print('{} : degree = {}'.format(l_element, deg))
 
                 # print("========")
 
@@ -167,31 +169,31 @@ class IneqGraph:
                 if edge_removed:
                     continue
                 
-                # # 2. Sinon, on enleve celui qu'on est le moins sur
+                # 2. Sinon, on enleve celui qu'on est le moins sur
 
-                # min_prob = 100
-                # edge_to_remove = None
-
-                # for e in cycle:
-
-                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
-
-                #     if p < min_prob:
-                #         min_prob = p
-                #         edge_to_remove = e
-
-                # #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
-                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
-
-                # 2.1. Sinon, on enleve tout le cycle : 
-
-                print('Removing all cycle')
+                min_prob = 100
+                edge_to_remove = None
 
                 for e in cycle:
 
-                    self.graph.remove_edge(e[0], e[1])
+                    p = self.graph.get_edge_data(e[0], e[1])['prob']
+
+                    if p < min_prob:
+                        min_prob = p
+                        edge_to_remove = e
+
+                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
+                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+
+                # # 2.1. Sinon, on enleve tout le cycle : 
+
+                # print('Removing all cycle')
+
+                # for e in cycle:
+
+                #     self.graph.remove_edge(e[0], e[1])
                 
-                #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
+                # #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
 
                 
