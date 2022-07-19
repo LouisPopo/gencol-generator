@@ -83,28 +83,80 @@ class IneqGraph:
 
     def remove_cycles_libr(self):
 
+        nb_cycles_found = 0
+
         while (True) :
 
             try: 
                 cycle =  find_cycle(self.graph, source='Source')
 
-                min_odds_right = 100
+                #print('Found cycle')
+                nb_cycles_found += 1
+
+                # min_odds_right = 100
+                # edge_to_remove = None
+
+                # for e in cycle:
+                #     in_degree = self.graph.in_degree(e[0])
+                #     out_degree = self.graph.out_degree(e[0])
+                #     print('{} : in = {}, out = {}'.format(e[0], in_degree, out_degree))
+                # l_element = cycle[-1][1]
+                # in_degree = self.graph.in_degree(l_element)
+                # out_degree = self.graph.out_degree(l_element)
+                # print('{} : in = {}, out = {}'.format(l_element, in_degree, out_degree))
+
+                edge_removed = False
+
+                # 1. on enleve en fonction des degres
+                for e in cycle:
+                    
+                    deg_u = self.graph.in_degree(e[0]) - self.graph.out_degree(e[1])
+                    deg_v = self.graph.in_degree(e[1]) - self.graph.out_degree(e[1])
+
+                    if deg_v < deg_u:
+                        self.graph.remove_edge(e[0], e[1])
+                        #print('Removing {}->{}'.format(e[0], e[1]))
+                        edge_removed = True
+
+                u = cycle[-1][1]
+                v = cycle[0][0]
+
+                deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
+                deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
+                if deg_v < deg_u:
+                    self.graph.remove_edge(u, v)
+                    print('Removing {}->{}'.format(u, v))
+                    edge_removed = True
+
+
+                if edge_removed:
+                    continue
+                
+                # 2. Sinon, on enleve celui qu'on est le moins sur
+
+                min_prob = 100
                 edge_to_remove = None
 
                 for e in cycle:
-                    
-                    p = self.graph.get_edge_data(e[0], e[1])['prob']
-        
-                    if p < min_odds_right:
-                        edge_to_remove = e
-                        min_odds_right = p
 
+                    p = self.graph.get_edge_data(e[0], e[1])['prob']
+
+                    if p < min_prob:
+                        min_prob = p
+                        edge_to_remove = e
+
+                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
                 self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+
+
+                
 
             except NetworkXNoCycle:
 
                 break
  
+        print('Found : {} cycles'.format(nb_cycles_found))
+
     def bellman_ford_libr(self):
 
         path = bellman_ford_path(self.graph, source='Source', target='Sink')
@@ -116,17 +168,6 @@ class IneqGraph:
         start_time = time.time()
 
         ineq_series = []
-
-        print('Before Removing cycles: {}'.format(self.graph.number_of_edges()))
-
-        print(" === ")
-        print("Removing cycles")
-
-        self.remove_cycles_libr()
-
-        print('Removed cycles in {} seconds'.format(time.time() - start_time))
-        print('After Removing cycles: {}'.format(self.graph.number_of_edges()))
-        
 
         print(" === ")
         
@@ -293,7 +334,7 @@ def create_gencol_file(
                 # <1 diff : 65% sur
                 # on create une fonction
                 max_odds = 0.999
-                min_odds = 0.95
+                min_odds = 0.65
                 # odds = a*diff + b
 
                 nb_wrong = 0
@@ -325,76 +366,42 @@ def create_gencol_file(
                     ineq_graph.add_edge(dual_var[NAME], 'Sink', 0, 1)
 
                 
+                # ADDING PAIRWISE INEQUALITIES
 
                 for i in range(len(s) - 1):
-                    #print('s[i]({}) = {}'.format(s[i][0], s[i][1]))
 
                     pi_i_name = s[i][NAME]
                     pi_i_value = s[i][VALUE]
 
-                    #print('{} : {} '.format(pi_i_name, pi_i_value))
-
-                    #print('si > 10 ?? : {}'.format(s[i][1] > 10))
                     for j in range(i + 1, len(s)):
 
                         pi_j_name = s[j][NAME]
                         pi_j_value = s[j][VALUE]
 
-                        #print('     {} : {} '.format(pi_j_name, pi_j_value))
-
-                        # On check si s[i] >= s[j] ??
-                        # On check la difference
-                        # On ajoute une probabilité d'erreur
-
-                        # ON AJOUTE ICI DU RANDOM
-
                         diff = abs(s[i][1] - s[j][1])
-                        # on sait que s[i] >= s[j], mais en fonction de la différence, on calcul une probabilité de se tromper
-                        #v = random.random() # return a value between [0,1) 1 never there
-                        treshold = a*diff + min_odds
-                        # PLUS LE TRESHOLD EST HAUT!, PLUS ON EST SUR DE NOTRE INEGALITE (PLUS LA DIFF EST GRANDE)
-                        # v = random.uniform(0, 1)
-                        v = 0
-                        #print('         {}'.format(treshold))   
 
-                        if pi_i_value >= pi_j_value: # AND RANDOM 
+                        odds_right = min(
+                            a*diff + min_odds + ( random.uniform(-5,5) / 100 ), 
+                            1
+                        )
 
-                            #print('         i >= j')
+                        r = random.uniform(0,1)
 
-                            if v <= treshold:
-                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
 
-                                #ineq_graph.add_edge(pi_j_name, pi_i_name, 0)
+                        if pi_i_value >= pi_j_value:
+
+                            if r <= odds_right:
+                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
                             else:
-                                #print('         but add error')
-                                #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
-
                                 nb_wrong += 1
-
-                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold)
-
+                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right)
                         else:
 
-                            #print('         j <  i')
-
-                            if v <= treshold:
-                                #ineq_graph.add_edge(pi_i_name, pi_j_name, 0)
-                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, treshold) 
+                            if r <= odds_right:
+                                ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right) 
                             else:
-
                                 nb_wrong += 1
-                                # add error
-                                #print('        but add error')
-                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, treshold)
-                                #ineq_graph.add_edge(pi_j_name, pi_i_name, 0) 
-
-                        # tasks_in_new_inequalities.add(pi_1)
-                        # tasks_in_new_inequalities.add(pi_2)
-                        
-                        # # techniquement non, on ajoute pas la, on note les relations
-                        # inequalities.append((pi_1, pi_2))
-
-                        # compute odds of having wrong inequality
+                                ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
 
                 print(" === ")
                 print('Added Edges in {} secs'.format(time.time() - start_time))
@@ -427,6 +434,16 @@ def create_gencol_file(
                 print('Original nb of edges : {}'.format(ineq_graph.graph.number_of_edges()))
 
                 #nx.draw(ineq_graph.graph, with_labels=True)
+
+                print('Before Removing cycles: {}'.format(ineq_graph.graph.number_of_edges()))
+
+                print(" === ")
+                print("Removing cycles")
+
+                ineq_graph.remove_cycles_libr()
+
+                print('Removed cycles in {} seconds'.format(time.time() - start_time))
+                print('After Removing cycles: {}'.format(ineq_graph.graph.number_of_edges()))
 
                 #plt.show()
 
