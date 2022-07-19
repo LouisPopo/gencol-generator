@@ -41,16 +41,16 @@ class IneqGraph:
 
         # add a -> c if no b such that a->b and b-> exists
 
-        for n in self.graph.neighbors(from_node_name):
+        # for n in self.graph.neighbors(from_node_name):
 
-            if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+        #     if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
 
-                # Sauf qu'on augmente quand même les degres
+        #         # Sauf qu'on augmente quand même les degres
 
-                self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
-                self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
 
-                return
+        #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
@@ -76,24 +76,24 @@ class IneqGraph:
 
         for e in list(self.graph.edges()):
 
-            deg_u = self.graph.in_degree(e[0]) - self.graph.out_degree(e[0])
-            deg_v = self.graph.in_degree(e[1]) - self.graph.out_degree(e[1])
+            deg_u = self.degrees[e[0]]
+            deg_v = self.degrees[e[1]]
 
             # deg_u should < deg_v
             if deg_v < deg_u:
-                nb_edges_not_respecting += 1
+                # nb_edges_not_respecting += 1
 
                 self.graph.remove_edge(e[0], e[1])
 
-                u_val = [(name, value) for name, value in dual_variables if name == e[0]][0][1]
-                v_val = [(name, value) for name, value in dual_variables if name == e[1]][0][1]
+                # u_val = [(name, value) for name, value in dual_variables if name == e[0]][0][1]
+                # v_val = [(name, value) for name, value in dual_variables if name == e[1]][0][1]
 
-                if v_val > u_val:
-                    nb_edges_really_not_respecting += 1
+                # if v_val > u_val:
+                #     nb_edges_really_not_respecting += 1
 
 
-        print('Nb edges not respecting : {}'.format(nb_edges_not_respecting))
-        print('Nb edges REALLY not respecting : {}'.format(nb_edges_really_not_respecting))
+        # print('Nb edges not respecting : {}'.format(nb_edges_not_respecting))
+        # print('Nb edges REALLY not respecting : {}'.format(nb_edges_really_not_respecting))
 
     def remove_edge_libr(self, u, v):
         
@@ -130,12 +130,17 @@ class IneqGraph:
         while (True) :
 
             try: 
+
+                s_time = time.time()
+
                 cycle =  find_cycle(self.graph, source='Source')
+
+
 
                 #print('Found cycle')
                 nb_cycles_found += 1
 
-                if nb_cycles_found % 1000 == 0:
+                if nb_cycles_found % 500 == 0:
                     print('         {} cycles'.format(nb_cycles_found))
                     print('         {} edges'.format(self.graph.number_of_edges()))
 
@@ -155,32 +160,32 @@ class IneqGraph:
 
                 # print("========")
 
-                edge_removed = False
+                # edge_removed = False
 
-                # 1. on enleve en fonction des degres
-                for e in cycle:
+                # # 1. on enleve en fonction des degres
+                # for e in cycle:
                     
-                    deg_u = self.degrees[e[0]]
-                    deg_v = self.degrees[e[1]]
+                #     deg_u = self.degrees[e[0]]
+                #     deg_v = self.degrees[e[1]]
 
-                    if deg_v < deg_u:
-                        self.graph.remove_edge(e[0], e[1])
-                        #print('Removing {}->{}'.format(e[0], e[1]))
-                        edge_removed = True
+                #     if deg_v < deg_u:
+                #         self.graph.remove_edge(e[0], e[1])
+                #         #print('Removing {}->{}'.format(e[0], e[1]))
+                #         edge_removed = True
 
-                # u = cycle[-1][1]
-                # v = cycle[0][0]
+                # # u = cycle[-1][1]
+                # # v = cycle[0][0]
 
-                # deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
-                # deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
-                # if deg_v < deg_u:
-                #     self.graph.remove_edge(u, v)
-                #     print('Removing {}->{}'.format(u, v))
-                #     edge_removed = True
+                # # deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
+                # # deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
+                # # if deg_v < deg_u:
+                # #     self.graph.remove_edge(u, v)
+                # #     print('Removing {}->{}'.format(u, v))
+                # #     edge_removed = True
 
 
-                if edge_removed:
-                    continue
+                # if edge_removed:
+                #     continue
                 
                 # 2. Sinon, on enleve celui qu'on est le moins sur
 
@@ -464,12 +469,12 @@ def create_gencol_file(
                 # ineq_graph.remove_triangles_ineq()
                 # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
                 
-                # print(" === ")
-                # print('Validating edges ... ')
-                # start_time = time.time()
-                # ineq_graph.validate_edges(dual_variables)
-                # print('DONE     {} secs'.format(time.time() - start_time))
-                # print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+                print(" === ")
+                print('Validating edges ... ')
+                start_time = time.time()
+                ineq_graph.validate_edges(dual_variables)
+                print('DONE     {} secs'.format(time.time() - start_time))
+                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
 
                 
