@@ -136,7 +136,7 @@ class IneqGraph:
                 print('Trying to find a cycle...')
 
                 cycle =  find_cycle(self.graph, source='Source')
-                print('DONE!')
+                print('DONE! in {} sec'.format(time.time() - s_time))
 
 
 
