@@ -27,6 +27,8 @@ class IneqGraph:
         self.node_name_to_indice = {}
 
         self.graph = nx.DiGraph()
+
+        self.degrees = {}
     
     def add_node(self, node_name):
 
@@ -59,6 +61,13 @@ class IneqGraph:
     def get_node_name_from_indice(self, indice):
         
         return self.indice_to_node_name[indice]
+
+    def establish_degrees(self):
+
+        for n in self.graph.nodes():
+
+            self.degrees[n] = self.graph.in_degree(n) - self.graph.out_degree(n)
+
 
     def validate_edges(self, dual_variables):
  
@@ -151,8 +160,8 @@ class IneqGraph:
                 # 1. on enleve en fonction des degres
                 for e in cycle:
                     
-                    deg_u = self.graph.in_degree(e[0]) - self.graph.out_degree(e[1])
-                    deg_v = self.graph.in_degree(e[1]) - self.graph.out_degree(e[1])
+                    deg_u = self.degrees[e[0]]
+                    deg_v = self.degrees[e[1]]
 
                     if deg_v < deg_u:
                         self.graph.remove_edge(e[0], e[1])
@@ -447,6 +456,12 @@ def create_gencol_file(
                 
                 print('DONE     {} secs'.format(time.time() - start_time))
                 print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+
+                print(" === ")
+                print('Establishing degrees ... ')
+                start_time = time.time()
+                ineq_graph.establish_degrees()
+                print('DONE     {} secs'.format(time.time() - start_time))
 
                 # print('Removing triangle ineq')
                 # ineq_graph.remove_triangles_ineq()
