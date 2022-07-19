@@ -265,7 +265,7 @@ class IneqGraph:
                 
                 ineq_series.append(serie)
 
-                if len(ineq_series) >= 5:
+                if len(ineq_series) >= 20:
                     break
 
         return ineq_series
