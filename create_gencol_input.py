@@ -133,7 +133,10 @@ class IneqGraph:
 
                 s_time = time.time()
 
+                print('Trying to find a cycle...')
+
                 cycle =  find_cycle(self.graph, source='Source')
+                print('DONE!')
 
 
 
@@ -143,6 +146,8 @@ class IneqGraph:
                 if nb_cycles_found % 2000 == 0:
                     print('         {} cycles'.format(nb_cycles_found))
                     print('         {} edges'.format(self.graph.number_of_edges()))
+
+                print(" === === ")
 
                 # min_odds_right = 100
                 # edge_to_remove = None
