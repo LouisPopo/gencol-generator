@@ -140,7 +140,7 @@ class IneqGraph:
                 #print('Found cycle')
                 nb_cycles_found += 1
 
-                if nb_cycles_found % 500 == 0:
+                if nb_cycles_found % 2000 == 0:
                     print('         {} cycles'.format(nb_cycles_found))
                     print('         {} edges'.format(self.graph.number_of_edges()))
 
@@ -205,7 +205,7 @@ class IneqGraph:
 
                 # 2.1. Sinon, on enleve tout le cycle : 
 
-                self.graph.remove_nodes_from(cycle)
+                self.graph.remove_edges_from(cycle)
                 
                 #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
