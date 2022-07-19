@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime
 from itertools import cycle
 from math import ceil
@@ -5,12 +6,13 @@ from operator import mod
 
 import os
 import random
+from aem import con
 import numpy as np
 import networkx as nx
 import time
 #import matplotlib.pyplot as plt
 
-from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle
+from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 
 NAME = 0
@@ -26,8 +28,6 @@ class IneqGraph:
         self.node_name_to_indice = {}
 
         self.graph = nx.DiGraph()
-
-        self.adj_matrix = np.ones((nb_nodes, nb_nodes)) * np.inf
     
     def add_node(self, node_name):
 
@@ -38,56 +38,62 @@ class IneqGraph:
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
 
-        # on ajoute u->v seulement s'il n'existe pas un i t.q. u->i->v existe
-
-        # for middle_node in self.graph.nodes:
-
-        #     if self.graph.has_edge(from_node_name, middle_node) and self.graph.has_edge(middle_node, to_node_name):
-                
-        #         print('Allo')
-
-        #         return
-
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
-        #self.adj_matrix[self.node_name_to_indice[from_node_name]][self.node_name_to_indice[to_node_name]] = value
-
     def get_indice_from_node_name(self, node_name):
+        
         return self.node_name_to_indice[node_name]
 
     def get_node_name_from_indice(self, indice):
+        
         return self.indice_to_node_name[indice]
 
-    def remove_edge_libr(self, u , v):
-        self.adj_matrix[self.node_name_to_indice[u]][self.node_name_to_indice[v]] = np.inf
-
-    def remove_edge_hand(self, u, v):
+    def remove_edge_libr(self, u, v):
+        
         self.graph.remove_edge(u, v)
 
+    def remove_triangles_ineq(self):
+
+        # Remove A->C if A->B and B->C exists. 
+
+        nb_edges = 0
+
+        for e in list(self.graph.edges()):
+
+            nb_edges += 1
+            if nb_edges % 25000 == 0:
+                print(nb_edges)
+
+            a = e[0]
+            c = e[1]
+
+            if a == 'Source' or c == 'Sink':
+                continue
+
+            for b in self.graph.nodes():
+
+                if self.graph.has_edge(a, b) and self.graph.has_edge(b, c):
+                    self.graph.remove_edge(a, c)
+                    break
+
+
+
+       
+
+        print('Is directed : {}'.format(self.graph.is_directed()))
+
     def remove_cycles_libr(self):
-        
-        nb_cycles = 0
 
         while (True) :
 
             try: 
                 cycle =  find_cycle(self.graph, source='Source')
 
-                #nb_cycles += 1
-
-                # print('Found cycle')
-                # print(cycle)
-
                 min_odds_right = 100
                 edge_to_remove = None
-                
-                #print(cycle)
 
                 for e in cycle:
                     
-                    # On devrait choisir le quel on enleve!
-                    #self.graph.remove_edge(e[0], e[1])
-
                     p = self.graph.get_edge_data(e[0], e[1])['prob']
         
                     if p < min_odds_right:
@@ -95,161 +101,18 @@ class IneqGraph:
                         min_odds_right = p
 
                 self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
-            
-                print(self.graph.number_of_edges())
 
             except NetworkXNoCycle:
 
-                #print('Cycles found : {}'.format(nb_cycles))
-
                 break
-
-        
+ 
     def bellman_ford_libr(self):
 
         path = bellman_ford_path(self.graph, source='Source', target='Sink')
 
         return False, path
 
-    def bellman_ford_hand(self):
-
-        # Algo. implémenté à la main
-
-        # Ford-Bellman algorithm : 
-        # Trouve le "shortest path" from source -> sink
-        # Si circuit (negatif) est trouve, on retourne True + le circuit
-        # Sinon, on retourne False + le plus court chemin entre source -> sink (la plus longue serie)
-
-        # STEP 1 : Initialize distances and parents
-        dist = [np.inf] * ( self.graph.number_of_nodes())
-        parent = [-1] * ( self.graph.number_of_nodes())
-        dist[self.node_name_to_indice['Source']] = 0
-
-        print('Number of nodes : {}'.format(self.graph.number_of_nodes()))
-        print('Number of edges : {}'.format(self.graph.number_of_edges()))
-
-        nb_total_iter = 0
-        nb_nodes_iter = 0
-
-        #print('Step1')
-
-        iter = 0
-
-        affected_nodes = set(self.graph.nodes)
-        edges_to_iter = set()
-        #print(affected_nodes)
-
-        # STEP 2 : Commpute shortest distances (?)
-        for _ in range(self.graph.number_of_nodes() - 1):
-
-            #print('Nb affected nodes : {}'.format(len(affected_nodes)))
-
-            edges_to_iter.clear()
-            for node in affected_nodes:
-                #print(node)
-                for e in list(self.graph.in_edges(node)):
-                    edges_to_iter.add(e)
-                for e in list(self.graph.out_edges(node)):
-                    edges_to_iter.add(e)
-            
-            has_change = False
-
-            affected_nodes.clear()
-
-            #print('Number of edges to iter : {}'.format(len(edges_to_iter)))
-
-            for e in edges_to_iter:
-            #for e in list(self.graph.edges):
-                
-                iter += 1
-
-                u = self.node_name_to_indice[e[0]]
-                v = self.node_name_to_indice[e[1]]
-                w = self.graph.get_edge_data(e[0], e[1])['weight']
-
-                if dist[u] != np.inf and dist[u] + w < dist[v]:
-                    dist[v] = dist[u] + w
-                    parent[v] = u
-                    has_change = True
-                    affected_nodes.add(self.indice_to_node_name[v])
-                    #affected_nodes.append(self.indice_to_node_name[v])
-
-                
-            
-                # if iter % 1000000 == 0:
-                #     print(iter)
-
-            if len(affected_nodes) == 0:
-                break
-            
-            #rint(has_change)
-        #print('Step2')
-        #print('Nb nodes iters : {}'.format(nb_nodes_iter))
-        #print('Nb total iters : {}'.format(nb_total_iter))
-        #print('----')
-
-        #print('Finished STEP 2')
-
-        # STEP 3 : Check for negative weight cycle
-        C = -1
-        for e in list(self.graph.edges):
-
-            u = self.node_name_to_indice[e[0]]
-            v = self.node_name_to_indice[e[1]]
-            w = self.graph.get_edge_data(e[0], e[1])['weight']
-
-            if dist[u] != np.inf and dist[u] + w < dist[v]:
-                C = v
-                break
-
-        #print('Finished STEP 3')
-
-        # STEP 4 : Construct the negative cycle or shortest path to return
-        if C != -1:
-
-            for _ in range(self.graph.number_of_nodes() - 1):
-                C = parent[C]
-
-            cycle = []
-            v = C
-
-            while(True):
-                cycle.append(self.indice_to_node_name[v])
-                if (v == C and len(cycle) > 1):
-                    break
-                v = parent[v]
-
-            cycle.reverse()
-
-            return True, cycle 
-        else:
-
-            v = self.node_name_to_indice['Sink']
-            serie = ['Sink']
-
-            while self.indice_to_node_name[v] != 'Source':
-                
-                v = parent[v]
-
-                if v == -1:
-                    # No parent and we didn't reach source. No more paths
-                    break
-
-                serie.append(self.indice_to_node_name[v])
-            
-            serie.reverse()
-
-            return False, serie
-
     def get_ineq_series_libr(self):
-
-        # Utilise une matrice adjacence, utilise un algo de librairie
-
-        # 1. Retirer tous les circuits de somme negatives
-        # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
-        #       2.1. Trouver le chemin le plus court
-        #       2.2. Le retirer du graphe
-        # 3. Retourner tous les plus courts chemins : ce sont les inegalites a imposer. 
 
         start_time = time.time()
 
@@ -259,6 +122,7 @@ class IneqGraph:
 
         print(" === ")
         print("Removing cycles")
+
         self.remove_cycles_libr()
 
         print('Removed cycles in {} seconds'.format(time.time() - start_time))
@@ -305,115 +169,6 @@ class IneqGraph:
 
         print(" Found all series in {} seconds".format(time.time() - start_time))          
         return ineq_series
-
-    def get_ineq_series_hand(self):
-
-        # Utilise graph networks, fait l'algo à la main
-
-        # 1. Retirer tous les circuits de somme negatives
-        # 2. Jusqu'a ce qu'il reste des chemins entre source et sink:
-        #       2.1. Trouver le chemin le plus court
-        #       2.2. Le retirer du graphe
-        # 3. Retourner tous les plus courts chemins : ce sont les inegalites a imposer. 
-
-        ineq_series = []
-
-        nb_cycles = 0
-
-        first_no_cycle = True
-
-        while(True):
-
-            #print(' ======= ')
-            
-            #has_neg, l = self.bellman_ford_hand()
-            #print(has_path())
-            c = find_cycle(G=self.graph, source='Source')
-            #print(c)
-            p = bellman_ford_path(self.graph, 'Source', 'Sink')
-            #print(p)
-
-            #print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
-            
-            # TEST
-            #has_neg_l, l_l = self.bellman_ford_libr()
-            # TEST
-
-            #print(l)
-            #print(l_l)
-            # if l != l_l:
-            #     print('WOWOOO NOT Both algo same')
-
-            if not has_neg:
-
-                if first_no_cycle:
-                    print('After removing cycle : {}'.format(self.graph.number_of_edges()))
-                    first_no_cycle = False
-
-
-
-                if len(l) <= 3:
-                    print('break')
-                    break
-
-                print('Found serie {} of len {}'.format(len(ineq_series) + 1, len(l)))
-
-                #print('No negative serie : ')
-                #print(l)
-
-                ineq_series.append(l)
-
-                for i in range(len(l) - 1):
-
-                    u = l[i]
-                    v = l[i+1]
-
-                    if u == 'Source' or v == 'Sink':
-                        continue
-                    
-                    #print("Removing {} -> {}".format(u, v))
-                    self.remove_edge_hand(u, v)
-
-                    # TEST
-                    #self.remove_edge_libr(u, v)
-                    # TEST
-
-                if len(ineq_series) > 100:
-                    break
-
-            else:
-
-                #print('Got cycle')
-
-                nb_cycles += 1
-            
-                #print('Negative serie : ')
-                #print(l)
-
-                u, v = None, None
-                s = 100
-
-                for i in range(len(l) - 1):
-                    p = self.graph.get_edge_data(l[i], l[i+1])['prob']
-                    #print(p)
-
-                    #print(' {} -> {} ({})'.format(l[i], l[i+1], p))
-                    if p < s:
-                        s = p
-                        u = l[i]
-                        v = l[i+1]
-
-                # we remove this edge
-                #print('Removing : {} -> {}'.format(u, v))
-                self.remove_edge_hand(u, v)
-
-                # for each edge in l, find smallest right_prob
-
-        
-        print('{} cycles found'.format(nb_cycles))
-
-        return ineq_series
-
 
 
 
@@ -670,15 +425,19 @@ def create_gencol_file(
                 #ineq_series = ineq_graph.get_ineq_series()
                 
 
-                print('Edges before : {}'.format(ineq_graph.graph.number_of_edges()))
+                print('Original nb of edges : {}'.format(ineq_graph.graph.number_of_edges()))
 
                 #nx.draw(ineq_graph.graph, with_labels=True)
 
                 #plt.show()
+
+                ineq_graph.remove_triangles_ineq()
+
+                print('After removing triangle inequalities : {}'.format(ineq_graph.graph.number_of_edges()))
                 
                 ineq_series = ineq_graph.get_ineq_series_libr()
 
-                print('Edges after : {}'.format(ineq_graph.graph.number_of_edges()))
+                print('After finding series (+ removing cycles) : {}'.format(ineq_graph.graph.number_of_edges()))
                 
                 
 
