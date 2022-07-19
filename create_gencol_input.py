@@ -42,6 +42,12 @@ class IneqGraph:
         for n in self.graph.neighbors(from_node_name):
 
             if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+
+                # Sauf qu'on augmente quand même les degres
+
+                self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+                self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+
                 return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
@@ -137,31 +143,31 @@ class IneqGraph:
                 if edge_removed:
                     continue
                 
-                # # 2. Sinon, on enleve celui qu'on est le moins sur
+                # 2. Sinon, on enleve celui qu'on est le moins sur
 
-                # min_prob = 100
-                # edge_to_remove = None
-
-                # for e in cycle:
-
-                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
-
-                #     if p < min_prob:
-                #         min_prob = p
-                #         edge_to_remove = e
-
-                # #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
-                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
-
-                # 2.1. Sinon, on enleve tout le cycle : 
-
-                print('Removing all cycle')
+                min_prob = 100
+                edge_to_remove = None
 
                 for e in cycle:
 
-                    self.graph.remove_edge(e[0], e[1])
+                    p = self.graph.get_edge_data(e[0], e[1])['prob']
+
+                    if p < min_prob:
+                        min_prob = p
+                        edge_to_remove = e
+
+                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
+                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+
+                # # 2.1. Sinon, on enleve tout le cycle : 
+
+                # print('Removing all cycle')
+
+                # for e in cycle:
+
+                #     self.graph.remove_edge(e[0], e[1])
                 
-                #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
+                # #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
 
                 
@@ -373,6 +379,10 @@ def create_gencol_file(
                     ineq_graph.add_edge('Source', dual_var[NAME], 0, 1)
                     #ineq_graph.add_edge(dual_var[NAME], 'Sink', -1)
 
+
+                ineq_graph.add_node('+InDeg')
+                ineq_graph.add_node('+OutDeg')
+
                 print(' === ')
 
                 print("Added nodes in {} sec".format(time.time() - start_time))
@@ -453,9 +463,9 @@ def create_gencol_file(
 
                 print("=====")
 
-                print('Removing triangle ineq')
-                ineq_graph.remove_triangles_ineq()
-                print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
+                # print('Removing triangle ineq')
+                # ineq_graph.remove_triangles_ineq()
+                # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
                 
                 print('Removing cycles')
                 ineq_graph.remove_cycles_libr()
