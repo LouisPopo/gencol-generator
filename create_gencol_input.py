@@ -126,6 +126,10 @@ class IneqGraph:
                 #print('Found cycle')
                 nb_cycles_found += 1
 
+                if nb_cycles_found % 10000 == 0:
+                    print('         {} cycles'.format(nb_cycles_found))
+                    print('         {} edges'.format(self.graph.number_of_edges()))
+
                 # min_odds_right = 100
                 # edge_to_remove = None
 
