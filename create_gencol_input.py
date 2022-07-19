@@ -39,16 +39,16 @@ class IneqGraph:
 
         #add a -> c if no b such that a->b and b-> exists
 
-        for n in self.graph.neighbors(from_node_name):
+        # for n in self.graph.neighbors(from_node_name):
 
-            if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+        #     if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
 
-                # Sauf qu'on augmente quand même les degres
+        #         # Sauf qu'on augmente quand même les degres
 
-                self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
-                self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+        #         self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
 
-                return
+        #         return
 
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
@@ -59,6 +59,32 @@ class IneqGraph:
     def get_node_name_from_indice(self, indice):
         
         return self.indice_to_node_name[indice]
+
+    def validate_edges(self, dual_variables):
+ 
+        nb_edges_not_respecting = 0
+        nb_edges_really_not_respecting = 0
+
+        for e in list(self.graph.edges()):
+
+            deg_u = self.graph.in_degree(e[0]) - self.graph.out_degree(e[0])
+            deg_v = self.graph.in_degree(e[1]) - self.graph.out_degree(e[1])
+
+            # deg_u should < deg_v
+            if deg_v < deg_u:
+                nb_edges_not_respecting += 1
+
+                self.graph.remove_edge(e[0], e[1])
+
+                u_val = [(name, value) for name, value in dual_variables if name == e[0]][0][1]
+                v_val = [(name, value) for name, value in dual_variables if name == e[1]][0][1]
+
+                if v_val > u_val:
+                    nb_edges_really_not_respecting += 1
+
+
+        print('Nb edges not respecting : {}'.format(nb_edges_not_respecting))
+        print('Nb edges REALLY not respecting : {}'.format(nb_edges_really_not_respecting))
 
     def remove_edge_libr(self, u, v):
         
@@ -88,7 +114,6 @@ class IneqGraph:
                     self.graph.remove_edge(a, c)
                     break
 
-
     def remove_cycles_libr(self):
 
         nb_cycles_found = 0
@@ -100,9 +125,6 @@ class IneqGraph:
 
                 #print('Found cycle')
                 nb_cycles_found += 1
-
-                if nb_cycles_found % 20000 == 0:
-                    print('{} cycles found, {} edges.'.format(nb_cycles_found, self.graph.number_of_edges()))
 
                 # min_odds_right = 100
                 # edge_to_remove = None
@@ -175,8 +197,6 @@ class IneqGraph:
             except NetworkXNoCycle:
 
                 break
- 
-        print('Found : {} cycles'.format(nb_cycles_found))
 
     def bellman_ford_libr(self):
 
@@ -186,13 +206,7 @@ class IneqGraph:
 
     def get_ineq_series_libr(self):
 
-        start_time = time.time()
-
         ineq_series = []
-
-        print(" === ")
-        
-        print('Finding Series')
 
         while(True):
 
@@ -227,8 +241,6 @@ class IneqGraph:
                 if len(ineq_series) >= 100:
                     break
 
-
-        print(" Found all series in {} seconds".format(time.time() - start_time))          
         return ineq_series
 
 
@@ -328,15 +340,10 @@ def create_gencol_file(
 
         nb_dual_vars_found = 0
 
-        start_time = time.time()
-
         if dual_variables_file_name != '':
             
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
             #nb_dual_vars_found = 30
-
-            print('Dual variables : {}'.format(nb_dual_vars_found))
-
 
             if add_pairwise_inequalities:
 
@@ -358,7 +365,7 @@ def create_gencol_file(
                 # <1 diff : 65% sur
                 # on create une fonction
                 max_odds = 0.999
-                min_odds = 0.85
+                min_odds = 0.80
                 # odds = a*diff + b
 
                 nb_wrong = 0
@@ -368,6 +375,10 @@ def create_gencol_file(
                 ineq_graph.add_node('Source')
 
                 edge_value = -1
+
+                print(" === ")
+                print("Adding edges ... ")
+                start_time = time.time()
 
 
                 for dual_var in s:
@@ -382,10 +393,6 @@ def create_gencol_file(
 
                 ineq_graph.add_node('+InDeg')
                 ineq_graph.add_node('+OutDeg')
-
-                print(' === ')
-
-                print("Added nodes in {} sec".format(time.time() - start_time))
 
                 ineq_graph.add_node('Sink')
                 for dual_var in s:
@@ -421,77 +428,48 @@ def create_gencol_file(
                             if r <= odds_right:
                                 ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
                             else:
-                                nb_wrong += 1
                                 ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right)
                         else:
 
                             if r <= odds_right:
                                 ineq_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right) 
                             else:
-                                nb_wrong += 1
                                 ineq_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
 
-                print(" === ")
-                print('Added Edges in {} secs'.format(time.time() - start_time))
-
-                print('nb wrongs : {}'.format(nb_wrong))
-
-                #ineq_graph.update_csgraph()
-
-                # print(ineq_graph.graph)
-
-                # print('Source : {}'.format(ineq_graph.get_indice_from_node_name('Source')))
-                # print('Sink : {}'.format(ineq_graph.get_indice_from_node_name('Sink')))
-
-                # dist_matrix, predecessors = bellman_ford(ineq_graph.graph, directed=True, indices=0, return_predecessors=True)
-
-                # with predecessors, find the dual variables values
-
-                # print(dist_matrix)
-                # print(predecessors)
-
-                # ineq_graph.get_longues_ineq_serie()
-
-                # print(s)
-
-                #ineq_graph.bellman_ford()
-
-                #ineq_series = ineq_graph.get_ineq_series()
                 
-
-                print('Number of edges : {}'.format(ineq_graph.graph.number_of_edges()))
-
-                print("=====")
+                
+                print('DONE     {} secs'.format(time.time() - start_time))
+                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
                 # print('Removing triangle ineq')
                 # ineq_graph.remove_triangles_ineq()
                 # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
                 
-                print('Removing cycles')
-                ineq_graph.remove_cycles_libr()
-                print('Number of edges after removing cycles : {}'.format(ineq_graph.graph.number_of_edges()))
+                print(" === ")
+                print('Validating edges ... ')
+                start_time = time.time()
+                ineq_graph.validate_edges(dual_variables)
+                print('DONE     {} secs'.format(time.time() - start_time))
+                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+
 
                 
-                print('=====')
 
-                print('Removed cycles in {} seconds'.format(time.time() - start_time))
-                print('After Removing cycles: {}'.format(ineq_graph.graph.number_of_edges()))
+                print(" === ")
+                print('Removing cycles ... ')
+                start_time = time.time()
+                ineq_graph.remove_cycles_libr()
+                print('DONE     {} secs'.format(time.time() - start_time))
+                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
                 #plt.show()
 
-                
-
-                
-                
+                print(" === ")
+                print('Getting ineq series  ... ')
+                start_time = time.time()
                 ineq_series = ineq_graph.get_ineq_series_libr()
-
-                print('After finding series (+ removing cycles) : {}'.format(ineq_graph.graph.number_of_edges()))
-                
-                
-
-                #ing ineq series:')
-
-                print('{} ineq series of average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
+                print('DONE     {} secs'.format(time.time() - start_time))
+                print('         {} ineq series. Average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
                 
                 wrong_ineq = 0
 
