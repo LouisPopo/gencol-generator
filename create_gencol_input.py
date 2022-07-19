@@ -138,6 +138,8 @@ class IneqGraph:
                 # out_degree = self.graph.out_degree(l_element)
                 # print('{} : in = {}, out = {}'.format(l_element, in_degree, out_degree))
 
+                # print("========")
+
                 edge_removed = False
 
                 # 1. on enleve en fonction des degres
@@ -165,31 +167,31 @@ class IneqGraph:
                 if edge_removed:
                     continue
                 
-                # 2. Sinon, on enleve celui qu'on est le moins sur
+                # # 2. Sinon, on enleve celui qu'on est le moins sur
 
-                min_prob = 100
-                edge_to_remove = None
-
-                for e in cycle:
-
-                    p = self.graph.get_edge_data(e[0], e[1])['prob']
-
-                    if p < min_prob:
-                        min_prob = p
-                        edge_to_remove = e
-
-                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
-                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
-
-                # # 2.1. Sinon, on enleve tout le cycle : 
-
-                # print('Removing all cycle')
+                # min_prob = 100
+                # edge_to_remove = None
 
                 # for e in cycle:
 
-                #     self.graph.remove_edge(e[0], e[1])
+                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
+
+                #     if p < min_prob:
+                #         min_prob = p
+                #         edge_to_remove = e
+
+                # #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
+                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+
+                # 2.1. Sinon, on enleve tout le cycle : 
+
+                print('Removing all cycle')
+
+                for e in cycle:
+
+                    self.graph.remove_edge(e[0], e[1])
                 
-                # #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
+                #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
 
                 
