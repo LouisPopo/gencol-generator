@@ -37,6 +37,13 @@ class IneqGraph:
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
 
+        #add a -> c if no b such that a->b and b-> exists
+
+        for n in self.graph.neighbors(from_node_name):
+
+            if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+                return
+
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
     def get_indice_from_node_name(self, node_name):
@@ -75,11 +82,6 @@ class IneqGraph:
                     self.graph.remove_edge(a, c)
                     break
 
-
-
-       
-
-        print('Is directed : {}'.format(self.graph.is_directed()))
 
     def remove_cycles_libr(self):
 
@@ -340,9 +342,12 @@ def create_gencol_file(
                 s = random.sample(dual_variables, nb_dual_vars_found)
                 
                 # sort du plus grand au plus petit
-                s.sort(key=lambda pair: pair[VALUE], reverse=True)
+                # s.sort(key=lambda pair: pair[VALUE], reverse=True)
 
-                max_diff = abs(s[0][VALUE] - s[-1][VALUE])
+                sorted_s = s.copy()
+                sorted_s.sort(key=lambda pair: pair[VALUE], reverse=True)
+
+                max_diff = abs(sorted_s[0][VALUE] - sorted_s[-1][VALUE])
                 # max_diff : 95% sur
                 # <1 diff : 65% sur
                 # on create une fonction
@@ -398,8 +403,8 @@ def create_gencol_file(
                             1
                         )
 
-                        r = random.uniform(0,1)
-
+                        # r = random.uniform(0,1)
+                        r = 0
 
                         if pi_i_value >= pi_j_value:
 
@@ -444,25 +449,29 @@ def create_gencol_file(
                 #ineq_series = ineq_graph.get_ineq_series()
                 
 
-                print('Original nb of edges : {}'.format(ineq_graph.graph.number_of_edges()))
+                print('Number of edges : {}'.format(ineq_graph.graph.number_of_edges()))
 
-                #nx.draw(ineq_graph.graph, with_labels=True)
+                print("=====")
 
-                print('Before Removing cycles: {}'.format(ineq_graph.graph.number_of_edges()))
-
-                print(" === ")
-                print("Removing cycles")
-
+                # print('Removing triangle ineq')
+                # ineq_graph.remove_triangles_ineq()
+                # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
+                
+                print('Removing cycles')
                 ineq_graph.remove_cycles_libr()
+                print('Number of edges after removing cycles : {}'.format(ineq_graph.graph.number_of_edges()))
+
+                
+                print('=====')
 
                 print('Removed cycles in {} seconds'.format(time.time() - start_time))
                 print('After Removing cycles: {}'.format(ineq_graph.graph.number_of_edges()))
 
                 #plt.show()
 
-                ineq_graph.remove_triangles_ineq()
+                
 
-                print('After removing triangle inequalities : {}'.format(ineq_graph.graph.number_of_edges()))
+                
                 
                 ineq_series = ineq_graph.get_ineq_series_libr()
 
