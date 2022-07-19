@@ -93,6 +93,9 @@ class IneqGraph:
                 #print('Found cycle')
                 nb_cycles_found += 1
 
+                if nb_cycles_found % 20000 == 0:
+                    print('{} cycles found, {} edges.'.format(nb_cycles_found, self.graph.number_of_edges()))
+
                 # min_odds_right = 100
                 # edge_to_remove = None
 
@@ -118,35 +121,45 @@ class IneqGraph:
                         #print('Removing {}->{}'.format(e[0], e[1]))
                         edge_removed = True
 
-                u = cycle[-1][1]
-                v = cycle[0][0]
+                # u = cycle[-1][1]
+                # v = cycle[0][0]
 
-                deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
-                deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
-                if deg_v < deg_u:
-                    self.graph.remove_edge(u, v)
-                    print('Removing {}->{}'.format(u, v))
-                    edge_removed = True
+                # deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
+                # deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
+                # if deg_v < deg_u:
+                #     self.graph.remove_edge(u, v)
+                #     print('Removing {}->{}'.format(u, v))
+                #     edge_removed = True
 
 
                 if edge_removed:
                     continue
                 
-                # 2. Sinon, on enleve celui qu'on est le moins sur
+                # # 2. Sinon, on enleve celui qu'on est le moins sur
 
-                min_prob = 100
-                edge_to_remove = None
+                # min_prob = 100
+                # edge_to_remove = None
+
+                # for e in cycle:
+
+                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
+
+                #     if p < min_prob:
+                #         min_prob = p
+                #         edge_to_remove = e
+
+                # #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
+                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+
+                # 2.1. Sinon, on enleve tout le cycle : 
+
+                print('Removing all cycle')
 
                 for e in cycle:
 
-                    p = self.graph.get_edge_data(e[0], e[1])['prob']
-
-                    if p < min_prob:
-                        min_prob = p
-                        edge_to_remove = e
-
-                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
-                self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+                    self.graph.remove_edge(e[0], e[1])
+                
+                #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
 
 
                 
@@ -334,7 +347,7 @@ def create_gencol_file(
                 # <1 diff : 65% sur
                 # on create une fonction
                 max_odds = 0.999
-                min_odds = 0.65
+                min_odds = 0.85
                 # odds = a*diff + b
 
                 nb_wrong = 0
