@@ -135,7 +135,7 @@ class IneqGraph:
 
                 print('Trying to find a cycle...')
 
-                cycle =  find_cycle(self.graph, source='Source')
+                cycle = find_cycle(self.graph, source='Source')
                 print('DONE! in {} sec'.format(time.time() - s_time))
 
 
@@ -223,7 +223,11 @@ class IneqGraph:
 
     def bellman_ford_libr(self):
 
+        s_time = time.time()
+
         path = bellman_ford_path(self.graph, source='Source', target='Sink')
+
+        print("Found path in {} seconds".format(time.time() - s_time))
 
         return False, path
 
