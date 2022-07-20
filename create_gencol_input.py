@@ -14,6 +14,16 @@ import time
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 
+min_odds_right = 0.75
+verify_triangle_inequality_at_insertion = True
+remove_triangle_inequalities_after_insertions = True
+validate_nodes_degrees = False
+try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
+try_removing_cycly_with_odds = True     # On aura toujours un edge removed par iteration
+remove_all_cycle = False
+max_serie_to_find = None
+print_ineq_series_found = False
+
 NAME = 0
 VALUE = 1
 
@@ -41,17 +51,20 @@ class IneqGraph:
 
         # add a -> c if no b such that a->b and b-> exists
 
-        # for n in self.graph.neighbors(from_node_name):
+        if verify_triangle_inequality_at_insertion:
 
-        #     if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
+            for n in self.graph.neighbors(from_node_name):
 
-        #         # Sauf qu'on augmente quand même les degres
+                if self.graph.has_edge(from_node_name, n) and self.graph.has_edge(n, to_node_name):
 
-        #         self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
-        #         self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
+                    # Sauf qu'on augmente quand même les degres
 
-        #         return
+                    self.graph.add_weighted_edges_from([(from_node_name, '+OutDeg', value)], 'weight', prob=1)
+                    self.graph.add_weighted_edges_from([('+InDeg', to_node_name, value)], 'weight', prob=1)
 
+                    return
+        
+        
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
     def get_indice_from_node_name(self, node_name):
@@ -68,7 +81,6 @@ class IneqGraph:
 
             self.degrees[n] = self.graph.in_degree(n) - self.graph.out_degree(n)
 
-
     def validate_edges(self, dual_variables):
  
         nb_edges_not_respecting = 0
@@ -83,7 +95,7 @@ class IneqGraph:
             if deg_v < deg_u:
                 # nb_edges_not_respecting += 1
 
-                self.graph.remove_edge(e[0], e[1])
+                
 
                 # u_val = [(name, value) for name, value in dual_variables if name == e[0]][0][1]
                 # v_val = [(name, value) for name, value in dual_variables if name == e[1]][0][1]
@@ -91,9 +103,7 @@ class IneqGraph:
                 # if v_val > u_val:
                 #     nb_edges_really_not_respecting += 1
 
-
-        # print('Nb edges not respecting : {}'.format(nb_edges_not_respecting))
-        # print('Nb edges REALLY not respecting : {}'.format(nb_edges_really_not_respecting))
+                self.graph.remove_edge(e[0], e[1])
 
     def remove_edge_libr(self, u, v):
         
@@ -133,10 +143,10 @@ class IneqGraph:
 
                 s_time = time.time()
 
-                print('Trying to find a cycle...')
+                # print('Trying to find a cycle...')
 
                 cycle = find_cycle(self.graph, source='Source')
-                print('DONE! in {} sec'.format(time.time() - s_time))
+                # print('DONE! in {} sec'.format(time.time() - s_time))
 
 
 
@@ -147,75 +157,47 @@ class IneqGraph:
                     print('         {} cycles'.format(nb_cycles_found))
                     print('         {} edges'.format(self.graph.number_of_edges()))
 
-                print(" === === ")
+                #print(" === === ")
 
-                # min_odds_right = 100
-                # edge_to_remove = None
+                edge_removed = False
 
-                # for e in cycle:
-                #     in_degree = self.graph.in_degree(e[0])
-                #     out_degree = self.graph.out_degree(e[0])
-                #     deg = in_degree - out_degree
-                #     print('{} : degree = {}'.format(e[0], deg))
-                # l_element = cycle[-1][1]
-                # in_degree = self.graph.in_degree(l_element)
-                # out_degree = self.graph.out_degree(l_element)
-                # deg = in_degree - out_degree
-                # print('{} : degree = {}'.format(l_element, deg))
+                if try_removing_cycle_with_degrees:
 
-                # print("========")
+                    # 1. on enleve en fonction des degres
+                    for e in cycle:
+                        
+                        deg_u = self.degrees[e[0]]
+                        deg_v = self.degrees[e[1]]
 
-                # edge_removed = False
+                        if deg_v < deg_u:
+                            self.graph.remove_edge(e[0], e[1])
+                            #print('Removing {}->{}'.format(e[0], e[1]))
+                            edge_removed = True
 
-                # # 1. on enleve en fonction des degres
-                # for e in cycle:
-                    
-                #     deg_u = self.degrees[e[0]]
-                #     deg_v = self.degrees[e[1]]
-
-                #     if deg_v < deg_u:
-                #         self.graph.remove_edge(e[0], e[1])
-                #         #print('Removing {}->{}'.format(e[0], e[1]))
-                #         edge_removed = True
-
-                # # u = cycle[-1][1]
-                # # v = cycle[0][0]
-
-                # # deg_u = self.graph.in_degree(u) - self.graph.out_degree(v)
-                # # deg_v = self.graph.in_degree(v) - self.graph.out_degree(v)
-                # # if deg_v < deg_u:
-                # #     self.graph.remove_edge(u, v)
-                # #     print('Removing {}->{}'.format(u, v))
-                # #     edge_removed = True
-
-
-                # if edge_removed:
-                #     continue
+                    if edge_removed:
+                        continue
                 
+                if try_removing_cycly_with_odds:
                 # 2. Sinon, on enleve celui qu'on est le moins sur
 
-                # min_prob = 100
-                # edge_to_remove = None
+                    min_prob = 100
+                    edge_to_remove = None
 
-                # for e in cycle:
+                    for e in cycle:
 
-                #     p = self.graph.get_edge_data(e[0], e[1])['prob']
+                        p = self.graph.get_edge_data(e[0], e[1])['prob']
 
-                #     if p < min_prob:
-                #         min_prob = p
-                #         edge_to_remove = e
+                        if p < min_prob:
+                            min_prob = p
+                            edge_to_remove = e
 
-                #print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
-                # self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+                    # print('Removing (odds) {} -> {}'.format(edge_to_remove[0], edge_to_remove[1]))
+                    self.graph.remove_edge(edge_to_remove[0], edge_to_remove[1])
+                    continue
 
                 # 2.1. Sinon, on enleve tout le cycle : 
-
-                self.graph.remove_edges_from(cycle)
-                
-                #self.graph.remove_edge(cycle[-1][1], cycle[0][0])
-
-
-                
+                if remove_all_cycle:
+                    self.graph.remove_edges_from(cycle)
 
             except NetworkXNoCycle:
 
@@ -227,7 +209,8 @@ class IneqGraph:
 
         path = bellman_ford_path(self.graph, source='Source', target='Sink')
 
-        print("Found path of len {} in {} seconds".format(len(path), time.time() - s_time))
+        if print_ineq_series_found:
+            print("Found path of len {} in {} seconds".format(len(path), time.time() - s_time))
 
         return False, path
 
@@ -265,8 +248,11 @@ class IneqGraph:
                 
                 ineq_series.append(serie)
 
-                if len(ineq_series) >= 1:
-                    break
+                if max_serie_to_find != None:
+
+                    if len(ineq_series) >= max_serie_to_find:
+                        
+                        break
 
         return ineq_series
 
@@ -320,6 +306,8 @@ def create_gencol_file(
     ):
 
     for pb in list_pb:
+
+        pre_process_start_time = time.time()
 
         network_folder = '{}/Network{}'.format(path_to_networks, pb)
 
@@ -392,7 +380,7 @@ def create_gencol_file(
                 # <1 diff : 65% sur
                 # on create une fonction
                 max_odds = 0.999
-                min_odds = 0.80
+                min_odds = min_odds_right
                 # odds = a*diff + b
 
                 nb_wrong = 0
@@ -404,7 +392,10 @@ def create_gencol_file(
                 edge_value = -1
 
                 print(" === ")
-                print("Adding edges ... ")
+                l = "Adding edges ... "
+                if verify_triangle_inequality_at_insertion:
+                    l += "(verifying triangle ineq. at insertion)"
+                print(l)
                 start_time = time.time()
 
 
@@ -468,22 +459,29 @@ def create_gencol_file(
                 print('DONE     {} secs'.format(time.time() - start_time))
                 print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
+                
                 print(" === ")
                 print('Establishing degrees ... ')
                 start_time = time.time()
                 ineq_graph.establish_degrees()
                 print('DONE     {} secs'.format(time.time() - start_time))
 
-                # print('Removing triangle ineq')
-                # ineq_graph.remove_triangles_ineq()
-                # print('Number of edges after removing triangle ineq : {}'.format(ineq_graph.graph.number_of_edges()))
+
+                if remove_triangle_inequalities_after_insertions:
+                    print(" === ")
+                    start_time = time.time()
+                    print('Removing triangle ineq ...')
+                    ineq_graph.remove_triangles_ineq()
+                    print('DONE     {} secs'.format(time.time() - start_time))
+                    print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
                 
-                print(" === ")
-                print('Validating edges ... ')
-                start_time = time.time()
-                ineq_graph.validate_edges(dual_variables)
-                print('DONE     {} secs'.format(time.time() - start_time))
-                print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+                if validate_nodes_degrees:
+                    print(" === ")
+                    print('Validating edges ... ')
+                    start_time = time.time()
+                    ineq_graph.validate_edges(dual_variables)
+                    print('DONE     {} secs'.format(time.time() - start_time))
+                    print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
 
 
                 
@@ -505,6 +503,17 @@ def create_gencol_file(
                 print('         {} ineq series. Average length : {}'.format(len(ineq_series), sum(len(s) for s in ineq_series) / len(ineq_series)))
                 
                 wrong_ineq = 0
+
+                total_time = time.time() - pre_process_start_time
+                
+                print(" === === ===")
+                print()
+                print('TOTAL PRE-PROCESS TIME : {} seconds'.format(total_time))
+                print()
+                print(" === === === ")
+
+                print()
+                print("Counting wrong inequalities ... ")
 
                 for s in ineq_series:
 
@@ -528,8 +537,9 @@ def create_gencol_file(
 
 
                     #print(s)
-                print('Wrong ineq : {}'.format(wrong_ineq))
-                print('Total ineq : {}'.format(len(inequalities)))
+                print('         Wrong ineq : {}'.format(wrong_ineq))
+                print('         Total ineq : {}'.format(len(inequalities)))
+                print(" === ")
 
                 #nx.draw(ineq_graph.graph, with_labels=True)
 
