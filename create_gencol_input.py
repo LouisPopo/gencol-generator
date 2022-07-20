@@ -14,7 +14,7 @@ import time
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 
-min_odds_right = 0.85
+min_odds_right = 0.70
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
 validate_nodes_degrees = True
