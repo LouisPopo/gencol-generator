@@ -15,14 +15,17 @@ from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 
 min_odds_right = 0.70
-verify_triangle_inequality_at_insertion = True
+max_odds_right = 0.90
+verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
-validate_nodes_degrees = False
-try_removing_cycle_with_degrees = True # On aura pas necessairement un edge removed par iteration
+validate_nodes_degrees = True
+try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = False     # On aura toujours un edge removed par iteration
 remove_all_cycle = True
-max_serie_to_find = None
+max_serie_to_find = 3
 print_ineq_series_found = False
+
+
 
 
 NAME = 0
@@ -380,7 +383,7 @@ def create_gencol_file(
                 # max_diff : 95% sur
                 # <1 diff : 65% sur
                 # on create une fonction
-                max_odds = 0.999
+                max_odds = max_odds_right
                 min_odds = min_odds_right
                 # odds = a*diff + b
 
