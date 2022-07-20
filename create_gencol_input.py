@@ -15,14 +15,15 @@ from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 
 min_odds_right = 0.70
-verify_triangle_inequality_at_insertion = False
+verify_triangle_inequality_at_insertion = True
 remove_triangle_inequalities_after_insertions = False
-validate_nodes_degrees = True
-try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
+validate_nodes_degrees = False
+try_removing_cycle_with_degrees = True # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = False     # On aura toujours un edge removed par iteration
 remove_all_cycle = True
-max_serie_to_find = 3
+max_serie_to_find = None
 print_ineq_series_found = False
+
 
 NAME = 0
 VALUE = 1
