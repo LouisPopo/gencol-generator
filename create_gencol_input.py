@@ -21,7 +21,7 @@ validate_nodes_degrees = False
 try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = True     # On aura toujours un edge removed par iteration
 remove_all_cycle = False
-max_serie_to_find = 10
+max_serie_to_find = 50
 print_ineq_series_found = True
 
 NAME = 0
