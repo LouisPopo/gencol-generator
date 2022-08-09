@@ -94,6 +94,10 @@ class IneqGraph:
                 print(" --- ")
                 print('Found cycle!')
                 self.graph.remove_edge(from_node_name, to_node_name)
+                try:
+                    next_cycle = find_cycle(self.graph, source=from_node_name)
+                except NetworkXNoCycle:
+                    print("Did not find another cycle! Good")
                 print("In {} sec.".format((time.time() - t)))
                 print(" --- ")
 
