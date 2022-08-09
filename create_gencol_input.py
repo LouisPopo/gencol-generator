@@ -1,3 +1,4 @@
+from ast import With
 from copy import copy
 from datetime import datetime
 from itertools import cycle
@@ -6,6 +7,7 @@ from operator import mod
 
 import os
 import random
+from matplotlib import pyplot as plt
 import numpy as np
 import networkx as nx
 import time
@@ -18,7 +20,7 @@ min_odds_right = 0.70
 max_odds_right = 0.90
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
-verify_cycle_online_at_insertion = True
+verify_cycle_online_at_insertion = False
 validate_nodes_degrees = True
 try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = False     # On aura toujours un edge removed par iteration
@@ -543,6 +545,22 @@ def create_gencol_file(
                 wrong_ineq = 0
 
                 total_time = time.time() - pre_process_start_time
+
+
+                ###
+                # Analyze degree and real value
+
+                with open('deg_vals_.txt', 'w+') as f:
+
+
+                    for n in ineq_graph.graph.nodes():
+
+                        deg = ineq_graph.degrees[n]
+                        real_val = [(name, value) for name, value in dual_variables if name == n][0][1]
+
+                        f.write('{},{}\n'.format(deg, real_val))
+
+                ###
                 
                 print(" === === ===")
                 print()
