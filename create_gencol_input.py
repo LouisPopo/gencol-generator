@@ -93,6 +93,7 @@ class IneqGraph:
             if has_cycle:
                 print(" --- ")
                 print('Found cycle!')
+                print('When adding : {} - {}'.format(from_node_name, to_node_name))
                 print(cycle)
                 self.graph.remove_edge(from_node_name, to_node_name)
                 try:
