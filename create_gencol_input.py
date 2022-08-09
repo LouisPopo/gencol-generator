@@ -52,7 +52,7 @@ class IneqGraph:
         self.graph.add_node(node_name)
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
-        
+
         # add a -> c if no b such that a->b and b-> exists
 
         if verify_triangle_inequality_at_insertion:
@@ -549,15 +549,22 @@ def create_gencol_file(
                 ###
                 # Analyze degree and real value
 
-                with open('deg_vals_.txt', 'w+') as f:
+                # with open('deg_vals_.txt', 'w+') as f:
 
 
-                    for n in ineq_graph.graph.nodes():
+                #     print(dual_variables)
 
-                        deg = ineq_graph.degrees[n]
-                        real_val = [(name, value) for name, value in dual_variables if name == n][0][1]
+                #     for n in ineq_graph.graph.nodes():
 
-                        f.write('{},{}\n'.format(deg, real_val))
+                #         if 'Cover' not in n:
+                #             continue
+
+
+                #         deg = ineq_graph.degrees[n]
+                #         print([(name, value) for name, value in dual_variables if name == n])
+                #         real_val = [(name, value) for name, value in dual_variables if name == n][0][1]
+
+                #         f.write('{},{}\n'.format(deg, real_val))
 
                 ###
                 
