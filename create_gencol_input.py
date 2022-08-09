@@ -18,7 +18,7 @@ min_odds_right = 0.70
 max_odds_right = 0.90
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
-verify_cycle_online_at_insertion = True
+verify_cycle_online_at_insertion = False
 validate_nodes_degrees = True
 try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = False     # On aura toujours un edge removed par iteration
@@ -73,6 +73,10 @@ class IneqGraph:
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
 
 
+        t = time.time()
+        print(" ==== ")
+        print('Verifying cycle')
+
         if verify_cycle_online_at_insertion:
 
             # if we add u->v, do we have a cycle ?
@@ -89,7 +93,10 @@ class IneqGraph:
                 has_cycle = False
 
             if has_cycle:
+                print('Found cycle!')
                 self.graph.remove_edge(from_node_name, to_node_name)
+            print("In {} sec.".format((time.time() - t)))
+            print(" ==== ")
 
         
 
