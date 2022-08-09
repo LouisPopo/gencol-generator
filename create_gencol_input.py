@@ -18,14 +18,13 @@ min_odds_right = 0.70
 max_odds_right = 0.90
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
+verify_cycle_online_at_insertion = True
 validate_nodes_degrees = True
 try_removing_cycle_with_degrees = False # On aura pas necessairement un edge removed par iteration
 try_removing_cycly_with_odds = False     # On aura toujours un edge removed par iteration
 remove_all_cycle = True
 max_serie_to_find = 3
 print_ineq_series_found = False
-
-
 
 
 NAME = 0
@@ -52,7 +51,7 @@ class IneqGraph:
         self.graph.add_node(node_name)
 
     def add_edge(self, from_node_name, to_node_name, value, prob_right):
-
+        
         # add a -> c if no b such that a->b and b-> exists
 
         if verify_triangle_inequality_at_insertion:
@@ -69,7 +68,30 @@ class IneqGraph:
                     return
         
         
+        # Add the edge, and maybe verify cycle detection
+        
         self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
+
+
+        if verify_cycle_online_at_insertion:
+
+            # if we add u->v, do we have a cycle ?
+            # We have a cycle only if we can reach u FROM v. 
+
+            self.graph.add_weighted_edges_from([(from_node_name, to_node_name, value)], 'weight', prob=prob_right)
+
+            has_cycle = True
+
+            try:
+                cycle = find_cycle(self.graph, source=from_node_name)
+            except NetworkXNoCycle:
+                # No cycle find
+                has_cycle = False
+
+            if has_cycle:
+                self.graph.remove_edge(from_node_name, to_node_name)
+
+        
 
     def get_indice_from_node_name(self, node_name):
         
