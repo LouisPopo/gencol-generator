@@ -74,8 +74,6 @@ class IneqGraph:
 
 
         t = time.time()
-        print(" ==== ")
-        print('Verifying cycle')
 
         if verify_cycle_online_at_insertion:
 
@@ -93,10 +91,11 @@ class IneqGraph:
                 has_cycle = False
 
             if has_cycle:
+                print(" --- ")
                 print('Found cycle!')
                 self.graph.remove_edge(from_node_name, to_node_name)
-            print("In {} sec.".format((time.time() - t)))
-            print(" ==== ")
+                print("In {} sec.".format((time.time() - t)))
+                print(" --- ")
 
         
 
