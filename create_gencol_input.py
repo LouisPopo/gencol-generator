@@ -30,7 +30,7 @@ remove_all_cycle = True
 max_serie_to_find = 3
 print_ineq_series_found = False
 
-add_eij_in_objective_function = False
+add_eij_in_objective_function = True
 
 
 NAME = 0
