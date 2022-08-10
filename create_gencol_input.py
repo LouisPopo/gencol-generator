@@ -17,6 +17,9 @@ from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
 
 min_odds_right = 0.70
 max_odds_right = 0.90
+
+with_errors = False
+
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
 verify_cycle_online_at_insertion = False
@@ -27,7 +30,7 @@ remove_all_cycle = True
 max_serie_to_find = 3
 print_ineq_series_found = False
 
-add_eij_in_objective_function = True
+add_eij_in_objective_function = False
 
 
 NAME = 0
@@ -480,7 +483,10 @@ def create_gencol_file(
                         )
 
                         r = random.uniform(0,1)
-                        # r = 0
+                        
+                        if not with_errors:
+                            # Va tout le temps etre correct. 
+                            r = 0
 
                         if pi_i_value >= pi_j_value:
 
