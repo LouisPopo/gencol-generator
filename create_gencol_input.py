@@ -27,6 +27,8 @@ remove_all_cycle = True
 max_serie_to_find = 3
 print_ineq_series_found = False
 
+add_eij_in_objective_function = True
+
 
 NAME = 0
 VALUE = 1
@@ -590,12 +592,15 @@ def create_gencol_file(
                         pi_1_real_value = [(name, value) for name, value in dual_variables if name == pi_1][0][1]
                         pi_2_real_value = [(name, value) for name, value in dual_variables if name == pi_2][0][1]
 
+                        # REAL diff between pi1 and pi2
+                        e_12 = pi_1_real_value - pi_2_real_value
+
                         if pi_2_real_value > pi_1_real_value:
                             wrong_ineq += 1
 
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2))
+                        inequalities.append((pi_1, pi_2, e_12))
 
 
                     #print(s)
@@ -813,7 +818,14 @@ def create_gencol_file(
             pi_1 = ineq[0]
             pi_2 = ineq[1]
             # pi_1 >= pi_2
-            cols_string += "Y_" + str(i) + " 0 (" + pi_1 + " -1) (" + pi_2 + " 1);\n"
+
+            if add_eij_in_objective_function:
+                obj_val_coef = ineq[2]
+            else:
+                obj_val_coef = 0
+
+            cols_string += "Y_{} {} ({} -1) ({} 1);\n".format(i, obj_val_coef, pi_1, pi_2)
+            #cols_string += "Y_" + str(i) + " 0 (" + pi_1 + " -1) (" + pi_2 + " 1);\n"
         
         
         cols_string += "};\n\n"
