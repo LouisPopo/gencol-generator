@@ -650,19 +650,11 @@ def create_gencol_file(
 
                 # On prend 90% des variables duales, et on en tire 2 a deux
 
-                pair_nb = int(0.5 * len(dual_variables))
-                if pair_nb % 2 != 0:
-                    pair_nb += 1
+                nb_random_pair_ineq = 3 * len(dual_variables)
 
-                s = random.sample(dual_variables, pair_nb)
-
-                while len(s) > 0:
+                for i in range(nb_random_pair_ineq):
 
                     pair = random.sample(s, 2)
-
-                    for dual_variable in pair:
-
-                        s.remove(dual_variable)
 
                     if pair[0][VALUE] >= pair[1][VALUE]:
                         pi_1 = pair[0][NAME]
@@ -679,6 +671,36 @@ def create_gencol_file(
                     tasks_in_new_inequalities.add(pi_1)
                     tasks_in_new_inequalities.add(pi_2)
                     inequalities.append((pi_1, pi_2, -int(e_12)))
+
+                # pair_nb = int(0.5 * len(dual_variables))
+                # if pair_nb % 2 != 0:
+                #     pair_nb += 1
+
+                # s = random.sample(dual_variables, pair_nb)
+
+                # while len(s) > 0:
+
+                #     pair = random.sample(s, 2)
+
+                #     for dual_variable in pair:
+
+                #         s.remove(dual_variable)
+
+                #     if pair[0][VALUE] >= pair[1][VALUE]:
+                #         pi_1 = pair[0][NAME]
+                #         pi_2 = pair[1][NAME]
+                #     else:
+                #         pi_1 = pair[1][NAME]
+                #         pi_2 = pair[0][NAME]
+
+                #     pi_1_val = dual_variables_vals[pi_1]
+                #     pi_2_val = dual_variables_vals[pi_2]
+
+                #     e_12 = pi_1_val - pi_2_val
+
+                #     tasks_in_new_inequalities.add(pi_1)
+                #     tasks_in_new_inequalities.add(pi_2)
+                #     inequalities.append((pi_1, pi_2, -int(e_12)))
             
             
 
