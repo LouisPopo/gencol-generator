@@ -25,10 +25,10 @@ RANDOM_PAIRS_INEQUALITIES = 2
 
 # Global parameters
 
-type_of_inequalities = RANDOM_PAIRS_INEQUALITIES
+type_of_inequalities = PAIRWISE_INEQUALITIES
 
 with_errors = False
-add_eij_in_objective_function = False
+add_eij_in_objective_function = True
 
 
 # Pairwise inequalities
@@ -571,24 +571,37 @@ def create_gencol_file(
 
 
                 ###
-                # Analyze degree and real value
+                # Adding inequalities with values e_ij
 
-                # with open('deg_vals_.txt', 'w+') as f:
+                pair_nb = int(0.20 * len(dual_variables))
+                if pair_nb % 2 != 0:
+                    pair_nb += 1
+                
+                s = random.sample(dual_variables, pair_nb)
 
+                while len(s) > 0:
 
-                #     print(dual_variables)
+                    pair = random.sample(s, 2)
 
-                #     for n in ineq_graph.graph.nodes():
+                    for dual_var in pair:
 
-                #         if 'Cover' not in n:
-                #             continue
+                        s.remove(dual_var)
 
+                        if pair[0][VALUE] >= pair[1][VALUE]:
+                            pi_1 = pair[0][NAME]
+                            pi_2 = pair[1][NAME]
+                        else:
+                            pi_1 = pair[1][NAME]
+                            pi_2 = pair[0][NAME]
 
-                #         deg = ineq_graph.degrees[n]
-                #         print([(name, value) for name, value in dual_variables if name == n])
-                #         real_val = [(name, value) for name, value in dual_variables if name == n][0][1]
+                        pi_1_val = dual_variables_vals[pi_1]
+                        pi_2_val = dual_variables_vals[pi_2]
 
-                #         f.write('{},{}\n'.format(deg, real_val))
+                        e_12 = pi_1_val - pi_2_val
+
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2, -e_12))
 
                 ###
                 
