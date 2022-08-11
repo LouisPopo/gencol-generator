@@ -654,7 +654,7 @@ def create_gencol_file(
 
                 for i in range(nb_random_pair_ineq):
 
-                    pair = random.sample(s, 2)
+                    pair = random.sample(dual_variables, 2)
 
                     if pair[0][VALUE] >= pair[1][VALUE]:
                         pi_1 = pair[0][NAME]
