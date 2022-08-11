@@ -25,7 +25,7 @@ RANDOM_PAIRS_INEQUALITIES = 2
 
 # Global parameters
 
-type_of_inequalities = RANDOM_PAIRS_INEQUALITIES
+type_of_inequalities = PAIRWISE_INEQUALITIES
 
 with_errors = False
 add_eij_in_objective_function = True
@@ -573,7 +573,7 @@ def create_gencol_file(
                 ###
                 # Adding inequalities with values e_ij
 
-                pair_nb = int(0.20 * len(dual_variables))
+                pair_nb = int(0.05 * len(dual_variables))
                 if pair_nb % 2 != 0:
                     pair_nb += 1
                 
@@ -597,11 +597,11 @@ def create_gencol_file(
                     pi_1_val = dual_variables_vals[pi_1]
                     pi_2_val = dual_variables_vals[pi_2]
 
-                    e_12 = pi_1_val - pi_2_val
+                    e_12 = max(0, pi_1_val - pi_2_val - 0.1) 
 
                     tasks_in_new_inequalities.add(pi_1)
                     tasks_in_new_inequalities.add(pi_2)
-                    inequalities.append((pi_1, pi_2, -int(0)))
+                    inequalities.append((pi_1, pi_2, - e_12)))
 
                 ###
                 
