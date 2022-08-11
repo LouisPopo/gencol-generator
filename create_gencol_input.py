@@ -573,7 +573,7 @@ def create_gencol_file(
                 ###
                 # Adding inequalities with values e_ij
 
-                pair_nb = int(0.25 * len(dual_variables))
+                pair_nb = int(0.50 * len(dual_variables))
                 if pair_nb % 2 != 0:
                     pair_nb += 1
                 
