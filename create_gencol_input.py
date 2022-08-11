@@ -628,14 +628,14 @@ def create_gencol_file(
                         pi_2_real_value = [(name, value) for name, value in dual_variables if name == pi_2][0][1]
 
                         # REAL diff between pi1 and pi2
-                        e_12 = pi_1_real_value - pi_2_real_value
+                        #e_12 = pi_1_real_value - pi_2_real_value
 
                         if pi_2_real_value > pi_1_real_value:
                             wrong_ineq += 1
 
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2, -e_12))
+                        inequalities.append((pi_1, pi_2, 0))
 
 
                     #print(s)
