@@ -666,7 +666,7 @@ def create_gencol_file(
 
                         tasks_in_new_inequalities.add(pi_1)
                         tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2, -int(e_12)))
+                        inequalities.append((pi_1, pi_2, -int(e_12) - 1))
 
                 print('Took {} secs. to add {} ineq'.format(time.time() - t, len(inequalities)))
                      
