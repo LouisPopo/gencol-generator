@@ -7,18 +7,31 @@ from operator import mod
 
 import os
 import random
+from tkinter import N
 import numpy as np
 import networkx as nx
 import time
 #import matplotlib.pyplot as plt
 
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
+from scipy import rand
 
 
 min_odds_right = 0.70
 max_odds_right = 0.90
 
+PAIRWISE_INEQUALITIES = 1
+RANDOM_PAIRS_INEQUALITIES = 2
+
+# Global parameters
+
+type_of_inequalities = RANDOM_PAIRS_INEQUALITIES
+
 with_errors = False
+add_eij_in_objective_function = True
+
+
+# Pairwise inequalities
 
 verify_triangle_inequality_at_insertion = False
 remove_triangle_inequalities_after_insertions = False
@@ -30,7 +43,7 @@ remove_all_cycle = True
 max_serie_to_find = 3
 print_ineq_series_found = False
 
-add_eij_in_objective_function = True
+
 
 
 NAME = 0
@@ -369,6 +382,7 @@ def create_gencol_file(
 
         # Read dual variables values
         dual_variables = []
+        dual_variables_vals = dict()
         if dual_variables_file_name != '':
             dual_variables_file = open(network_folder + '/' + dual_variables_file_name, 'r')
             dual_variables_list = dual_variables_file.read().splitlines()
@@ -381,6 +395,8 @@ def create_gencol_file(
                 # Finalement on garde le < 0
                 if value < 850 and "Max" not in dual_variable and "Count" not in dual_variable:
                     dual_variables.append((dual_variable, value))
+
+                    dual_variables_vals[dual_variable] = value
 
         dual_variables.sort(key = lambda pair: pair[1], reverse=True)
         nb_dual_variables = len(dual_variables)
@@ -404,7 +420,7 @@ def create_gencol_file(
             nb_dual_vars_found = int(percentage_ineq * nb_dual_variables)
             #nb_dual_vars_found = 30
 
-            if add_pairwise_inequalities:
+            if type_of_inequalities == PAIRWISE_INEQUALITIES:
 
                 ineq_graph = IneqGraph(nb_dual_vars_found + 2)
 
@@ -614,64 +630,40 @@ def create_gencol_file(
                 print('         Total ineq : {}'.format(len(inequalities)))
                 print(" === ")
 
-                #nx.draw(ineq_graph.graph, with_labels=True)
 
-                #plt.show()
+            elif type_of_inequalities == RANDOM_PAIRS_INEQUALITIES:
 
-            else:
+                # On test ici des paires random avec e_ij
 
-                # on groupe les variables duales
-                s = random.sample(dual_variables, nb_dual_variables)
+                # On prend 90% des variables duales, et on en tire 2 a deux
 
-                # sort du plus grand au plus petit
-                s.sort(key = lambda pair: pair[1], reverse=True)
+                pair_nb = int(0.9 * len(dual_variables))
+                if pair_nb % 2 != 0:
+                    pair_nb += 1
 
-                ineq_groups = []
+                s = random.sample(dual_variables, pair_nb)
 
-                max_val = int(s[0][1])
-                min_val = int(s[-1][1])
+                while len(s) > 0:
 
-                group_range = 6 # VARIABLE
+                    pair = random.sample(s, 2)
 
-                for i in range(max_val, min_val, -group_range):
-                    
-                    group = [x for x in s if (i >= x[1]) and (x[1] > i - group_range)]
+                    for dual_variable in pair:
 
-                    ineq_groups.append(group)
+                        s.remove(dual_variable)
 
+                        if pair[0][VALUE] >= pair[1][VALUE]:
+                            pi_1 = pair[0][NAME]
+                            pi_2 = pair[1][NAME]
+                        else:
+                            pi_1 = pair[1][NAME]
+                            pi_2 = pair[0][NAME]
 
-                    # on les groupe, mais certaines variables duales devraient êtres placés de façon aléatoire (plus de chances d'être
-                    # dans un groupe proche)
+                        pi_1_val = dual_variables_vals[pi_1]
+                        pi_2_val = dual_variables_vals[pi_2]
 
-                print(ineq_groups)
-                
-                # Groupes sont en ordre du plus grand au plus petit
-                ineq_groups = [g for g in ineq_groups if g != []]
+                        e_12 = pi_1_val - pi_2_val
 
-                for g, group in enumerate(ineq_groups):
-
-                    for i in range(len(group) - 1 ) : 
-                        
-                        # Ici, c'est les inégalités "inter groupes"
-
-                        pi_1 = group[i][0]
-                        pi_2 = group[i+1][0]
-
-                        tasks_in_new_inequalities.add(pi_1)
-                        tasks_in_new_inequalities.add(pi_2)
-                        inequalities.append((pi_1, pi_2))
-
-                    # pour les n-1 groupes (sauf le dernier)
-                    if g < len(ineq_groups) - 1:
-
-                        # on rajoute l'inégalité entre-groupes
-
-                        # le dernier du drenier groupe
-                        pi_1 = group[-1][0]
-                        pi_2 = ineq_groups[g + 1][0][0]
-                        # le premier du prochain groupe
-
-                        inequalities.append((pi_1, pi_2))
+                        inequalities.append((pi_1, pi_2, e_12))
             
             
 
