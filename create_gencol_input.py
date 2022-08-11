@@ -648,29 +648,50 @@ def create_gencol_file(
 
                 # On test ici des paires random avec e_ij
 
-                # On prend 90% des variables duales, et on en tire 2 a deux
+                # 100% des paires de duales variables existantes
 
-                nb_random_pair_ineq = 3 * len(dual_variables)
+                t = time.time()
 
-                for i in range(nb_random_pair_ineq):
+                for i in range(len(dual_variables) - 1):
+                    for j in range(i+1, len(dual_variables)):
 
-                    pair = random.sample(dual_variables, 2)
+                        if dual_variables[i][VALUE] >= dual_variables[j][VALUE]:
+                            pi_1 = dual_variables[i][NAME]
+                            pi_2 = dual_variables[j][NAME]
+                        else:
+                            pi_1 = dual_variables[j][NAME]
+                            pi_2 = dual_variables[i][NAME]
+                        
+                        e_12 = dual_variables_vals[pi_1] - dual_variables_vals[pi_2]
 
-                    if pair[0][VALUE] >= pair[1][VALUE]:
-                        pi_1 = pair[0][NAME]
-                        pi_2 = pair[1][NAME]
-                    else:
-                        pi_1 = pair[1][NAME]
-                        pi_2 = pair[0][NAME]
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
+                        inequalities.append((pi_1, pi_2, -int(e_12)))
 
-                    pi_1_val = dual_variables_vals[pi_1]
-                    pi_2_val = dual_variables_vals[pi_2]
+                print('Took {} secs. to add {} ineq'.format(time.time() - t, len(inequalities)))
+                     
 
-                    e_12 = pi_1_val - pi_2_val
+                # nb_random_pair_ineq = 3 * len(dual_variables)
 
-                    tasks_in_new_inequalities.add(pi_1)
-                    tasks_in_new_inequalities.add(pi_2)
-                    inequalities.append((pi_1, pi_2, -int(e_12)))
+                # for i in range(nb_random_pair_ineq):
+
+                #     pair = random.sample(dual_variables, 2)
+
+                #     if pair[0][VALUE] >= pair[1][VALUE]:
+                #         pi_1 = pair[0][NAME]
+                #         pi_2 = pair[1][NAME]
+                #     else:
+                #         pi_1 = pair[1][NAME]
+                #         pi_2 = pair[0][NAME]
+
+                #     pi_1_val = dual_variables_vals[pi_1]
+                #     pi_2_val = dual_variables_vals[pi_2]
+
+                #     e_12 = pi_1_val - pi_2_val
+
+                #     tasks_in_new_inequalities.add(pi_1)
+                #     tasks_in_new_inequalities.add(pi_2)
+                #     inequalities.append((pi_1, pi_2, -int(e_12)))
 
                 # pair_nb = int(0.5 * len(dual_variables))
                 # if pair_nb % 2 != 0:
