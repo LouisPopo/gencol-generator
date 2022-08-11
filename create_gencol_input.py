@@ -663,6 +663,8 @@ def create_gencol_file(
 
                         e_12 = pi_1_val - pi_2_val
 
+                        tasks_in_new_inequalities.add(pi_1)
+                        tasks_in_new_inequalities.add(pi_2)
                         inequalities.append((pi_1, pi_2, -e_12))
             
             
