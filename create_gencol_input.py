@@ -573,19 +573,23 @@ def create_gencol_file(
                 ###
                 # Adding inequalities with values e_ij
 
-                pair_nb = int(0.75 * len(dual_variables))
-                if pair_nb % 2 != 0:
-                    pair_nb += 1
+                pair_nb = 2 * len(dual_variables)
+
+                #pair_nb = int(0.75 * len(dual_variables))
+                #if pair_nb % 2 != 0:
+                #    pair_nb += 1
                 
-                s = random.sample(dual_variables, pair_nb)
+                #s = random.sample(dual_variables, pair_nb)
 
-                while len(s) > 0:
+                #while len(s) > 0:
 
-                    pair = random.sample(s, 2)
+                for _ in range(pair_nb):
 
-                    for dual_var in pair:
+                    pair = random.sample(dual_variables, 2)
 
-                        s.remove(dual_var)
+                    #for dual_var in pair:
+
+                    #    s.remove(dual_var)
 
                     if pair[0][VALUE] >= pair[1][VALUE]:
                         pi_1 = pair[0][NAME]
@@ -597,11 +601,11 @@ def create_gencol_file(
                     pi_1_val = dual_variables_vals[pi_1]
                     pi_2_val = dual_variables_vals[pi_2]
 
-                    e_12 = max(0, 0.75 *  int(pi_1_val - pi_2_val)) 
+                    e_12 = max(0, 0.5 * int(pi_1_val - pi_2_val)) 
 
                     tasks_in_new_inequalities.add(pi_1)
                     tasks_in_new_inequalities.add(pi_2)
-                    inequalities.append((pi_1, pi_2, 0))
+                    inequalities.append((pi_1, pi_2, - e_12))
 
                 ###
                 
