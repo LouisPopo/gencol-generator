@@ -597,7 +597,7 @@ def create_gencol_file(
                     pi_1_val = dual_variables_vals[pi_1]
                     pi_2_val = dual_variables_vals[pi_2]
 
-                    e_12 = max(0, 0.50 *  int(pi_1_val - pi_2_val)) 
+                    e_12 = max(0, 0.75 *  int(pi_1_val - pi_2_val)) 
 
                     tasks_in_new_inequalities.add(pi_1)
                     tasks_in_new_inequalities.add(pi_2)
