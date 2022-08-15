@@ -816,11 +816,13 @@ def create_gencol_file(
 
                 for i in range(len(groups) - 1):
 
-                    pi_j = random.choice(groups[i+1])
+                    pi_j = random.choice(groups[i+1])[NAME]
 
                     tasks_in_new_inequalities.add(pi_j)
 
-                    for pi_i in groups[i]:
+                    for d_i in groups[i]:
+                        
+                        pi_i = d_i[NAME]
 
                         tasks_in_new_inequalities.add(pi_i)
                         inequalities.append((pi_i, pi_j, 0))
