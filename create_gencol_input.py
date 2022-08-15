@@ -30,7 +30,7 @@ RANDOM_PAIRS_INEQUALITIES = 2
 type_of_inequalities = PAIRWISE_INEQUALITIES
 
 with_errors = True
-add_eij_in_objective_function = False
+add_eij_in_objective_function = True
 
 
 # Pairwise inequalities
@@ -577,47 +577,41 @@ def create_gencol_file(
                     print('Adding e_ij inequalities ... ')
                     start_time = time.time()
 
-
-                    # 1. determiner le nombre
-                    # 2. trouver des inegalités qui respectent le graphe
-                    
-
                     nb_e_ij_ineq = int(0.33 * len(dual_variables) / 2)
 
                     dual_vars_in_new_ineq = set()
 
                     for _ in range(nb_e_ij_ineq):
-                        
-                        pair = random.sample([tup for tup in dual_variables if tup not in dual_vars_in_new_ineq ], 2)
 
-                        if has_path(ineq_graph.graph, pair[0][NAME], pair[1][NAME]):
+                        # On simule en disant que notre modele de prediction serait seulement confiant si la vraie diff est >= 15
 
-                            #print("{} >= {}".format(pair[0], pair[1]))
+                        pi_i = random.choice([tup for tup in dual_variables if tup not in dual_vars_in_new_ineq ])
 
-                            pi_1 = pair[0]
-                            pi_2 = pair[1]
+                        available_for_pi_j = [tup for tup in dual_variables if tup not in dual_vars_in_new_ineq and tup != pi_i and abs(pi_i[VALUE] - tup[VALUE]) >= 15]
+
+                        if not available_for_pi_j:
+                            continue
+
+                        pi_j = random.choice(available_for_pi_j)
+
+                        if has_path(ineq_graph.graph, pi_i[NAME], pi_j[NAME]):
+                            pi_1 = pi_i
+                            pi_2 = pi_j
                         else:
-                            #print("{} < {}".format(pair[0], pair[1]))
-                            pi_1 = pair[1]
-                            pi_2 = pair[0]
-
-                        # pi_1 >= pi_2 selon notre graphe
-
+                            pi_1 = pi_j
+                            pi_2 = pi_i
+                        
                         dual_vars_in_new_ineq.add(pi_1)
                         dual_vars_in_new_ineq.add(pi_2)
 
-                        real_p1_val = pi_1[VALUE]
-                        real_p2_val = pi_2[VALUE]
+                        real_pi_1_val = pi_1[VALUE]
+                        real_pi_2_val = pi_2[VALUE]
 
-                        if real_p2_val > real_p1_val:
-
-                            # made a mistake 
+                        if real_pi_2_val > real_pi_1_val:
                             wrong_ineq += 1
                             print("{} : {} is a mistake".format(pi_1, pi_2))
-                            # On pourrait tester ce qui arrive si on le mets pas
                         
-                        real_abs_diff = abs(real_p1_val - real_p2_val)
-                        
+                        real_abs_diff = abs(real_pi_1_val - real_pi_2_val)
 
                         tasks_in_new_inequalities.add(pi_1[NAME])
                         tasks_in_new_inequalities.add(pi_2[NAME])
