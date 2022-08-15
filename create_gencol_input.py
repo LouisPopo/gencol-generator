@@ -15,7 +15,7 @@ import networkx as nx
 import time
 #import matplotlib.pyplot as plt
 
-from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, neighbors
+from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, has_path
 from scipy import rand
 
 
@@ -29,7 +29,7 @@ RANDOM_PAIRS_INEQUALITIES = 2
 
 type_of_inequalities = PAIRWISE_INEQUALITIES
 
-with_errors = False
+with_errors = True
 add_eij_in_objective_function = True
 
 
@@ -569,6 +569,66 @@ def create_gencol_file(
                 
                 wrong_ineq = 0
 
+                once = True
+
+                if add_eij_in_objective_function:
+
+                    print(" === ")
+                    print('Adding e_ij inequalities ... ')
+                    start_time = time.time()
+
+
+                    # 1. determiner le nombre
+                    # 2. trouver des inegalités qui respectent le graphe
+                    
+
+                    nb_e_ij_ineq = int(0.33 * len(dual_variables) / 2)
+
+                    dual_vars_in_new_ineq = set()
+
+                    for _ in range(nb_e_ij_ineq):
+                        
+                        pair = random.sample([tup for tup in dual_variables if tup not in dual_vars_in_new_ineq ], 2)
+
+                        if has_path(ineq_graph.graph, pair[0][NAME], pair[1][NAME]):
+
+                            #print("{} >= {}".format(pair[0], pair[1]))
+
+                            pi_1 = pair[0]
+                            pi_2 = pair[1]
+                        else:
+                            #print("{} < {}".format(pair[0], pair[1]))
+                            pi_1 = pair[1]
+                            pi_2 = pair[0]
+
+                        # pi_1 >= pi_2 selon notre graphe
+
+                        dual_vars_in_new_ineq.add(pi_1)
+                        dual_vars_in_new_ineq.add(pi_2)
+
+                        real_p1_val = pi_1[VALUE]
+                        real_p2_val = pi_2[VALUE]
+
+                        if real_p2_val > real_p1_val:
+
+                            # made a mistake 
+                            wrong_ineq += 1
+                            print("{} : {} is a mistake".format(pi_1, pi_2))
+                            # On pourrait tester ce qui arrive si on le mets pas
+                        
+                        real_abs_diff = abs(real_p1_val - real_p2_val)
+                        
+
+                        tasks_in_new_inequalities.add(pi_1[NAME])
+                        tasks_in_new_inequalities.add(pi_2[NAME])
+                        inequalities.append((pi_1[NAME], pi_2[NAME], - int(0.85*real_abs_diff)))
+
+
+                    
+                    print('DONE     {} secs'.format(time.time() - start_time))
+                    print('         {} edges'.format(ineq_graph.graph.number_of_edges()))
+
+
                 total_time = time.time() - pre_process_start_time
 
 
@@ -577,47 +637,47 @@ def create_gencol_file(
 
                 #pair_nb = 2 * len(dual_variables)
 
-                nb_new_ineq = int( (0.25 * len(dual_variables)) / 2)
-                if nb_new_ineq % 2 != 0:
-                    nb_new_ineq += 1
+                # nb_new_ineq = int( (0.25 * len(dual_variables)) / 2)
+                # if nb_new_ineq % 2 != 0:
+                #     nb_new_ineq += 1
 
-                #pair_nb = int(0.25 * len(dual_variables))
-                #if pair_nb % 2 != 0:
-                #   pair_nb += 1
+                # #pair_nb = int(0.25 * len(dual_variables))
+                # #if pair_nb % 2 != 0:
+                # #   pair_nb += 1
 
-                duals_vars_added = set()
+                # duals_vars_added = set()
 
-                for _ in range(nb_new_ineq):
+                # for _ in range(nb_new_ineq):
                     
-                    pi_i = random.choice([tup for tup in dual_variables if tup not in duals_vars_added])
+                #     pi_i = random.choice([tup for tup in dual_variables if tup not in duals_vars_added])
                     
-                    available_for_pi_j = [tup for tup in dual_variables if tup not in duals_vars_added and abs(tup[VALUE] - pi_i[VALUE]) > 20  and tup != pi_i]
+                #     available_for_pi_j = [tup for tup in dual_variables if tup not in duals_vars_added and abs(tup[VALUE] - pi_i[VALUE]) > 20  and tup != pi_i]
 
-                    if len(available_for_pi_j) > 0:
+                #     if len(available_for_pi_j) > 0:
 
-                        duals_vars_added.add(pi_i)
+                #         duals_vars_added.add(pi_i)
 
-                        pi_j = random.choice(available_for_pi_j)
+                #         pi_j = random.choice(available_for_pi_j)
 
-                        duals_vars_added.add(pi_j)
+                #         duals_vars_added.add(pi_j)
 
-                        #print('{} : {}'.format(pi_1, pi_2))
+                #         #print('{} : {}'.format(pi_1, pi_2))
 
-                        if pi_i[VALUE] >= pi_j[VALUE]:
-                            pi_1 = pi_i
-                            pi_2 = pi_j
-                        else:
-                            pi_1 = pi_j
-                            pi_2 = pi_i
+                #         if pi_i[VALUE] >= pi_j[VALUE]:
+                #             pi_1 = pi_i
+                #             pi_2 = pi_j
+                #         else:
+                #             pi_1 = pi_j
+                #             pi_2 = pi_i
 
-                        e_12 = max(0, int( 0.75 * abs(pi_1[VALUE] - pi_2[VALUE]) ) )
+                #         e_12 = max(0, int( 0.75 * abs(pi_1[VALUE] - pi_2[VALUE]) ) )
 
-                        tasks_in_new_inequalities.add(pi_1[NAME])
-                        tasks_in_new_inequalities.add(pi_2[NAME])
-                        inequalities.append((pi_1[NAME], pi_2[NAME], - e_12))
+                #         tasks_in_new_inequalities.add(pi_1[NAME])
+                #         tasks_in_new_inequalities.add(pi_2[NAME])
+                #         inequalities.append((pi_1[NAME], pi_2[NAME], - e_12))
                     
-                    else: 
-                        print('No more choices...')
+                #     else: 
+                #         print('No more choices...')
 
                     
                 
@@ -662,7 +722,7 @@ def create_gencol_file(
                 print(" === === === ")
 
                 print()
-                print("Counting wrong inequalities ... ")
+                print("Counting wrong and adding inequalities ... ")
 
                 for s in ineq_series:
 
