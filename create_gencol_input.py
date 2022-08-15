@@ -30,7 +30,7 @@ RANDOM_PAIRS_INEQUALITIES = 2
 type_of_inequalities = PAIRWISE_INEQUALITIES
 
 with_errors = True
-add_eij_in_objective_function = True
+add_eij_in_objective_function = False
 
 
 # Pairwise inequalities
