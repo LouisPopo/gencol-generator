@@ -591,7 +591,7 @@ def create_gencol_file(
                     
                     pi_i = random.choice([tup for tup in dual_variables if tup not in duals_vars_added])
                     
-                    available_for_pi_j = [tup for tup in dual_variables if tup not in duals_vars_added and abs(tup[VALUE] - pi_i[VALUE]) > 10 and abs(tup[VALUE] - pi_i[VALUE]) <= 20  and tup != pi_i]
+                    available_for_pi_j = [tup for tup in dual_variables if tup not in duals_vars_added and abs(tup[VALUE] - pi_i[VALUE]) > 20  and tup != pi_i]
 
                     if len(available_for_pi_j) > 0:
 
