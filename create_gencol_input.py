@@ -1,4 +1,5 @@
 from ast import With
+from audioop import reverse
 from cmath import inf
 from copy import copy
 from datetime import datetime
@@ -274,7 +275,7 @@ class IneqGraph:
 
         return False, path
 
-    def get_ineq_series_libr(self):
+    def get_ineq_series_libr(self, nb_series=max_serie_to_find):
 
         ineq_series = []
 
@@ -308,9 +309,9 @@ class IneqGraph:
                 
                 ineq_series.append(serie)
 
-                if max_serie_to_find != None:
+                if nb_series != None:
 
-                    if len(ineq_series) >= max_serie_to_find:
+                    if len(ineq_series) >= nb_series:
                         
                         break
 
@@ -782,10 +783,6 @@ def create_gencol_file(
                 print(" === ")
                 print('Creating group and inequalities ... ')
                 start_time = time.time()
-                
-                
-
-
 
                 # on les place dans un groupe
                 
@@ -794,12 +791,9 @@ def create_gencol_file(
                 x = 0
 
                 groups = []
-
+                grp_size = 6
                 min_val = min(dual_variables, key=lambda t: t[VALUE])[VALUE]
                 max_val = max(dual_variables, key=lambda t: t[VALUE])[VALUE] + 1 # (Pour quil soit inclus)
-
-                grp_size = 6
-
                 nb_groups = ceil((max_val - min_val) / grp_size)
 
                 for g in range(nb_groups) : 
@@ -814,18 +808,138 @@ def create_gencol_file(
 
                     #print(" {} <= x < {} : ({})".format(lb, ub, len(dual_vars_to_append)))
 
-                for i in range(len(groups) - 1):
 
-                    pi_j = random.choice(groups[i+1])[NAME]
+                
 
-                    tasks_in_new_inequalities.add(pi_j)
+                max_diff = abs(max_val - min_val)
+                max_odds = max_odds_right
+                min_odds = min_odds_right
+                edge_value = -1
 
-                    for d_i in groups[i]:
+                a = (max_odds - min_odds)/max_diff
+
+                
+
+                groups.reverse()
+
+                # le groupe avec les plus grosse valeur est au debut et ainsi de suite
+
+                previous_group_last_dual_var = None
+
+                wrong_ineq = 0
+
+                print(len(groups))
+
+                for group in groups:
+                    
+
+                    if len(group) > 2:
+
+                        group_graph = IneqGraph(len(group) + 2)
+
+                        dual_var_name_to_value = {}
+
+                        sorted_group = group.sort(key = lambda t: t[VALUE], reverse=True)
+                
+                        group_graph.add_node('Source')
+
                         
-                        pi_i = d_i[NAME]
+                        for dual_var in group:
 
-                        tasks_in_new_inequalities.add(pi_i)
-                        inequalities.append((pi_i, pi_j, 0))
+                            group_graph.add_node(dual_var[NAME])
+                            group_graph.add_edge('Source', dual_var[NAME], 0, 1)
+
+                        group_graph.add_node('+InDeg')
+                        group_graph.add_node('+OutDeg')
+
+                        group_graph.add_node('Sink')
+
+                        for dual_var in group:
+                            group_graph.add_edge(dual_var[NAME], 'Sink', 0, 1)
+
+                        for i in range(len(group) - 1):
+
+                            pi_i_name = group[i][NAME]
+                            pi_i_value = group[i][VALUE]
+
+                            for j in range(i + 1, len(group)):
+
+                                pi_j_name = group[j][NAME]
+                                pi_j_value = group[j][VALUE]
+
+                                diff = abs(pi_i_value - pi_j_value)
+
+                                odds_right = min(
+                                    a * diff + min_odds + (random.uniform(-5,5) / 100),
+                                    1
+                                )
+
+                                r = random.uniform(0,1)
+
+                                if pi_i_value >= pi_j_value:
+                                    if r <= odds_right:
+                                        group_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
+                                    else:
+                                        group_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right)
+                                else:
+
+                                    if r <= odds_right:
+                                        group_graph.add_edge(pi_j_name, pi_i_name, edge_value, odds_right) 
+                                    else:
+                                        group_graph.add_edge(pi_i_name, pi_j_name, edge_value, odds_right)
+
+                        #print(" ======== ")
+                        #print("Group len : {}".format(len(group)))
+                        #print("Initial nb of edges : {}".format(group_graph.graph.number_of_edges()))
+                        group_graph.establish_degrees()
+
+                        group_graph.validate_edges(group)
+
+                        #print("After validation of edges : {}".format(group_graph.graph.number_of_edges()))
+
+                        group_graph.remove_cycles_libr()
+
+                        #print("After removing cycles : {}".format(group_graph.graph.number_of_edges()))
+
+                        ineq_serie = group_graph.get_ineq_series_libr(1)[0] # only one serie
+
+                        if previous_group_last_dual_var != None:
+
+                            inequalities.append((previous_group_last_dual_var, ineq_serie[0]))
+
+                        for i in range(len(ineq_serie) - 1):
+
+                            pi_1_real_value = dual_variables_vals[ineq_serie[i]]
+                            pi_2_real_value = dual_variables_vals[ineq_serie[i+1]]
+
+                            if pi_2_real_value > pi_1_real_value:
+                                wrong_ineq += 1
+
+                            tasks_in_new_inequalities.add(ineq_serie[i])
+                            tasks_in_new_inequalities.add(ineq_serie[i+1])
+                            inequalities.append((ineq_serie[i], ineq_serie[i+1], 0))
+
+                        previous_group_last_dual_var = ineq_serie[-1]
+
+                print("Wrong ineq : {}".format(wrong_ineq))
+                print("Nb of ineq : {}".format(len(inequalities)))
+
+
+
+
+                
+                # for i in range(len(groups) - 1):
+
+                #     pi_j = random.choice(groups[i+1])[NAME]
+
+                #     tasks_in_new_inequalities.add(pi_j)
+
+                #     for d_i in groups[i]:
+                        
+                #         pi_i = d_i[NAME]
+
+                #         tasks_in_new_inequalities.add(pi_i)
+                #         inequalities.append((pi_i, pi_j, 0))
 
 
 
