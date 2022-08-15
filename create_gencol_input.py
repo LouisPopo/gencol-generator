@@ -901,7 +901,12 @@ def create_gencol_file(
 
                         #print("After removing cycles : {}".format(group_graph.graph.number_of_edges()))
 
-                        ineq_serie = group_graph.get_ineq_series_libr(1)[0] # only one serie
+                        ineq_series = group_graph.get_ineq_series_libr(1) # only one serie
+
+                        if len(ineq_series) < 1:
+                            continue
+                        
+                        ineq_serie = ineq_series[0]
 
                         if previous_group_last_dual_var != None:
 
