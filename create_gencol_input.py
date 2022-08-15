@@ -1,4 +1,5 @@
 from ast import With
+from cmath import inf
 from copy import copy
 from datetime import datetime
 from itertools import cycle
@@ -7,6 +8,7 @@ from operator import mod
 
 import os
 import random
+from re import L
 from tkinter import N
 import numpy as np
 import networkx as nx
@@ -575,41 +577,81 @@ def create_gencol_file(
 
                 #pair_nb = 2 * len(dual_variables)
 
-                pair_nb = int(0.25 * len(dual_variables))
-                if pair_nb % 2 != 0:
-                   pair_nb += 1
+                nb_new_ineq = int( (0.25 * len(dual_variables)) / 2)
+                if nb_new_ineq % 2 != 0:
+                    nb_new_ineq += 1
+
+                #pair_nb = int(0.25 * len(dual_variables))
+                #if pair_nb % 2 != 0:
+                #   pair_nb += 1
+
+                duals_vars_added = set()
+
+                for _ in range(nb_new_ineq):
+                    
+                    pi_i = random.choice([tup for tup in dual_variables if tup not in duals_vars_added])
+                    
+                    available_for_pi_j = [tup for tup in dual_variables if tup not in duals_vars_added and abs(tup[VALUE] - pi_i[VALUE]) <= 10]
+
+                    if len(available_for_pi_j) > 0:
+
+                        duals_vars_added.add(pi_i)
+
+                        pi_j = random.choice(available_for_pi_j)
+
+                        duals_vars_added.add(pi_j)
+
+                        #print('{} : {}'.format(pi_1, pi_2))
+
+                        if pi_i[VALUE] >= pi_j[VALUE]:
+                            pi_1 = pi_i
+                            pi_2 = pi_j
+                        else:
+                            pi_1 = pi_j
+                            pi_2 = pi_i
+
+                        e_12 = max(0, int( 0.75 * abs(pi_1[VALUE] - pi_2[VALUE]) ) )
+
+                        tasks_in_new_inequalities.add(pi_1[NAME])
+                        tasks_in_new_inequalities.add(pi_2[NAME])
+                        inequalities.append((pi_1[NAME], pi_2[NAME], - e_12))
+                    
+                    else: 
+                        print('No more choices...')
+
+                    
                 
-                s = random.sample(dual_variables, pair_nb)
+                #s = random.sample(dual_variables, pair_nb)
 
-                while len(s) > 0:
+                # while len(s) > 0:
 
-                # for _ in range(pair_nb):
+                # # for _ in range(pair_nb):
 
-                    #pair = random.sample(dual_variables, 2)
+                #     #pair = random.sample(dual_variables, 2)
                     
-                    pair = random.sample(s, 2)
+                #     pair = random.sample(s, 2)
 
-                    for dual_var in pair:
+                #     for dual_var in pair:
 
-                       s.remove(dual_var)
+                #        s.remove(dual_var)
 
-                    if pair[0][VALUE] >= pair[1][VALUE]:
-                        pi_1 = pair[0][NAME]
-                        pi_2 = pair[1][NAME]
-                    else:
-                        pi_1 = pair[1][NAME]
-                        pi_2 = pair[0][NAME]
+                #     if pair[0][VALUE] >= pair[1][VALUE]:
+                #         pi_1 = pair[0][NAME]
+                #         pi_2 = pair[1][NAME]
+                #     else:
+                #         pi_1 = pair[1][NAME]
+                #         pi_2 = pair[0][NAME]
 
-                    pi_1_val = dual_variables_vals[pi_1]
-                    pi_2_val = dual_variables_vals[pi_2]
+                #     pi_1_val = dual_variables_vals[pi_1]
+                #     pi_2_val = dual_variables_vals[pi_2]
 
-                    e_12 = max(0, int ( 0.75  * (pi_1_val - pi_2_val)) )
+                #     e_12 = max(0, int ( 0.75 * int(pi_1_val - pi_2_val)) )
 
                     
 
-                    tasks_in_new_inequalities.add(pi_1)
-                    tasks_in_new_inequalities.add(pi_2)
-                    inequalities.append((pi_1, pi_2, - e_12))
+                #     tasks_in_new_inequalities.add(pi_1)
+                #     tasks_in_new_inequalities.add(pi_2)
+                #     inequalities.append((pi_1, pi_2, - e_12))
 
                 ###
                 
