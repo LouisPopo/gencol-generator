@@ -809,23 +809,39 @@ def create_gencol_file(
 
                     dual_vars_to_append = [tup for tup in dual_variables if tup[VALUE] >= lb and tup[VALUE] < ub]
 
-                    groups.append(dual_vars_to_append)
+                    if len(dual_vars_to_append) > 0:
+                        groups.append(dual_vars_to_append)
 
                     #print(" {} <= x < {} : ({})".format(lb, ub, len(dual_vars_to_append)))
 
-                for group in groups:
-                    if len(group) > 1:
+                for i in range(len(groups) - 1):
 
-                        group.sort(key=lambda t: t[VALUE], reverse=True)
+                    pi_j = random.choice(groups[i+1])
 
-                        for i in range(len(group) - 1):
+                    tasks_in_new_inequalities.add(pi_j)
 
-                            pi_1 = group[i][NAME]
-                            pi_2 = group[i+1][NAME]
+                    for pi_i in groups[i]:
 
-                            tasks_in_new_inequalities.add(pi_1)
-                            tasks_in_new_inequalities.add(pi_2)
-                            inequalities.append((pi_1, pi_2, 0))
+                        tasks_in_new_inequalities.add(pi_i)
+                        inequalities.append((pi_i, pi_j, 0))
+
+
+
+
+
+                # for group in groups:
+                #     if len(group) > 1:
+
+                #         group.sort(key=lambda t: t[VALUE], reverse=True)
+
+                #         for i in range(len(group) - 1):
+
+                #             pi_1 = group[i][NAME]
+                #             pi_2 = group[i+1][NAME]
+
+                #             tasks_in_new_inequalities.add(pi_1)
+                #             tasks_in_new_inequalities.add(pi_2)
+                #             inequalities.append((pi_1, pi_2, 0))
 
 
                         # print(group[0])
