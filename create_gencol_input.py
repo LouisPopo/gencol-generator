@@ -3,7 +3,7 @@ from cmath import inf
 from copy import copy
 from datetime import datetime
 from itertools import cycle
-from math import ceil
+from math import ceil, fabs
 from operator import mod
 
 import os
@@ -24,13 +24,14 @@ max_odds_right = 0.90
 
 PAIRWISE_INEQUALITIES = 1
 RANDOM_PAIRS_INEQUALITIES = 2
+GROUP_INEQUALITIES = 3
 
 # Global parameters
 
-type_of_inequalities = PAIRWISE_INEQUALITIES
+type_of_inequalities = GROUP_INEQUALITIES
 
-with_errors = True
-add_eij_in_objective_function = True
+with_errors = False
+add_eij_in_objective_function = False
 
 
 # Pairwise inequalities
@@ -776,58 +777,62 @@ def create_gencol_file(
 
                 print('Took {} secs. to add {} ineq'.format(time.time() - t, len(inequalities)))
                      
+            elif type_of_inequalities == GROUP_INEQUALITIES:
 
-                # nb_random_pair_ineq = 3 * len(dual_variables)
+                print(" === ")
+                print('Creating group and inequalities ... ')
+                start_time = time.time()
+                
+                
 
-                # for i in range(nb_random_pair_ineq):
 
-                #     pair = random.sample(dual_variables, 2)
 
-                #     if pair[0][VALUE] >= pair[1][VALUE]:
-                #         pi_1 = pair[0][NAME]
-                #         pi_2 = pair[1][NAME]
-                #     else:
-                #         pi_1 = pair[1][NAME]
-                #         pi_2 = pair[0][NAME]
+                # on les place dans un groupe
+                
+                # on fait des ineqs entre groupes
 
-                #     pi_1_val = dual_variables_vals[pi_1]
-                #     pi_2_val = dual_variables_vals[pi_2]
+                x = 0
 
-                #     e_12 = pi_1_val - pi_2_val
+                groups = []
 
-                #     tasks_in_new_inequalities.add(pi_1)
-                #     tasks_in_new_inequalities.add(pi_2)
-                #     inequalities.append((pi_1, pi_2, -int(e_12)))
+                min_val = min(dual_variables, key=lambda t: t[VALUE])[VALUE]
+                max_val = max(dual_variables, key=lambda t: t[VALUE])[VALUE] + 1 # (Pour quil soit inclus)
 
-                # pair_nb = int(0.5 * len(dual_variables))
-                # if pair_nb % 2 != 0:
-                #     pair_nb += 1
+                grp_size = 6
 
-                # s = random.sample(dual_variables, pair_nb)
+                nb_groups = ceil((max_val - min_val) / grp_size)
 
-                # while len(s) > 0:
+                for g in range(nb_groups) : 
 
-                #     pair = random.sample(s, 2)
+                    lb = min_val + g * grp_size
+                    ub = min_val + (g + 1) * grp_size
 
-                #     for dual_variable in pair:
+                    dual_vars_to_append = [tup for tup in dual_variables if tup[VALUE] >= lb and tup[VALUE] < ub]
 
-                #         s.remove(dual_variable)
+                    groups.append(dual_vars_to_append)
 
-                #     if pair[0][VALUE] >= pair[1][VALUE]:
-                #         pi_1 = pair[0][NAME]
-                #         pi_2 = pair[1][NAME]
-                #     else:
-                #         pi_1 = pair[1][NAME]
-                #         pi_2 = pair[0][NAME]
+                    #print(" {} <= x < {} : ({})".format(lb, ub, len(dual_vars_to_append)))
 
-                #     pi_1_val = dual_variables_vals[pi_1]
-                #     pi_2_val = dual_variables_vals[pi_2]
+                for group in groups:
+                    if len(group) > 100:
 
-                #     e_12 = pi_1_val - pi_2_val
+                        group.sort(key=lambda t: t[VALUE], reverse=True)
 
-                #     tasks_in_new_inequalities.add(pi_1)
-                #     tasks_in_new_inequalities.add(pi_2)
-                #     inequalities.append((pi_1, pi_2, -int(e_12)))
+                        for i in range(len(group) - 1):
+
+                            pi_1 = group[i][NAME]
+                            pi_2 = group[i+1][NAME]
+
+                            tasks_in_new_inequalities.add(pi_1)
+                            tasks_in_new_inequalities.add(pi_2)
+                            inequalities.append((pi_1, pi_2, 0))
+
+
+                        # print(group[0])
+                        # print(group[-1])
+                        # print("----")
+
+                print('DONE     {} secs'.format(time.time() - start_time))
             
             
 
