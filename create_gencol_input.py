@@ -814,7 +814,7 @@ def create_gencol_file(
                     #print(" {} <= x < {} : ({})".format(lb, ub, len(dual_vars_to_append)))
 
                 for group in groups:
-                    if len(group) > 100:
+                    if len(group) > 1:
 
                         group.sort(key=lambda t: t[VALUE], reverse=True)
 
