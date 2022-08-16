@@ -131,27 +131,29 @@ def create_pairwise_inequalities(folder_name):
     
     # folder_name : nom du folder ou les instances sont storés
 
-    os.chdir('gencol_files/{}'.format(folder_name))
+    # os.chdir('gencol_files/{}'.format(folder_name))
     
-    for instance in glob.glob('*/'):
+    # for instance in glob.glob('*/'):
 
-        instance_name = instance.replace('/', '')
+    #     instance_name = instance.replace('/', '')
         
-        with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
-            input_problem = f.read().splitlines()
+    #     with open('{}/inputProblem{}_default.in'.format(instance_name, instance_name), 'r') as f:
+    #         input_problem = f.read().splitlines()
             
-            vehicule_i = 0
+    #         vehicule_i = 0
 
-            for i, line in enumerate(input_problem):
-                if "Columns" in line:
-                    vehicule_i = i + 2
-                    break
+    #         for i, line in enumerate(input_problem):
+    #             if "Columns" in line:
+    #                 vehicule_i = i + 2
+    #                 break
 
-            nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
+    #         nb_veh = int(input_problem[vehicule_i].split(' ')[4].replace(']', ''))
 
-    # ici, on assume que toutes les instances dans le répertoire ont le même nombre de véhicules
+    # # ici, on assume que toutes les instances dans le répertoire ont le même nombre de véhicules
 
-    os.chdir('../../')
+    # os.chdir('../../')
+
+    nb_veh = 60
 
     for instance in glob.glob('Networks/{}/*/'.format(folder_name)):
 
