@@ -32,7 +32,7 @@ GROUP_INEQUALITIES = 3
 type_of_inequalities = GROUP_INEQUALITIES
 
 with_errors = False
-add_eij_in_objective_function = False
+add_eij_in_objective_function = True
 
 
 # Pairwise inequalities
@@ -828,7 +828,7 @@ def create_gencol_file(
 
                 # le groupe avec les plus grosse valeur est au debut et ainsi de suite
 
-                nb_serie_per_group = 10
+                nb_serie_per_group = 2
 
                 previous_group_last_dual_var = None
                 previous_group_last_dual_vars = [None] * nb_serie_per_group
@@ -915,7 +915,7 @@ def create_gencol_file(
 
                             if previous_group_last_dual_vars[s_i] != None:
 
-                                inequalities.append((previous_group_last_dual_vars[s_i], serie[0]))
+                                inequalities.append((previous_group_last_dual_vars[s_i], serie[0], 0))
 
                             for i in range(len(serie) - 1):
 
@@ -959,6 +959,55 @@ def create_gencol_file(
                 print("Wrong ineq : {}".format(wrong_ineq))
                 print("Nb of ineq : {}".format(len(inequalities)))
 
+
+                # On rajoute les inegalites e_ij
+
+                if add_eij_in_objective_function:
+
+                    print(" === ")
+                    print('Adding e_ij inequalities ... ')
+                    start_time = time.time()
+
+                    nb_e_ij_ineq = int(0.15 * len(dual_variables))
+
+                    dual_vars_in_new_ineq = set()
+
+                    for _ in range(nb_e_ij_ineq):
+
+                        # On simule en disant que notre modele de prediction serait seulement confiant si la vraie diff est >= 15
+
+                        pi_i = random.choice([tup for tup in dual_variables if tup not in dual_vars_in_new_ineq ])
+
+                        available_for_pi_j = [tup for tup in dual_variables if tup not in dual_vars_in_new_ineq and tup != pi_i and abs(pi_i[VALUE] - tup[VALUE]) > 5]
+
+                        if not available_for_pi_j:
+                            continue
+
+                        pi_j = random.choice(available_for_pi_j)
+
+                        if pi_i[VALUE] >= pi_j[VALUE]:
+                            pi_1 = pi_i
+                            pi_2 = pi_j
+                        else:
+                            pi_1 = pi_j
+                            pi_2 = pi_i
+
+                        real_pi_1_val = pi_1[VALUE]
+                        real_pi_2_val = pi_2[VALUE]
+                        
+                        dual_vars_in_new_ineq.add(pi_1)
+                        dual_vars_in_new_ineq.add(pi_2)
+
+                        
+                        # if real_pi_2_val > real_pi_1_val:
+                        #     wrong_ineq += 1
+                        #     print("{} : {} is a mistake".format(pi_1, pi_2))
+                        
+                        real_abs_diff = abs(real_pi_1_val - real_pi_2_val)
+
+                        tasks_in_new_inequalities.add(pi_1[NAME])
+                        tasks_in_new_inequalities.add(pi_2[NAME])
+                        inequalities.append((pi_1[NAME], pi_2[NAME], - int(0.75*real_abs_diff)))
 
 
 
