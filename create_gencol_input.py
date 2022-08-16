@@ -1006,7 +1006,7 @@ def create_gencol_file(
 
                         tasks_in_new_inequalities.add(pi_1[NAME])
                         tasks_in_new_inequalities.add(pi_2[NAME])
-                        inequalities.append((pi_1[NAME], pi_2[NAME], - int(0.75*real_abs_diff)))
+                        inequalities.append((pi_1[NAME], pi_2[NAME], - int(real_abs_diff)))
 
 
 
