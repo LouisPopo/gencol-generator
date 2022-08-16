@@ -793,7 +793,7 @@ def create_gencol_file(
                 groups = []
 
 
-                grp_size = 10
+                grp_size = 16
 
 
                 min_val = min(dual_variables, key=lambda t: t[VALUE])[VALUE]
