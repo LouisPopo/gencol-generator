@@ -793,7 +793,7 @@ def create_gencol_file(
                 groups = []
 
 
-                grp_size = 16
+                grp_size = 10
 
 
                 min_val = min(dual_variables, key=lambda t: t[VALUE])[VALUE]
@@ -828,7 +828,10 @@ def create_gencol_file(
 
                 # le groupe avec les plus grosse valeur est au debut et ainsi de suite
 
+                nb_serie_per_group = 2
+
                 previous_group_last_dual_var = None
+                previous_group_last_dual_vars = [None] * nb_serie_per_group
 
                 wrong_ineq = 0
 
@@ -903,30 +906,55 @@ def create_gencol_file(
 
                         #print("After removing cycles : {}".format(group_graph.graph.number_of_edges()))
 
-                        ineq_series = group_graph.get_ineq_series_libr(1) # only one serie
+                        ineq_series = group_graph.get_ineq_series_libr(nb_serie_per_group) # only one serie
 
-                        if len(ineq_series) < 1:
-                            continue
+                        for s_i, serie in enumerate(ineq_series):
+
+                            if len(serie) < 2:
+                                continue
+
+                            if previous_group_last_dual_vars[s_i] != None:
+
+                                inequalities.append((previous_group_last_dual_vars[s_i], serie[0]))
+
+                            for i in range(len(serie) - 1):
+
+                                pi_1_real_value = dual_variables_vals[serie[i]]
+                                pi_2_real_value = dual_variables_vals[serie[i+1]]
+
+                                if pi_2_real_value > pi_1_real_value:
+                                    wrong_ineq += 1
+
+                                tasks_in_new_inequalities.add(serie[i])
+                                tasks_in_new_inequalities.add(serie[i+1])
+                                inequalities.append((serie[i], serie[i+1], 0))
+
+                            previous_group_last_dual_vars[s_i] = serie[-1]
+                            
+
+
+                        # if len(ineq_series) < 1:
+                        #     continue
                         
-                        ineq_serie = ineq_series[0]
+                        # ineq_serie = ineq_series[0]
 
-                        if previous_group_last_dual_var != None:
+                        # if previous_group_last_dual_var != None:
 
-                            inequalities.append((previous_group_last_dual_var, ineq_serie[0]))
+                        #     inequalities.append((previous_group_last_dual_var, ineq_serie[0]))
 
-                        for i in range(len(ineq_serie) - 1):
+                        # for i in range(len(ineq_serie) - 1):
 
-                            pi_1_real_value = dual_variables_vals[ineq_serie[i]]
-                            pi_2_real_value = dual_variables_vals[ineq_serie[i+1]]
+                        #     pi_1_real_value = dual_variables_vals[ineq_serie[i]]
+                        #     pi_2_real_value = dual_variables_vals[ineq_serie[i+1]]
 
-                            if pi_2_real_value > pi_1_real_value:
-                                wrong_ineq += 1
+                        #     if pi_2_real_value > pi_1_real_value:
+                        #         wrong_ineq += 1
 
-                            tasks_in_new_inequalities.add(ineq_serie[i])
-                            tasks_in_new_inequalities.add(ineq_serie[i+1])
-                            inequalities.append((ineq_serie[i], ineq_serie[i+1], 0))
+                        #     tasks_in_new_inequalities.add(ineq_serie[i])
+                        #     tasks_in_new_inequalities.add(ineq_serie[i+1])
+                        #     inequalities.append((ineq_serie[i], ineq_serie[i+1], 0))
 
-                        previous_group_last_dual_var = ineq_serie[-1]
+                        # previous_group_last_dual_var = ineq_serie[-1]
 
                 print("Wrong ineq : {}".format(wrong_ineq))
                 print("Nb of ineq : {}".format(len(inequalities)))
