@@ -977,7 +977,7 @@ def create_gencol_file(
 
                         pi_i = random.choice([tup for tup in dual_variables if tup not in dual_vars_in_new_ineq ])
 
-                        available_for_pi_j = [tup for tup in dual_variables if tup not in dual_vars_in_new_ineq and tup != pi_i and abs(pi_i[VALUE] - tup[VALUE]) > 5]
+                        available_for_pi_j = [tup for tup in dual_variables if tup not in dual_vars_in_new_ineq and tup != pi_i]
 
                         if not available_for_pi_j:
                             continue
