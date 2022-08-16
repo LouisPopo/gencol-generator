@@ -966,7 +966,6 @@ def create_gencol_file(
 
                     print(" === ")
                     print('Adding e_ij inequalities ... ')
-                    start_time = time.time()
 
                     nb_e_ij_ineq = int(0.15 * len(dual_variables))
 
