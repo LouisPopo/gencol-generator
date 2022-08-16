@@ -791,7 +791,11 @@ def create_gencol_file(
                 x = 0
 
                 groups = []
-                grp_size = 6
+
+
+                grp_size = 10
+
+
                 min_val = min(dual_variables, key=lambda t: t[VALUE])[VALUE]
                 max_val = max(dual_variables, key=lambda t: t[VALUE])[VALUE] + 1 # (Pour quil soit inclus)
                 nb_groups = ceil((max_val - min_val) / grp_size)
@@ -827,8 +831,6 @@ def create_gencol_file(
                 previous_group_last_dual_var = None
 
                 wrong_ineq = 0
-
-                print(len(groups))
 
                 for group in groups:
                     
