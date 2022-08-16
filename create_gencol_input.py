@@ -828,7 +828,7 @@ def create_gencol_file(
 
                 # le groupe avec les plus grosse valeur est au debut et ainsi de suite
 
-                nb_serie_per_group = 4
+                nb_serie_per_group = 10
 
                 previous_group_last_dual_var = None
                 previous_group_last_dual_vars = [None] * nb_serie_per_group
