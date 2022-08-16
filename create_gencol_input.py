@@ -32,7 +32,7 @@ GROUP_INEQUALITIES = 3
 type_of_inequalities = GROUP_INEQUALITIES
 
 with_errors = False
-add_eij_in_objective_function = True
+add_eij_in_objective_function = False
 
 
 # Pairwise inequalities
