@@ -32,7 +32,7 @@ GROUP_INEQUALITIES = 3
 type_of_inequalities = GROUP_INEQUALITIES
 
 with_errors = False
-add_eij_in_objective_function = False
+add_eij_in_objective_function = True
 
 
 # Pairwise inequalities
@@ -879,7 +879,10 @@ def create_gencol_file(
                                     1
                                 )
 
-                                r = random.uniform(0,1)
+                                if with_errors:
+                                    r = random.uniform(0,1)
+                                else:
+                                    r = 0
 
                                 if pi_i_value >= pi_j_value:
                                     if r <= odds_right:
@@ -967,7 +970,7 @@ def create_gencol_file(
                     print(" === ")
                     print('Adding e_ij inequalities ... ')
 
-                    nb_e_ij_ineq = int(0.15 * len(dual_variables))
+                    nb_e_ij_ineq = int(0.20 * len(dual_variables))
 
                     dual_vars_in_new_ineq = set()
 
