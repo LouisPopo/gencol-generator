@@ -841,6 +841,10 @@ def create_gencol_file(
                 graph_index = 0
 
                 for group in groups:
+
+                    for dual_var in group : 
+
+                        dual_var_graph_index[dual_var[NAME]] = graph_index
                     
 
                     if len(group) > 2:
@@ -855,8 +859,6 @@ def create_gencol_file(
                         
 
                         for dual_var in group:
-
-                            dual_var_graph_index[dual_var[NAME]] = graph_index
 
                             group_graph.add_node(dual_var[NAME])
                             group_graph.add_edge('Source', dual_var[NAME], 0, 1)
