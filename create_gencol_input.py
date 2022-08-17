@@ -9,7 +9,7 @@ from operator import mod
 
 import os
 import random
-from re import L
+from re import L, T
 from tkinter import N
 import numpy as np
 import networkx as nx
@@ -31,8 +31,8 @@ GROUP_INEQUALITIES = 3
 
 type_of_inequalities = GROUP_INEQUALITIES
 
-with_errors = False
-add_eij_in_objective_function = False
+with_errors = True
+add_eij_in_objective_function = True
 
 
 # Pairwise inequalities
@@ -807,8 +807,8 @@ def create_gencol_file(
 
                     dual_vars_to_append = [tup for tup in dual_variables if tup[VALUE] >= lb and tup[VALUE] < ub]
 
-                    if len(dual_vars_to_append) > 0:
-                        groups.append(dual_vars_to_append)
+                    # On append meme si cest nul
+                    groups.append(dual_vars_to_append)
 
                     #print(" {} <= x < {} : ({})".format(lb, ub, len(dual_vars_to_append)))
 
@@ -825,6 +825,8 @@ def create_gencol_file(
                 
 
                 groups.reverse()
+
+                ineq_graphs = []
 
                 # le groupe avec les plus grosse valeur est au debut et ainsi de suite
 
@@ -847,7 +849,6 @@ def create_gencol_file(
                         sorted_group = group.sort(key = lambda t: t[VALUE], reverse=True)
                 
                         group_graph.add_node('Source')
-
                         
                         for dual_var in group:
 
@@ -909,6 +910,8 @@ def create_gencol_file(
 
                         #print("After removing cycles : {}".format(group_graph.graph.number_of_edges()))
 
+                        ineq_graphs.append(group_graph)
+
                         ineq_series = group_graph.get_ineq_series_libr(nb_serie_per_group) # only one serie
 
                         for s_i, serie in enumerate(ineq_series):
@@ -934,7 +937,8 @@ def create_gencol_file(
 
                             previous_group_last_dual_vars[s_i] = serie[-1]
                             
-
+                    else:
+                        ineq_graphs.append(None)
 
                         # if len(ineq_series) < 1:
                         #     continue
@@ -989,12 +993,26 @@ def create_gencol_file(
 
                         # Ici, on doit verifier que l'inegalité suit notre logique de pairwise
 
-                        if pi_i[VALUE] >= pi_j[VALUE]:
+                        grp_nb_i = int ( (max_val - pi_i[VALUE]) / grp_size )
+                        grp_nb_j = int ( (max_val - pi_j[VALUE]) / grp_size )
+
+                        if grp_nb_i > grp_nb_j:
+                            pi_1 = pi_j
+                            pi_2 = pi_i
+                        elif grp_nb_i < grp_nb_j:
                             pi_1 = pi_i
                             pi_2 = pi_j
                         else:
-                            pi_1 = pi_j
-                            pi_2 = pi_i
+                            # Same group, on doit aller chercher le graphe ineq
+                            corresponding_graph = ineq_graphs[grp_nb_i].graph
+
+                            if has_path(corresponding_graph, pi_i[NAME], pi_j[NAME]):
+                                pi_1 = pi_i
+                                pi_2 = pi_j
+                            else:
+                                pi_1 = pi_j
+                                pi_2 = pi_i
+
 
                         real_pi_1_val = pi_1[VALUE]
                         real_pi_2_val = pi_2[VALUE]
@@ -1003,9 +1021,9 @@ def create_gencol_file(
                         dual_vars_in_new_ineq.add(pi_2)
 
                         
-                        # if real_pi_2_val > real_pi_1_val:
-                        #     wrong_ineq += 1
-                        #     print("{} : {} is a mistake".format(pi_1, pi_2))
+                        if real_pi_2_val > real_pi_1_val:
+                            wrong_ineq += 1
+                            print("{} : {} is a mistake".format(pi_1, pi_2))
                         
                         real_abs_diff = abs(real_pi_1_val - real_pi_2_val)
 
