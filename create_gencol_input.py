@@ -1010,6 +1010,8 @@ def create_gencol_file(
 
                             corresponding_graph = ineq_graphs[grp_nb_i].graph
 
+                            print(corresponding_graph.nodes())
+
                             if has_path(corresponding_graph, pi_i[NAME], pi_j[NAME]):
                                 pi_1 = pi_i
                                 pi_2 = pi_j
