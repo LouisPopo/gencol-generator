@@ -804,6 +804,8 @@ def create_gencol_file(
                     lb = min_val + g * grp_size
                     ub = min_val + (g + 1) * grp_size
 
+                    print('[ {} , {} ['.format(lb, ub))
+
                     dual_vars_to_append = [tup for tup in dual_variables if tup[VALUE] >= lb and tup[VALUE] < ub]
 
                     # On append meme si cest nul
