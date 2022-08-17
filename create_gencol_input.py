@@ -804,8 +804,6 @@ def create_gencol_file(
                     lb = min_val + g * grp_size
                     ub = min_val + (g + 1) * grp_size
 
-                    print('[ {} , {} ['.format(lb, ub))
-
                     dual_vars_to_append = [tup for tup in dual_variables if tup[VALUE] >= lb and tup[VALUE] < ub]
 
                     # On append meme si cest nul
@@ -855,7 +853,6 @@ def create_gencol_file(
                 
                         group_graph.add_node('Source')
                         
-                        print('Adding : {} '.format([d for d in group]))
 
                         for dual_var in group:
 
@@ -993,8 +990,6 @@ def create_gencol_file(
                             pi_2 = pi_j
                         else:
                             # Same group, on doit aller chercher le graphe ineq
-
-                            print('Finding {} ({}) and {} ({}) in graph '.format(pi_i, pi_j, grp_nb_i, grp_nb_j))
 
                             corresponding_graph = ineq_graphs[grp_nb_i].graph
 
