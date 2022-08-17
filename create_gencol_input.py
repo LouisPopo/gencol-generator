@@ -792,7 +792,6 @@ def create_gencol_file(
 
                 groups = []
 
-
                 grp_size = 10
 
 
@@ -969,6 +968,8 @@ def create_gencol_file(
 
                 # On rajoute les inegalites e_ij
 
+                print(ineq_graphs)
+
                 if add_eij_in_objective_function:
 
                     print(" === ")
@@ -1004,6 +1005,9 @@ def create_gencol_file(
                             pi_2 = pi_j
                         else:
                             # Same group, on doit aller chercher le graphe ineq
+
+                            print('Finding {} and {} in graph '.format(pi_i, pi_j))
+
                             corresponding_graph = ineq_graphs[grp_nb_i].graph
 
                             if has_path(corresponding_graph, pi_i[NAME], pi_j[NAME]):
