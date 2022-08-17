@@ -838,6 +838,10 @@ def create_gencol_file(
 
                 wrong_ineq = 0
 
+                dual_var_graph_index = dict()
+
+                graph_index = 0
+
                 for group in groups:
                     
 
@@ -854,6 +858,8 @@ def create_gencol_file(
                         print('Adding : {} '.format([d for d in group]))
 
                         for dual_var in group:
+
+                            dual_var_graph_index[dual_var[NAME]] = graph_index
 
                             group_graph.add_node(dual_var[NAME])
                             group_graph.add_edge('Source', dual_var[NAME], 0, 1)
@@ -943,28 +949,7 @@ def create_gencol_file(
                     else:
                         ineq_graphs.append(None)
 
-                        # if len(ineq_series) < 1:
-                        #     continue
-                        
-                        # ineq_serie = ineq_series[0]
-
-                        # if previous_group_last_dual_var != None:
-
-                        #     inequalities.append((previous_group_last_dual_var, ineq_serie[0]))
-
-                        # for i in range(len(ineq_serie) - 1):
-
-                        #     pi_1_real_value = dual_variables_vals[ineq_serie[i]]
-                        #     pi_2_real_value = dual_variables_vals[ineq_serie[i+1]]
-
-                        #     if pi_2_real_value > pi_1_real_value:
-                        #         wrong_ineq += 1
-
-                        #     tasks_in_new_inequalities.add(ineq_serie[i])
-                        #     tasks_in_new_inequalities.add(ineq_serie[i+1])
-                        #     inequalities.append((ineq_serie[i], ineq_serie[i+1], 0))
-
-                        # previous_group_last_dual_var = ineq_serie[-1]
+                    graph_index += 1
 
                 print("Wrong ineq : {}".format(wrong_ineq))
                 print("Nb of ineq : {}".format(len(inequalities)))
@@ -998,9 +983,8 @@ def create_gencol_file(
 
                         # Ici, on doit verifier que l'inegalité suit notre logique de pairwise
 
-                        grp_nb_i = int ( (max_val - pi_i[VALUE]) / grp_size )
-                        grp_nb_j = int ( (max_val - pi_j[VALUE]) / grp_size )
-
+                        grp_nb_i = dual_var_graph_index[pi_i[NAME]]
+                        grp_nb_j = dual_var_graph_index[pi_j[NAME]]
                         if grp_nb_i > grp_nb_j:
                             pi_1 = pi_j
                             pi_2 = pi_i
