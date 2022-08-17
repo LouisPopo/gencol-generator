@@ -954,8 +954,6 @@ def create_gencol_file(
 
                 # On rajoute les inegalites e_ij
 
-                print(ineq_graphs)
-
                 if add_eij_in_objective_function:
 
                     print(" === ")
