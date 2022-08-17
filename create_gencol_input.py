@@ -849,6 +849,8 @@ def create_gencol_file(
                 
                         group_graph.add_node('Source')
                         
+                        print('Adding : {} '.format([d for d in group]))
+
                         for dual_var in group:
 
                             group_graph.add_node(dual_var[NAME])
