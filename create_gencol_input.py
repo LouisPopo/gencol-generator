@@ -32,7 +32,7 @@ GROUP_INEQUALITIES = 3
 type_of_inequalities = GROUP_INEQUALITIES
 
 with_errors = False
-add_eij_in_objective_function = True
+add_eij_in_objective_function = False
 
 
 # Pairwise inequalities
@@ -986,6 +986,8 @@ def create_gencol_file(
                             continue
 
                         pi_j = random.choice(available_for_pi_j)
+
+                        # Ici, on doit verifier que l'inegalité suit notre logique de pairwise
 
                         if pi_i[VALUE] >= pi_j[VALUE]:
                             pi_1 = pi_i
