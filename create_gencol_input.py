@@ -909,7 +909,7 @@ def create_gencol_file(
 
                         #print("After removing cycles : {}".format(group_graph.graph.number_of_edges()))
 
-                        ineq_graphs.append(group_graph)
+                        ineq_graphs.append(copy(group_graph))
 
                         ineq_series = group_graph.get_ineq_series_libr(nb_serie_per_group) # only one serie
 
@@ -1010,7 +1010,7 @@ def create_gencol_file(
 
                             corresponding_graph = ineq_graphs[grp_nb_i].graph
 
-                            print(corresponding_graph.nodes())
+                            #print(corresponding_graph.nodes())
 
                             if has_path(corresponding_graph, pi_i[NAME], pi_j[NAME]):
                                 pi_1 = pi_i
