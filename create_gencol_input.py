@@ -1008,7 +1008,7 @@ def create_gencol_file(
                         else:
                             # Same group, on doit aller chercher le graphe ineq
 
-                            print('Finding {} and {} in graph '.format(pi_i, pi_j))
+                            print('Finding {} ({}) and {} ({}) in graph '.format(pi_i, pi_j, grp_nb_i, grp_nb_j))
 
                             corresponding_graph = ineq_graphs[grp_nb_i].graph
 
