@@ -51,6 +51,9 @@ def copy_files(suffix):
 
     for folder in os.listdir('Networks'):
 
+        if 'Network' not in folder:
+            continue
+
         for file in os.listdir('Networks/{}'.format(folder)):
 
             if suffix in file:

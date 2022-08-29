@@ -15,6 +15,10 @@ from math import ceil
 # 1. Va chercher tous les folder dans Networks et genere un fichier inputProblem... par folder (par instance)
 
 for folder in os.listdir('Networks'):
+
+    if 'Network' not in folder:
+        continue
+
     print(folder)
 
     network_folder = 'Networks/{}'.format(folder)
