@@ -1,6 +1,7 @@
 # given an instance, go read the folder, read dual vars, read input problem, create a graph
 
 from math import floor
+from tracemalloc import start
 from typing import NewType
 import networkx as nx
 
@@ -8,7 +9,7 @@ import plotly.graph_objects as go
 
 import matplotlib.pyplot as plt
 
-instance = '4b_5_0'
+instance = '4b_13_0'
 
 # Creating graph
 
@@ -18,6 +19,8 @@ found_arcs = False
 
 
 positions = []
+starts = []
+ends = []
 
 x_counts = {}
 
@@ -28,6 +31,11 @@ with open('Networks/Network{}/voyages.txt'.format(instance), 'r') as f:
     for i, line in enumerate(f):
 
         infos = line.split(';')
+
+        print(infos)
+
+        starts.append(infos[2])
+        ends.append(infos[4])
 
         x_pos = int(int(infos[2]) / 15) # converti en range de 15 mins
 
@@ -53,6 +61,8 @@ with open('Networks/Network{}/inputProblem{}_default.in'.format(instance, instan
             node_text.append(node_name)
 
             node_nb = int(node_name.replace('n_T', ''))
+
+            node_text[node_nb] += ' : ({},{})'.format(starts[node_nb], ends[node_nb])
 
             # print('Node name is : {}.'.format(node_name))
 
@@ -88,7 +98,7 @@ with open('Networks/Network{}/dualVarsFirstLinearRelaxProblem{}_default.out'.for
             if int_val >= 900:
                 int_val = 100
 
-            node_text[trip_nb] += ' : {}'.format(int_val)
+            node_text[trip_nb] += '\n{}'.format(int_val)
 
             dual_variables_values.append(int_val)
 
