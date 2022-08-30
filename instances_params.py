@@ -3,7 +3,7 @@
 
 network_num = '4b'
 
-max_minutes = [4, 3.5, 3, 2.66, 2.33, 2, 1.66, 1.33]
+max_minutes = [3.66, 3.33, 3, 2.66, 2.33, 2]
 
 var_modif = 3
 nb_bornes = 3
@@ -14,7 +14,7 @@ nb_instances_per_max_min = 3
 fixed_cost = 1000                       # Cout d'un vehicule
 nb_veh = 100             
 
-sigma_max = 363000                      # En Wh (!!!!! A CHANGER !!!!!) 
+sigma_max = 100000                      # En Wh
 speed = 18/60                           # en km/min (en moyenne, sans compter les arrets)
 enrgy_km = 1050                         # Energie consommee en Wh par km parcouru
 enrgy_w = 11000/60                      # Energie consommee en Wh par minute passee a l'arret
