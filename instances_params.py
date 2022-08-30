@@ -3,7 +3,7 @@
 
 network_num = '4b'
 
-max_minutes = [5]
+max_minutes = [13]
 
 var_modif = 3
 nb_bornes = 3
