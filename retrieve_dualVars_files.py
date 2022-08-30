@@ -14,6 +14,8 @@ for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
     network, max_min, seed = instance_info.split('_')
 
+    print('Veryfing : Networks/Network{}'.format(network))
+
     if os.path.exists('Networks/Network{}'.format(network)):
 
         print('Exists')
