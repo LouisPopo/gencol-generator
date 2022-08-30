@@ -6,9 +6,11 @@ import shutil
 
 for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
-    print(file)
+    
 
-    instance_info = file.replace('dualVarsFirstLinearRelaxProblem', '')
+    instance_info = file.replace('../MdevspGencolTest/dualVarsFirstLinearRelaxProblem', '').replace('_default.out', '')
+
+    print(instance_info)
 
     network, max_min, seed = instance_info.split('_')
 
