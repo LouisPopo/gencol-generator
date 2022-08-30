@@ -16,7 +16,7 @@ for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
     print('Veryfing : Networks/Network{}'.format(network))
 
-    if os.path.exists('Networks/Network{}'.format(network)):
+    if os.path.exists('Networks/Network{}_{}_{}'.format(network, max_min, seed)):
 
         print('Exists')
 
