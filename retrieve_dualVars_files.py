@@ -6,8 +6,6 @@ import shutil
 
 for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
-    
-
     instance_info = file.replace('../MdevspGencolTest/dualVarsFirstLinearRelaxProblem', '').replace('_default.out', '')
 
     print(instance_info)
@@ -16,9 +14,11 @@ for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
     print('Veryfing : Networks/Network{}'.format(network))
 
-    if os.path.exists('Networks/Network{}_{}_{}'.format(network, max_min, seed)):
+    instance_folder = 'Networks/Network_{}_{}_{}'.format(network, max_min, seed)
+
+    if os.path.exists(instance_folder):
 
         print('Exists')
 
-        shutil.copy('../MdevspGencolTest/{}'.format(file), 'Networks/Network{}'.format(network))
+        shutil.copy('../MdevspGencolTest/{}'.format(file), instance_folder)
 
