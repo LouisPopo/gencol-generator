@@ -16,5 +16,7 @@ for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
     if os.path.exists('Networks/Network{}'.format(network)):
 
+        print('Exists')
+
         shutil.copy('../MdevspGencolTest/{}'.format(file), 'Networks/Network{}'.format(network))
 
