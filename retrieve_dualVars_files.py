@@ -4,7 +4,7 @@ from glob import glob
 import os
 import shutil
 
-for file in glob('../MdevspGencolTest/','dualVarsFirstLinearRelax*'):
+for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
     instance_info = file.replace('dualVarsFirstLinearRelaxProblem', '')
 
