@@ -20,5 +20,13 @@ for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):
 
         print('Exists')
 
+        print('Copying : {} to {}'.format(file, instance_folder))
+
+        if os.path.exists('../MdevspGencolTest/{}'.format(file)):
+            print('source exists')
+        
+        if os.path.exists(instance_folder):
+            print('destination exists')
+
         shutil.copy('../MdevspGencolTest/{}'.format(file), instance_folder)
 
