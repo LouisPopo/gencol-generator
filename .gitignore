@@ -4,6 +4,7 @@
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
+code_juliette/*
 code_juliette/dataset_trip_shifting/__pycache__/*
 */__pycache__/
 __pycache__/
