@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 
 import matplotlib.pyplot as plt
 
-instance = '4b_20_0'
+instance = '4b_5_0'
 
 # Creating graph
 
@@ -95,7 +95,7 @@ with open('Networks/Network{}/dualVarsFirstLinearRelaxProblem{}_default.out'.for
 
             int_val = round(float(dual_var_value))
 
-            if int_val >= 900:
+            if int_val >= 800:
                 int_val = 100
 
             node_text[trip_nb] += '\n{}'.format(int_val)
