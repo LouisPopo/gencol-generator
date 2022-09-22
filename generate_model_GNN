@@ -1,0 +1,26 @@
+import dgl
+import torch
+
+import pandas as pd
+
+import networkx as nx
+
+import matplotlib.pyplot as plt
+
+
+
+df_nodes = pd.read_csv('DGL_graph/nodes4b_4_0.csv',sep=';',index_col = 0)
+df_edges = pd.read_csv('DGL_graph/edges4b_4_0.csv',sep=';',index_col = 0)
+
+G = dgl.graph((df_edges['idx_src'], df_edges['idx_dst']))
+G.edata['features'] = torch.tensor(df_edges[['cost', 'energy', 'travel_time', 'waiting_time', 'delta_time', 'rg_id','rg']].astype('float').values)
+G.ndata['features'] = torch.tensor(df_nodes[[c for c in df_nodes.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_10_id', 'nb_fin_10', 'nb_fin_10_id', 't_s', 't_e'] or 's_' in c or 'e_' in c]].astype('float').values)
+
+print('Nb Nodes : {}'.format(G.num_nodes()))
+print('Nb edges : {}'.format(G.num_edges()))
+
+nxg = G.to_networkx()
+
+nx.draw(nxg)
+
+plt.show()

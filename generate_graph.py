@@ -259,5 +259,20 @@ df_nodes['nb_fin_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_e==x.
 df_nodes['nb_fin_id_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_e==x.n_e)&(df_trip.t_e<=x.t_e)&
     (df_trip.n_s==x.n_s)&(df_trip.t_e>=x.t_e-10)])-1 if x.n==1 else 0, axis=1)
 
+df_edges = pd.merge(df_edges, df_nodes[['name','t_e', 'n_e',]], left_on = ['src'], right_on = ['name'])
+df_edges = pd.merge(df_edges, df_nodes[['name','t_s', 'n_s']], left_on = ['dst'], right_on = ['name'])
+
+
+gg = df_edges.groupby(['src', 'n_s']).rank("dense", ascending=True)
+for key, item in gg:
+    print(gg.get_group(key), "\n\n")
+
+df_edges['rg_id'] = df_edges.groupby(['src','n_s'])["t_s"].rank("dense", ascending=True)
+df_edges['rg'] = df_edges.groupby(['src'])["t_s"].rank("dense", ascending=True)
+
+# df_edges.rename(columns= {'c_x': 'c', 'c_y': 'c_x', 'c':'c_y'}, inplace = True)
+del df_edges['name_x']
+del df_edges['name_y']
+
 df_nodes.to_csv('DGL_graph/nodes{}.csv'.format(instance_name), sep=';')
 df_edges.to_csv('DGL_graph/edges{}.csv'.format(instance_name), sep=';')
