@@ -63,7 +63,7 @@ for line in hlp_file.readlines():
 def c_trip(n1, n2, e1, s2): # Cost of the hlp trip from node 1 to node 2 between 
     # a trip finishing at n1 at time e1 and starting at n2 at time s2
     travel_time = hlp[n1][n2]
-    wait_time = s2 - (e1 + travel_time)
+    wait_time = s2 - e1 - travel_time
     cost = int(cost_t*travel_time + cost_w*wait_time)
     total_time = s2 - e1
     return cost, travel_time, wait_time, total_time
@@ -86,7 +86,7 @@ def c_depot(n1, n2):
 
 def compatible(n1, n2, e1, s2):
     travel_time = hlp[n1][n2]
-    return ((e1 + travel_time) <= s2) and (s2 - e1) <= delta
+    return ((e1 + travel_time) <= s2) and ((s2 - e1) <= delta)
 
 
 # On creer les noeuds : un par voyage, + recharges
@@ -130,6 +130,7 @@ for i, trip1 in enumerate(trips_list):
         depot_node,n200,_ = depot.split(';')
         energy = int(e_hlp(depot_node, t1_n_s))
         cost, travel_time, WWW = c_depot(depot_node, t1_n_s)
+
         list_edges.append(["o_D{}".format(k), "n_T{}".format(i), cost, energy, travel_time, WWW, travel_time, 0, t1_line])
 
         energy = int(t1_energy + e_hlp(t1_n_e, depot_node))
@@ -141,7 +142,7 @@ for i, trip1 in enumerate(trips_list):
         t2_id,t2_n_s,t2_t_s,t2_n_e,t2_t_e,t2_line,_ = trip2.split(';')
         if compatible(t1_n_e, t2_n_s, int(t1_t_e), int(t2_t_s)):
             energy = int(t1_energy + e_hlp(t1_n_e, t2_n_s))
-            cost, travel_time, wait_time, total_time = c_trip(t1_n_e, t1_n_s, int(t1_t_e), int(t2_t_s))
+            cost, travel_time, wait_time, total_time = c_trip(t1_n_e, t2_n_s, int(t1_t_e), int(t2_t_s))
             list_edges.append(["n_T{}".format(i), "n_T{}".format(j), cost, energy, travel_time, wait_time, total_time, t1_line, t2_line])
 
     
@@ -164,7 +165,7 @@ for i, trip1 in enumerate(trips_list):
 
 for h, charging_station in enumerate(chrg_stations_list):
     st_n,nb_b,_ = charging_station.split(';')
-    for p in range(nb_periods):
+    for p in range(nb_periods - 1):
         # wait -> wait
         list_edges.append(["w_H{}_P{}".format(h,p), "w_H{}_P{}".format(h,p+1), 0, 0, 0, 0, recharge, 0, 0])
         # wait -> charge
@@ -183,9 +184,80 @@ for h, charging_station in enumerate(chrg_stations_list):
         energy = int(e_hlp(st_n, depot_node))
         cost, travel_time, waiting_time = c_depot(st_n,depot_node)
         list_edges.append(["w_H{}_P{}".format(h, nb_periods-1), "k_D{}".format(k), cost, energy, travel_time, wait_time, travel_time, 0, 0])
+                                                        #cost, energy, travel time, waiting time, total time, 
+df_edges = pd.DataFrame(list_edges, columns=['src','dst','cost','energy','travel_time','waiting_time','delta_time','line_i','line_j'])
 
-df_edges = pd.DataFrame(list_edges, columns=['src','dst','c','r1','t_d','t_w','delta','line_i','line_j'])
+# One hot encoding of the type of node
+df_nodes['type'] = df_nodes['name'].apply(lambda x : x.split('_')[0])
+for t in ['o', 'k', 'n', 'w', 'c', 'd']:
+    df_nodes[t] = (df_nodes['type']==t).astype(int)
+
+# dictionnaire entre le nom du noeud et un id unique
+name_idxn = dict(df_nodes.reset_index().set_index('name')['index'])
+
+# Mets les IDS unique des noeuds sur les edges
+df_edges['idx_src'] = df_edges['src'].apply(lambda x : name_idxn[x])
+df_edges['idx_dst'] = df_edges['dst'].apply(lambda x : name_idxn[x])
+df_edges = df_edges.astype({'cost' : float, 'energy' : float})
+
+# Relative cost 1 = max, 0.5 = half max cost
+df_edges['c_stand'] = df_edges['cost']/df_edges['cost'].max()
+df_edges['energy_stand'] = df_edges['energy']/sigma_max # A VERIFIER L'UTILITE
+
+# ON DEVRAIT ALLER CHERCHER ICI LES "REPONSES ET LES AJOUTER AUX NOEUDS"
+
+# BOUT DE CODE PRIS DE JULIETTE : ON SIMPLIFIE NOTRE GRAPHE PHYSIQUE, ET ON MERGE LES EMPLACEMENTS
+# QUI ONT UNE DISTANCE DE 0 EN UN NOUVEL ENDROIT
+
+# Dict entre des noeuds dont la distance est 0
+hlp = pd.read_csv(network_folder + '/hlp.txt',sep=';',header=None, usecols=[0,1,2], names=['n1','n2','t'])
+dict_nodes = dict()
+for x in hlp[hlp.t==0].itertuples():
+    if x.n1 not in dict_nodes.keys():
+        dict_nodes[x.n1] = [x.n2]
+    else :
+        if x.n2 not in dict_nodes[x.n1]:
+            dict_nodes[x.n1].append(x.n2)
+
+# print(dict_nodes)
+
+dict_nodes_2 = dict()
+list_node = []
+for node in dict_nodes.keys():
+    if node not in list_node:
+        for n2 in dict_nodes[node]:
+            dict_nodes_2[n2] = node
+        list_node.append(node)
+        list_node += dict_nodes[node]
+for node in hlp['n1'].unique():
+    if node not in dict_nodes_2.keys():
+        dict_nodes_2[node] = node
+# print("----")
+# print(dict_nodes_2)
+
+df_nodes['n_s'] = df_nodes['n_s'].apply(lambda x:dict_nodes_2[x])
+df_nodes['n_e'] = df_nodes['n_e'].apply(lambda x:dict_nodes_2[x])
+for noeud in df_nodes['n_s'].unique():
+    df_nodes['s_'+noeud] = (df_nodes['n_s']==noeud).astype(int)
+for noeud in df_nodes['n_e'].unique():
+    df_nodes['e_'+noeud] = (df_nodes['n_e']==noeud).astype(int)
 
 
-df_nodes.to_csv('DGL_graph/nodes{}.csv'.format(instance_name), sep='\t')
-df_edges.to_csv('DGL_graph/edges{}.csv'.format(instance_name), sep='\t')
+df_trip = pd.read_csv(network_folder + '/voyages.txt',sep=';',header=None,usecols=[0,1,2,3,4,5],
+    names=['trip','n_s','t_s','n_e','t_e','line'])
+df_trip['n_s'] = df_trip['n_s'].apply(lambda x:dict_nodes_2[x])
+df_trip['n_e'] = df_trip['n_e'].apply(lambda x:dict_nodes_2[x])
+
+df_nodes = df_nodes.astype({'t_s': float, 't_e': float})
+
+df_nodes['nb_dep_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_s==x.n_s)&(df_trip.t_s>=x.t_s)&
+    (df_trip.t_s<=x.t_s+10)])-1 if x.n==1 else 0, axis=1)
+df_nodes['nb_dep_id_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_s==x.n_s)&(df_trip.n_e==x.n_e)&
+    (df_trip.t_s>=x.t_s)&(df_trip.t_s<=x.t_s+10)])-1 if x.n==1 else 0, axis=1)
+df_nodes['nb_fin_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_e==x.n_e)&(df_trip.t_e<=x.t_e)&
+    (df_trip.t_e>=x.t_e-10)])-1 if x.n==1 else 0, axis=1)
+df_nodes['nb_fin_id_10'] = df_nodes.apply(lambda x:len(df_trip.loc[(df_trip.n_e==x.n_e)&(df_trip.t_e<=x.t_e)&
+    (df_trip.n_s==x.n_s)&(df_trip.t_e>=x.t_e-10)])-1 if x.n==1 else 0, axis=1)
+
+df_nodes.to_csv('DGL_graph/nodes{}.csv'.format(instance_name), sep=';')
+df_edges.to_csv('DGL_graph/edges{}.csv'.format(instance_name), sep=';')
