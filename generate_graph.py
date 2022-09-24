@@ -263,9 +263,9 @@ df_edges = pd.merge(df_edges, df_nodes[['name','t_e', 'n_e',]], left_on = ['src'
 df_edges = pd.merge(df_edges, df_nodes[['name','t_s', 'n_s']], left_on = ['dst'], right_on = ['name'])
 
 
-gg = df_edges.groupby(['src', 'n_s']).rank("dense", ascending=True)
-for key, item in gg:
-    print(gg.get_group(key), "\n\n")
+# gg = df_edges.groupby(['src', 'n_s']).rank("dense", ascending=True)
+# for key, item in gg:
+#     print(gg.get_group(key), "\n\n")
 
 df_edges['rg_id'] = df_edges.groupby(['src','n_s'])["t_s"].rank("dense", ascending=True)
 df_edges['rg'] = df_edges.groupby(['src'])["t_s"].rank("dense", ascending=True)
@@ -273,6 +273,21 @@ df_edges['rg'] = df_edges.groupby(['src'])["t_s"].rank("dense", ascending=True)
 # df_edges.rename(columns= {'c_x': 'c', 'c_y': 'c_x', 'c':'c_y'}, inplace = True)
 del df_edges['name_x']
 del df_edges['name_y']
+
+
+
+
+# Get les variables duales : 
+dual_vars = pd.read_csv(network_folder + "/dualVarsFirstLinearRelaxProblem4b_4_0_default.out", sep=' ', names=['name', 'pi_value'])
+dual_vars = dual_vars.astype({'pi_value' : float})
+
+dual_vars['name'] = dual_vars['name'].apply(lambda x : x.replace('Cover', 'n'))
+print(dual_vars)
+
+df_nodes = pd.merge(df_nodes, dual_vars, how="left", on=['name']).fillna(0) # Fill NA pour les dual vars qui ont pas de match (donc les noeuds pas voyage)
+
+df_nodes['class'] = df_nodes['pi_value'].apply(lambda x : int(x > 0))
+
 
 df_nodes.to_csv('DGL_graph/nodes{}.csv'.format(instance_name), sep=';')
 df_edges.to_csv('DGL_graph/edges{}.csv'.format(instance_name), sep=';')
