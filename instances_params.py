@@ -1,15 +1,15 @@
 
 
 
-network_num = '4b'
+network_num = '3b'
 
-max_minutes = [4,5,6]
+max_minutes = [1.5, 2, 2.5, 3]
 
-var_modif = 3
+var_modif = 1
 nb_bornes = 3
 nb_veh = 100                            # Nb. de vehicules disponibles a un depot
 
-nb_instances_per_max_min = 3
+nb_instances_per_max_min = 2
 
 fixed_cost = 1000                       # Cout d'un vehicule
 nb_veh = 100             
