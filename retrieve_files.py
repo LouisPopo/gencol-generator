@@ -7,10 +7,13 @@ import os
 import shutil
 
 unsolved = []
+nb = 0
 
 for instance_folder in glob('Networks/Network*'):
 
-    instance_info = instance_folder.replace('Network', '')
+    nb+=1
+
+    instance_info = instance_folder.split('/')[1].replace('Network', '')
 
     dual_vars_path = '../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_info)
 
@@ -22,7 +25,7 @@ for instance_folder in glob('Networks/Network*'):
 
         unsolved.append(instance_info)
 
-print('Unsolved instances : {}'.format(unsolved))
+print('{}/{} instances were unsolved : {}'.format(len(unsolved), nb, unsolved))
 
           
 
