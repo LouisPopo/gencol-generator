@@ -17,11 +17,13 @@ for instance_folder in glob('Networks/Network*'):
 
     dual_vars_path = '../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_info)
     report_path = '../MdevspGencolTest/reportProblem{}_default.out'.format(instance_info)
+    out_path = '../MdevspGencolTest/out{}_default.out'.format(instance_info)
 
     if os.path.exists(dual_vars_path):
 
         shutil.copy(dual_vars_path, instance_folder)
         shutil.copy(report_path, instance_folder)
+        shutil.copy(out_path, instance_folder)
 
     else:
 
