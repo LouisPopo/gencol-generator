@@ -6,14 +6,19 @@
 from glob import glob
 import os
 import shutil
+import pandas as pd
 
-import re
+results = []
 for instance_folder in glob('Networks/Network*'):
 
     instance_info = instance_folder.split('/')[1].replace('Network', '')
 
-    dual_vars_path = '{}/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_folder, instance_info)
+    network, max_min, seed = instance_info.split('_')
+
+    dual_vars_file_path = '{}/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_folder, instance_info)
     report_file_path = '{}/reportProblem{}_default.out'.format(instance_folder, instance_info)
+    out_file_path = '{}/out{}_default'.format(instance_folder, instance_info)
+    trips_file_path = '{}/voyages.txt'.format(instance_folder)
 
     if os.path.exists(report_file_path):
 
@@ -29,5 +34,38 @@ for instance_folder in glob('Networks/Network*'):
 
             obj_val = float(obj_val_line.split(':')[1].split(' ')[-1])
 
-            print('{} : {}'.format(time, obj_val))
+        with open(out_file_path, 'r') as f:
 
+            gotV0, gotV1 = False, False
+
+            for line in f:
+
+                if 'Veh_D0' in line:
+
+                    nb_Veh_D0 = float(line.split(' ')[4])
+
+                    gotV0 = True
+                
+                elif 'Veh_D1' in line:
+
+                    nb_Veh_D1 = float(line.split(' ')[4])
+
+                    gotV1 = True
+
+                if gotV0 and gotV1 :
+                    break
+
+        with open(trips_file_path, 'r') as f:
+
+            nb_trips = len(f.readlines())
+
+        results.append([network, max_min, int(seed), nb_trips, time, nb_Veh_D0, nb_Veh_D1, obj_val])
+    
+print(results)
+
+df_results = pd.DataFrame(results, columns=['net', 'max_min', 'seed', 'nb_trips', 'sol_time', 'nb_veh_D0', 'nb_veh_D1', 'obj_val']) 
+
+df_results.sort_values(['max_min', 'seed'], inplace=True)
+
+df_results.to_csv('instances_stats.csv', index=False)       
+    
