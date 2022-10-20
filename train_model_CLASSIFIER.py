@@ -130,7 +130,7 @@ def evaluate(g, features, labels, mask, model):
 
         return score, acc
 
-def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
+def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter, both_are_trips):
 
     # Compute une prediction du modele, compute la loss et l'accuracy de la prediction, retourne loss et acc
 
@@ -153,7 +153,9 @@ def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
     #pi_values = pi_values[mask]
     #preds = preds[mask]
 
-    goods = torch.eq(preds, second_greater_first).float()
+    
+
+    goods = torch.eq(preds[both_are_trips], second_greater_first[both_are_trips]).float()
     acc = (torch.sum(goods) / goods.shape[0]).item()
 
     loss = loss_fnc(probs, second_greater_first)
@@ -187,8 +189,16 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_greater_first = (second_minus_first > 0).float().squeeze(1)
 
             batched_graph = batched_graph.to(device)
+
+            trips = batched_graph.ndata['mask'].unsqueeze(1)
+            a = trips.repeat(num_nodes,1)
+            b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            both_are_trips = (a * b).squeeze(1)
+            # percent_trips = torch.sum(both_are_trips) / both_are_trips.shape[0]
+            # print(percent_trips)
+            both_are_trips = both_are_trips.bool()
             
-            loss, acc = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
+            loss, acc = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id, both_are_trips)
 
             total_loss += loss.item()
             total_acc += acc
@@ -242,11 +252,20 @@ def train(train_dataloader, val_dataloader, device, model):
 
             second_greater_first = (second_minus_first > 0).float().squeeze(1)
 
-            
+            trips = batched_graph.ndata['mask'].unsqueeze(1)
+            a = trips.repeat(num_nodes,1)
+            b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            both_are_trips = (a * b).squeeze(1)
+
+            #percent_trips = torch.sum(both_are_trips) / both_are_trips.shape[0]
+            #print(percent_trips)
+
+            both_are_trips = both_are_trips.bool()
+
 
             # Memes operations dans le meme sens donc ca vs ce qui sort du forward peuvent etre comparer
             
-            loss, acc = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id)
+            loss, acc = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id, both_are_trips)
 
             optimizer.zero_grad()
             loss.backward()
