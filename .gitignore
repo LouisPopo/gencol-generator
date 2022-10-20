@@ -3,7 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
 /MDEVSP_dataset/*.csv
-/MDEVSP_dataset/*.bin
+/MDEVSP_dataset/**/*.bin
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
