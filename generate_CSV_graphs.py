@@ -9,7 +9,13 @@ import pandas as pd
 from glob import glob
 import os
 
-for instance_folder in glob('Networks/Network*'):
+df_all_nodes = pd.DataFrame()
+df_all_edges = pd.DataFrame()
+df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'label'])
+
+nb_instances = len(glob('Networks/Network*'))
+
+for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
     instance_info = instance_folder.split('/')[1].replace('Network', '')
 
@@ -207,8 +213,8 @@ for instance_folder in glob('Networks/Network*'):
     name_idxn = dict(df_nodes.reset_index().set_index('name')['index'])
 
     # Mets les IDS unique des noeuds sur les edges
-    df_edges['idx_src'] = df_edges['src'].apply(lambda x : name_idxn[x])
-    df_edges['idx_dst'] = df_edges['dst'].apply(lambda x : name_idxn[x])
+    df_edges['src_id'] = df_edges['src'].apply(lambda x : name_idxn[x])
+    df_edges['dst_id'] = df_edges['dst'].apply(lambda x : name_idxn[x])
     df_edges = df_edges.astype({'cost' : float, 'energy' : float})
 
     # Relative cost 1 = max, 0.5 = half max cost
@@ -298,8 +304,21 @@ for instance_folder in glob('Networks/Network*'):
 
     df_nodes['class'] = df_nodes['pi_value'].apply(lambda x : int(x > 0))
 
+    df_nodes['node_id'] = df_nodes.index
 
-    df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
-    df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
+    df_nodes['graph_id'] = instance_id
+    df_edges['graph_id'] = instance_id
 
-    print('{} done'.format(instance_info))
+    df_all_nodes = pd.concat([df_all_nodes, df_nodes], ignore_index=True, axis=0)
+    df_all_edges = pd.concat([df_all_edges, df_edges], ignore_index=True, axis=0)
+
+    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, 0]
+
+    # df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
+    # df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
+
+    print('{}/{} done'.format(instance_id + 1, nb_instances))
+
+df_all_graphs.to_csv('MDEVSP_dataset/graphs.csv', sep=',', index=False)
+df_all_nodes.to_csv('MDEVSP_dataset/nodes.csv', sep=',', index=False)
+df_all_edges.to_csv('MDEVSP_dataset/edges.csv', sep=',', index=False)
