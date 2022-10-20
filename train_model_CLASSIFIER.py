@@ -62,21 +62,20 @@ class BinaryClassifier(nn.Module):
 
         self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
         self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=None, allow_zero_in_degree=True)
-        #self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], residual=True, activation=None, allow_zero_in_degree=True)
-
-        #self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        #self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=F.elu, allow_zero_in_degree=True)
-        #self.gat_layers.append(GATConv(hid_size*heads[1], out_size, heads[2], residual=True, activation=None, allow_zero_in_degree=True))
-
-        # 2 * hid_size car on cacatene
-        #self.l1 = nn.Linear(2*hid_size, 32)
-        #self.l2 = nn.Linear(32, 64)
-        #self.l3 = nn.Linear(64, 1)
         
-        # 2 * in_size because we stack two nodes 
+        # Modele X -> GNN -> H -> CONCAT_H -> MLP
         self.l1 = nn.Linear(2*hid_size, hid_size)
         self.l2 = nn.Linear(hid_size, hid_size)
         self.l3 = nn.Linear(hid_size, 1)
+
+        # Modele X -> GNN -> H -> MLP -> H' -> CONCAT_H' -> MLP
+        # Archi avec un mid_MLP pour réduire le nb de features
+        self.ml1 = nn.Linear(hid_size, hid_size)
+        self.ml2 = nn.Linear(hid_size, 16)
+        # Concat
+        self.l1 = nn.Linear(2*16, 16)
+        self.l2 = nn.Linear(16, 16)
+        self.l3 = nn.Linear(16, 1)
 
         #self.l1 = nn.Linear(2, 1)
 
@@ -84,32 +83,47 @@ class BinaryClassifier(nn.Module):
 
     def forward(self, graph, inputs):
 
-        h = inputs
+        is_trip = graph.ndata['mask'].bool()
+        num_trip_nodes = torch.sum(is_trip)
 
+        # 1. GNN
+        h = inputs
         h = self.gat1(graph, h).flatten(1)
         h = self.gat2(graph, h).mean(1)
 
-        # Version juste avec les nodes trips
-        # is_trip = graph.ndata['mask'].bool()
-        # num_trip_nodes = is_trip.shape[0]
-        # feats_size = h.shape[1]
-        # h = h[is_trip]
-        # first = h.repeat(num_trip_nodes, 1)
-        # second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
-        # h = torch.cat((second, first), dim=1)
-        # ===================== #
+        # Si on passe dans le mid mlp
+        # 2. MID MLP (pour réduire le nb. de features)
+        h = h[is_trip]
+        h = torch.relu(self.ml1(h))
+        h = torch.relu(self.ml2(h))
 
-        # Version avec tous les noeuds
-        num_nodes = graph.num_nodes()
+        # 3. Concatene ensemble
         feats_size = h.shape[1]
-        first = h.repeat(num_nodes,1)
-        second = h.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,feats_size).squeeze(1)
-        h = torch.cat((second,first), dim=1)
-        # ===================== #
+        first = h.repeat(num_trip_nodes, 1)
+        second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
+        h = torch.cat((second, first), dim=1)
 
+        # 4. MLP pour prédiction 
         h = torch.relu(self.l1(h))
         h = torch.relu(self.l2(h))
         h = torch.sigmoid(self.l3(h))
+
+
+        # Version juste avec les nodes trips
+        
+        # ===================== #
+
+        # Version avec tous les noeuds
+        # num_nodes = graph.num_nodes()
+        # feats_size = h.shape[1]
+        # first = h.repeat(num_nodes,1)
+        # second = h.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,feats_size).squeeze(1)
+        # h = torch.cat((second,first), dim=1)
+        # ===================== #
+
+        # h = torch.relu(self.l1(h))
+        # h = torch.relu(self.l2(h))
+        # h = torch.sigmoid(self.l3(h))
 
         return h.squeeze(1)
 
@@ -132,7 +146,7 @@ def evaluate(g, features, labels, mask, model):
 
         return score, acc
 
-def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter, both_are_trips):
+def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
 
     # Compute une prediction du modele, compute la loss et l'accuracy de la prediction, retourne loss et acc
 
@@ -157,7 +171,7 @@ def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter, both_
 
     
 
-    goods = torch.eq(preds[both_are_trips], second_greater_first[both_are_trips]).float()
+    goods = torch.eq(preds, second_greater_first).float()
     acc = (torch.sum(goods) / goods.shape[0]).item()
 
     loss = loss_fnc(probs, second_greater_first)
@@ -178,29 +192,33 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 
         for batch_id, (batched_graph, _) in enumerate(dataloader):
 
+            # Ici, second greather first pourrait etre fait uniquement avec les trips nodes, pour eviter le deuxieme filtre
 
-            num_nodes = batched_graph.num_nodes()
-            pi_values = batched_graph.ndata['pi_value'].unsqueeze(1)
+            # num_nodes = batched_graph.num_nodes()
 
-            first = pi_values.repeat(num_nodes,1)
+            is_trip = batched_graph.ndata['mask'].bool()
+            num_trip_nodes = torch.sum(is_trip)
+
+            pi_values = batched_graph.ndata['pi_value'].unsqueeze(1)[is_trip]
+
+            first = pi_values.repeat(num_trip_nodes,1)
             second = pi_values.unsqueeze(1)
-            second = second.repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            second = second.repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,1).squeeze(1)
 
             second_minus_first = second - first
-
             second_greater_first = (second_minus_first > 0).float().squeeze(1)
 
             batched_graph = batched_graph.to(device)
 
-            trips = batched_graph.ndata['mask'].unsqueeze(1)
-            a = trips.repeat(num_nodes,1)
-            b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
-            both_are_trips = (a * b).squeeze(1)
+            #trips = batched_graph.ndata['mask'].unsqueeze(1)
+            #a = trips.repeat(num_nodes,1)
+            #b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            #both_are_trips = (a * b).squeeze(1)
             # percent_trips = torch.sum(both_are_trips) / both_are_trips.shape[0]
             # print(percent_trips)
-            both_are_trips = both_are_trips.bool()
+            #both_are_trips = both_are_trips.bool()
             
-            loss, acc = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id, both_are_trips)
+            loss, acc = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
 
             total_loss += loss.item()
             total_acc += acc
@@ -234,7 +252,11 @@ def train(train_dataloader, val_dataloader, device, model):
         train_total_acc = 0
         # mini-batch loop
         for batch_id, (batched_graph, _) in enumerate(train_dataloader):
+            
             batched_graph = batched_graph.to(device)
+
+            is_trip = batched_graph.ndata['mask'].bool()
+            num_trip_nodes = torch.sum(is_trip)
             # features = batched_graph.ndata['feat'].float()
             # mask = batched_graph.ndata['mask'].bool()
 
@@ -243,31 +265,30 @@ def train(train_dataloader, val_dataloader, device, model):
 
             # loss = loss_fcn(logits[mask], labels[mask])
 
-            num_nodes = batched_graph.num_nodes()
-            pi_values = batched_graph.ndata['pi_value'].unsqueeze(1)
+            #num_nodes = batched_graph.num_nodes()
+            pi_values = batched_graph.ndata['pi_value'].unsqueeze(1)[is_trip]
 
-            first = pi_values.repeat(num_nodes,1)
-            second = pi_values.unsqueeze(1)
-            second = second.repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            first = pi_values.repeat(num_trip_nodes,1)
+            second = pi_values.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,1).squeeze(1)
 
             second_minus_first = second - first
 
             second_greater_first = (second_minus_first > 0).float().squeeze(1)
 
-            trips = batched_graph.ndata['mask'].unsqueeze(1)
-            a = trips.repeat(num_nodes,1)
-            b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
-            both_are_trips = (a * b).squeeze(1)
+            # trips = batched_graph.ndata['mask'].unsqueeze(1)
+            # a = trips.repeat(num_nodes,1)
+            # b = trips.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,1).squeeze(1)
+            # both_are_trips = (a * b).squeeze(1)
 
             #percent_trips = torch.sum(both_are_trips) / both_are_trips.shape[0]
             #print(percent_trips)
 
-            both_are_trips = both_are_trips.bool()
+            # both_are_trips = both_are_trips.bool()
 
 
             # Memes operations dans le meme sens donc ca vs ce qui sort du forward peuvent etre comparer
             
-            loss, acc = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id, both_are_trips)
+            loss, acc = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id)
 
             optimizer.zero_grad()
             loss.backward()
