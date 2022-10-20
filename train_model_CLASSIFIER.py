@@ -89,19 +89,21 @@ class BinaryClassifier(nn.Module):
         h = self.gat1(graph, h).flatten(1)
         h = self.gat2(graph, h).mean(1)
 
+        # Version juste avec les nodes trips
+        # is_trip = graph.ndata['mask'].bool()
+        # num_trip_nodes = is_trip.shape[0]
+        # feats_size = h.shape[1]
+        # h = h[is_trip]
+        # first = h.repeat(num_trip_nodes, 1)
+        # second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
+        # h = torch.cat((second, first), dim=1)
+        # ===================== #
 
-
-        # Concatene pour avoir les paires possibles
+        # Version avec tous les noeuds
         num_nodes = graph.num_nodes()
         feats_size = h.shape[1]
-
         first = h.repeat(num_nodes,1)
-        second = h.unsqueeze(1)
-        # second = second.repeat(1,1,num_nodes)
-        # second = second.view(num_nodes*num_nodes,-1,feats_size)
-        # second = second.squeeze(1)
-        second = second.repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,feats_size).squeeze(1)
-
+        second = h.unsqueeze(1).repeat(1,1,num_nodes).view(num_nodes*num_nodes,-1,feats_size).squeeze(1)
         h = torch.cat((second,first), dim=1)
         # ===================== #
 
@@ -222,7 +224,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
     loss_fcn = nn.BCELoss()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 
     for epoch in range(400):
         
