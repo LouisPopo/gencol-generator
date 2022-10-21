@@ -228,7 +228,7 @@ def validate_logic_predictions(preds, second_greater_first):
                 # B >= A
                 logic_respected += 1
 
-    return logic_respected/n_nodes
+    return logic_respected/n_samples
     
 
 def evaluate_in_batches(dataloader, loss_fnc, device, model):
@@ -294,8 +294,8 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 def train(train_dataloader, val_dataloader, device, model):
 
     last_loss = 1000
-    trigger_times = 0
-    patience = 5
+    trigger_times = 0 
+    patience = 10
 
     loss_fcn = nn.BCELoss()
 
