@@ -1,3 +1,4 @@
+import random
 import dgl
 from dgl.dataloading import GraphDataLoader
 from dgl.nn import GraphConv, GATConv, GATv2Conv
@@ -181,12 +182,67 @@ def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
 
     # acc = accuracy_score(second_greater_first, preds)
     
-    return loss, acc
+    return loss, acc, probs
+
+
+def validate_logic_predictions(preds, second_greater_first):
+
+    # from the graph we sample a few pair A,B
+    # if A,B = 1 (A >= B) -> B,A = 1 (if B=A) or 0 (if B < A)
+    # if B,A = 0 (A  < B) -> B,A = 1 (B>=A)
+    n_pairs = preds.shape[0]
+    n_samples = 200
+
+    samples = random.sample(range(0, n_pairs), n_samples)
+
+    logic_respected = 0
+
+    for s_ab in samples:
+
+        p_ab = preds[s_ab].item() # notre prediction A,B (1 ou 0)
+
+        i = (s_ab + 1) // n_pairs
+        j = (s_ab % n_pairs) + 1
+
+        s_ba = (j - 1)*n_pairs + i - 1
+        p_ba = preds[s_ba].item()
+
+        if p_ab == 1:
+            
+            # A >= B
+            r_ab = second_greater_first[s_ab]
+            r_ba = second_greater_first[s_ba]
+            if r_ab == r_ba:
+                # A == B alors B >= A : 1
+                if p_ba == 1:
+                    logic_respected += 1
+            else:
+                # A != B alors B >= A : 0
+                if p_ba == 0:
+                    logic_respected += 1
+        else:
+
+            # A < B
+            if p_ba == 1:
+                # B >= A
+                logic_respected += 1
+
+    return logic_respected/n_samples
+        
+
+
+
+
+    
+
+
+
 
 def evaluate_in_batches(dataloader, loss_fnc, device, model):
     
     total_loss = 0
     total_acc = 0
+    percent_logic_respected = []
 
     with torch.no_grad():
 
@@ -218,7 +274,15 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             # print(percent_trips)
             #both_are_trips = both_are_trips.bool()
             
-            loss, acc = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
+            loss, acc, probs = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
+
+            preds = (probs > 0.5).float()
+
+            # tests (preds, second greater)
+
+            log_res = validate_logic_predictions(preds, second_greater_first)
+            percent_logic_respected.append(log_res)
+
 
             total_loss += loss.item()
             total_acc += acc
@@ -232,7 +296,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             
             #total_f1_acc += f1_acc
             #total_acc += acc
-        return (total_loss / (batch_id + 1)), (total_acc / (batch_id + 1))
+        return (total_loss / (batch_id + 1)), (total_acc / (batch_id + 1)), np.average(percent_logic_respected)
 
 def train(train_dataloader, val_dataloader, device, model):
 
@@ -244,7 +308,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=0)
 
-    for epoch in range(400):
+    for epoch in range(200):
         
         model.train(True)
 
@@ -288,7 +352,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
             # Memes operations dans le meme sens donc ca vs ce qui sort du forward peuvent etre comparer
             
-            loss, acc = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id)
+            loss, acc, probs = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id)
 
             optimizer.zero_grad()
             loss.backward()
@@ -313,9 +377,9 @@ def train(train_dataloader, val_dataloader, device, model):
         model.train(False)
         # On evalue le model avec le validation set : loss et acc
 
-        eval_loss, eval_acc = evaluate_in_batches(val_dataloader, loss_fcn, device, model)
+        eval_loss, eval_acc, perc_logic_res = evaluate_in_batches(val_dataloader, loss_fcn, device, model)
 
-        print("Epoch {:05d} | Train Loss : {:.4f} | Eval Loss : {:.4f} | Train acc : {:.4f} | Eval Acc : {:.4f}".format(epoch, train_loss, eval_loss, train_acc, eval_acc))
+        print("Epoch {:05d} | Train Loss : {:.4f} | Eval Loss : {:.4f} | Train acc : {:.4f} | Eval Acc : {:.4f} | Eval Log. Respected : {:.4f}".format(epoch, train_loss, eval_loss, train_acc, eval_acc, perc_logic_res))
 
 
         # if eval_loss > last_loss:
@@ -362,7 +426,7 @@ if __name__ == '__main__':
 
     print('Testing...')
     test_loss_fnc = nn.BCEWithLogitsLoss()
-    test_loss, test_acc = evaluate_in_batches(test_dataloader, test_loss_fnc, device, model)
-    print("Test Loss {:.4f} | Test Acc {:.4f}".format(test_loss, test_acc))
+    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, device, model)
+    print("Test Loss {:.4f} | Test Acc {:.4f} | Test Log. Res. {:.4f}".format(test_loss, test_acc, perc_logic_res))
 
 
