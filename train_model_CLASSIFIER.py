@@ -64,9 +64,9 @@ class BinaryClassifier(nn.Module):
         self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=None, allow_zero_in_degree=True)
         
         # Modele X -> GNN -> H -> CONCAT_H -> MLP
-        self.l1 = nn.Linear(2*hid_size, hid_size)
-        self.l2 = nn.Linear(hid_size, hid_size)
-        self.l3 = nn.Linear(hid_size, 1)
+        # self.l1 = nn.Linear(2*hid_size, hid_size)
+        # self.l2 = nn.Linear(hid_size, hid_size)
+        # self.l3 = nn.Linear(hid_size, 1)
 
         # Modele X -> GNN -> H -> MLP -> H' -> CONCAT_H' -> MLP
         # Archi avec un mid_MLP pour réduire le nb de features
@@ -206,7 +206,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second = second.repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,1).squeeze(1)
 
             second_minus_first = second - first
-            second_greater_first = (second_minus_first > 0).float().squeeze(1)
+            second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
             batched_graph = batched_graph.to(device)
 
