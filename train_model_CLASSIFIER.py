@@ -1,3 +1,4 @@
+import math
 import random
 import dgl
 from dgl.dataloading import GraphDataLoader
@@ -190,10 +191,10 @@ def validate_logic_predictions(preds, second_greater_first):
     # from the graph we sample a few pair A,B
     # if A,B = 1 (A >= B) -> B,A = 1 (if B=A) or 0 (if B < A)
     # if B,A = 0 (A  < B) -> B,A = 1 (B>=A)
-    n_pairs = preds.shape[0]
+    n_nodes = int(math.sqrt(preds.shape[0]))
     n_samples = 200
 
-    samples = random.sample(range(0, n_pairs), n_samples)
+    samples = random.sample(range(0, n_nodes), n_samples)
 
     logic_respected = 0
 
@@ -201,10 +202,10 @@ def validate_logic_predictions(preds, second_greater_first):
 
         p_ab = preds[s_ab].item() # notre prediction A,B (1 ou 0)
 
-        i = (s_ab + 1) // n_pairs
-        j = (s_ab % n_pairs) + 1
+        i = (s_ab + 1) // n_nodes
+        j = (s_ab % n_nodes) + 1
 
-        s_ba = (j - 1)*n_pairs + i - 1
+        s_ba = (j - 1)*n_nodes + i - 1
         p_ba = preds[s_ba].item()
 
         if p_ab == 1:
@@ -227,7 +228,7 @@ def validate_logic_predictions(preds, second_greater_first):
                 # B >= A
                 logic_respected += 1
 
-    return logic_respected/n_samples
+    return logic_respected/n_nodes
         
 
 
