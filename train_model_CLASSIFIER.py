@@ -229,15 +229,7 @@ def validate_logic_predictions(preds, second_greater_first):
                 logic_respected += 1
 
     return logic_respected/n_nodes
-        
-
-
-
-
     
-
-
-
 
 def evaluate_in_batches(dataloader, loss_fnc, device, model):
     
@@ -383,14 +375,14 @@ def train(train_dataloader, val_dataloader, device, model):
         print("Epoch {:05d} | Train Loss : {:.4f} | Eval Loss : {:.4f} | Train acc : {:.4f} | Eval Acc : {:.4f} | Eval Log. Respected : {:.4f}".format(epoch, train_loss, eval_loss, train_acc, eval_acc, perc_logic_res))
 
 
-        # if eval_loss > last_loss:
-        #     trigger_times += 1
-        #     if trigger_times >= patience:
-        #         print('Early Stopping')
-        #         return model
-        # else:
-        #     trigger_times = 0
-        #     last_loss = eval_loss
+        if eval_loss > last_loss:
+            trigger_times += 1
+            if trigger_times >= patience:
+                print('Early Stopping')
+                return model
+        else:
+            trigger_times = 0
+            last_loss = eval_loss
 
     return model
     
