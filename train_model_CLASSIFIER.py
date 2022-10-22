@@ -62,8 +62,8 @@ class BinaryClassifier(nn.Module):
         self.hid_size = hid_size
 
 
-        self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=None, allow_zero_in_degree=True)
+        # self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=None, allow_zero_in_degree=True)
         
         # Modele X -> GNN -> H -> CONCAT_H -> MLP
         # self.l1 = nn.Linear(2*hid_size, hid_size)
@@ -72,7 +72,7 @@ class BinaryClassifier(nn.Module):
 
         # Modele X -> GNN -> H -> MLP -> H' -> CONCAT_H' -> MLP
         # Archi avec un mid_MLP pour réduire le nb de features
-        self.ml1 = nn.Linear(hid_size, hid_size)
+        self.ml1 = nn.Linear(in_size, hid_size)
         self.ml2 = nn.Linear(hid_size, 16)
         # Concat
         self.l1 = nn.Linear(2*16, 16)
@@ -90,8 +90,8 @@ class BinaryClassifier(nn.Module):
 
         # 1. GNN
         h = inputs
-        h = self.gat1(graph, h).flatten(1)
-        h = self.gat2(graph, h).mean(1)
+        # h = self.gat1(graph, h).flatten(1)
+        # h = self.gat2(graph, h).mean(1)
 
         # Si on passe dans le mid mlp
         # 2. MID MLP (pour réduire le nb. de features)
