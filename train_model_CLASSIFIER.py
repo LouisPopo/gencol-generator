@@ -198,9 +198,10 @@ def validate_logic_predictions(preds, second_greater_first):
     # if A,B = 1 (A >= B) -> B,A = 1 (if B=A) or 0 (if B < A)
     # if B,A = 0 (A  < B) -> B,A = 1 (B>=A)
     n_nodes = int(math.sqrt(preds.shape[0]))
+    n_pairs = preds.shape[0]
     n_samples = 1000
 
-    samples = random.sample(range(0, n_nodes), n_samples)
+    samples = random.sample(range(0, n_pairs), n_samples)
 
     logic_respected = 0
 
