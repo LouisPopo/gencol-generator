@@ -316,6 +316,8 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 
             # num_nodes = batched_graph.num_nodes()
 
+            batched_graph = dgl.add_self_loop(batched_graph)
+
             is_trip = batched_graph.ndata['mask'].bool()
             num_trip_nodes = torch.sum(is_trip)
 
