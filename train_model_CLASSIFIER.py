@@ -314,7 +314,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
     loss_fcn = nn.BCELoss()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 
     for epoch in range(200):
         
