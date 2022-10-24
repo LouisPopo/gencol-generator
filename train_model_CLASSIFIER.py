@@ -62,11 +62,13 @@ class BinaryClassifier(nn.Module):
         self.hid_size = hid_size
 
 
-        # self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], residual=True, activation=None, allow_zero_in_degree=True)
+        self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
+        self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
+        self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
+        self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
         
-        self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
-        self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
+        #self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
+        #self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
 
         # Modele X -> GNN -> H -> CONCAT_H -> MLP
         # self.l1 = nn.Linear(2*hid_size, hid_size)
@@ -77,13 +79,15 @@ class BinaryClassifier(nn.Module):
         # Archi avec un mid_MLP pour réduire le nb de features
         
         #self.ml1 = nn.Linear(in_size, hid_size)
-        self.ml1 = nn.Linear(hid_size, hid_size)
-        self.ml2 = nn.Linear(hid_size, 16)
+        self.ml1 = nn.Linear(hid_size, 2*hid_size)
+        self.ml2 = nn.Linear(2*hid_size, hid_size)
+        self.ml3 = nn.Linear(hid_size, 16)
         
         # Concat
-        self.l1 = nn.Linear(2*16, 16)
-        self.l2 = nn.Linear(16, 16)
-        self.l3 = nn.Linear(16, 1)
+        self.l1 = nn.Linear(2*16, 32)
+        self.l2 = nn.Linear(32, 32)
+        self.l3 = nn.Linear(32, 16)
+        self.l4 = nn.Linear(16, 1)
 
         #self.l1 = nn.Linear(2, 1)
 
@@ -97,13 +101,16 @@ class BinaryClassifier(nn.Module):
         # 1. GNN
         h = inputs
         h = self.gat1(graph, h).flatten(1)
-        h = self.gat2(graph, h).mean(1)
+        h = self.gat2(graph, h).flatten(1)
+        h = self.gat3(graph, h).flatten(1)
+        h = self.gat4(graph, h).mean(1)
 
         # Si on passe dans le mid mlp
         # 2. MID MLP (pour réduire le nb. de features)
         h = h[is_trip]
         h = torch.relu(self.ml1(h))
         h = torch.relu(self.ml2(h))
+        h = self.ml3(h) # PAS DE RELU COMME CA ON A UNE VALEUR PAS CONTRAINTES! 
 
         # 3. Concatene ensemble
         feats_size = h.shape[1]
@@ -114,7 +121,8 @@ class BinaryClassifier(nn.Module):
         # 4. MLP pour prédiction 
         h = torch.relu(self.l1(h))
         h = torch.relu(self.l2(h))
-        h = torch.sigmoid(self.l3(h))
+        h = torch.relu(self.l3(h))
+        h = torch.sigmoid(self.l4(h))
 
 
         # Version juste avec les nodes trips
@@ -417,7 +425,7 @@ if __name__ == '__main__':
     features = g.ndata['feat']
 
     in_size = features.shape[1]
-    model = BinaryClassifier(in_size, 32, [3, 3])
+    model = BinaryClassifier(in_size, 32, [3, 3, 3, 6])
 
     # model training
 
