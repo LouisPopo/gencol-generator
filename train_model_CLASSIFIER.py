@@ -2,7 +2,7 @@ import math
 import random
 import dgl
 from dgl.dataloading import GraphDataLoader
-from dgl.nn import GraphConv, GATConv, GATv2Conv
+from dgl.nn import GraphConv, GATConv, GATv2Conv, EGATConv
 from dgl.data.utils import split_dataset
 import numpy as np
 
@@ -56,16 +56,20 @@ class MDEVSPEdgesDataParser:
         return parsed
 
 class BinaryClassifier(nn.Module):
-    def __init__(self, in_size, hid_size, heads) -> None:
+    def __init__(self, nodes_in_size, edges_in_size, hid_size, heads) -> None:
         super(BinaryClassifier, self).__init__()
 
         self.hid_size = hid_size
 
-
-        self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
-        self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
-        self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
+        self.gat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
+        #self.gat3 = EGATConv(nodes_in_size*heads[1], edges_in_size*heads[1], hid_size, hid_size, heads[2])
+        #self.gat4 = EGATConv(nodes_in_size*heads[2], edges_in_size*heads[2], hid_size, hid_size, heads[3])
+        
+        # self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
         
         #self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
         #self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
@@ -95,15 +99,36 @@ class BinaryClassifier(nn.Module):
 
     def forward(self, graph, inputs):
 
+
+
         is_trip = graph.ndata['mask'].bool()
         num_trip_nodes = torch.sum(is_trip)
 
+        nodes_feats = inputs
+        edges_feats = graph.edata['feat'] 
+
         # 1. GNN
-        h = inputs
-        h = self.gat1(graph, h).flatten(1)
-        h = self.gat2(graph, h).flatten(1)
-        h = self.gat3(graph, h).flatten(1)
-        h = self.gat4(graph, h).mean(1)
+        #h = inputs
+        nodes_feats, edges_feats = self.gat1(graph, nodes_feats, edges_feats)
+        h = nodes_feats.mean(1)
+        #edges_feats = edges_feats.mean(1)
+
+        # nodes_feats, edges_feats = self.gat2(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.mean(1)
+        # edges_feats = edges_feats.mean(1)
+
+        # nodes_feats, edges_feats = self.gat3(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.mean(1)
+        # edges_feats = edges_feats.mean(1)
+
+        # nodes_feats, edges_feats = self.gat4(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.mean(1)
+        # edges_feats = edges_feats.mean(1)
+
+        # h = self.gat1(graph, h).flatten(1)
+        # h = self.gat2(graph, h).flatten(1)
+        # h = self.gat3(graph, h).flatten(1)
+        # h = self.gat4(graph, h).mean(1)
 
         # Si on passe dans le mid mlp
         # 2. MID MLP (pour réduire le nb. de features)
@@ -207,43 +232,74 @@ def validate_logic_predictions(preds, second_greater_first):
     # if B,A = 0 (A  < B) -> B,A = 1 (B>=A)
     n_nodes = int(math.sqrt(preds.shape[0]))
     n_pairs = preds.shape[0]
-    n_samples = 1000
-
-    samples = random.sample(range(0, n_pairs), n_samples)
+    #n_samples = 1000
+    #samples = random.sample(range(0, n_pairs), n_samples)
 
     logic_respected = 0
+    cnt = 0
 
-    for s_ab in samples:
+    for i in range(0,n_nodes):
+        for j in range(i + 1, n_nodes):
 
-        p_ab = preds[s_ab].item() # notre prediction A,B (1 ou 0)
+            cnt += 1
 
-        i = (s_ab + 1) // n_nodes
-        j = (s_ab % n_nodes) + 1
+            idx_ab = i*n_nodes + j
 
-        s_ba = (j - 1)*n_nodes + i - 1
-        p_ba = preds[s_ba].item()
+            i_ = (idx_ab + 1) // n_nodes
+            j_ = (idx_ab % n_nodes) + 1
 
-        if p_ab == 1:
-            
-            # A >= B
-            r_ab = second_greater_first[s_ab]
-            r_ba = second_greater_first[s_ba]
-            if r_ab == r_ba:
-                # A == B alors B >= A : 1
+            idx_ba = i_*n_nodes + j_
+
+            p_ab = preds[idx_ab]
+            p_ba = preds[idx_ba]
+
+            r_ab = second_greater_first[idx_ab]
+            r_ba = second_greater_first[idx_ba]
+
+            if p_ab == 1:
+                # A >= B then B >= A (1 or 0) is right if 1 : A == B, else A > B
+                logic_respected += 1
+            else:
+                # A < B then B >= A (1)
                 if p_ba == 1:
                     logic_respected += 1
-            else:
-                # A != B alors B >= A : 0
-                if p_ba == 0:
-                    logic_respected += 1
-        else:
 
-            # A < B
-            if p_ba == 1:
-                # B >= A
-                logic_respected += 1
+        return logic_respected/cnt
 
-    return logic_respected/n_samples
+
+    # logic_respected = 0
+
+    # for s_ab in samples:
+
+    #     p_ab = preds[s_ab].item() # notre prediction A,B (1 ou 0)
+
+    #     i = (s_ab + 1) // n_nodes
+    #     j = (s_ab % n_nodes) + 1
+
+    #     s_ba = (j - 1)*n_nodes + i - 1
+    #     p_ba = preds[s_ba].item()
+
+    #     if p_ab == 1:
+            
+    #         # A >= B
+    #         r_ab = second_greater_first[s_ab]
+    #         r_ba = second_greater_first[s_ba]
+    #         if r_ab == r_ba:
+    #             # A == B alors B >= A : 1
+    #             if p_ba == 1:
+    #                 logic_respected += 1
+    #         else:
+    #             # A != B alors B >= A : 0
+    #             if p_ba == 0:
+    #                 logic_respected += 1
+    #     else:
+
+    #         # A < B
+    #         if p_ba == 1:
+    #             # B >= A
+    #             logic_respected += 1
+
+    # return logic_respected/n_samples
     
 
 def evaluate_in_batches(dataloader, loss_fnc, device, model):
@@ -326,6 +382,7 @@ def train(train_dataloader, val_dataloader, device, model):
         for batch_id, (batched_graph, _) in enumerate(train_dataloader):
             
             batched_graph = batched_graph.to(device)
+            batched_graph = dgl.add_self_loop(batched_graph)
 
             is_trip = batched_graph.ndata['mask'].bool()
             num_trip_nodes = torch.sum(is_trip)
@@ -422,10 +479,13 @@ if __name__ == '__main__':
     test_dataloader = GraphDataLoader(test_ds, batch_size=val_test_batch_size, shuffle=True)
 
     g,_ = train_ds[0]
-    features = g.ndata['feat']
+    nodes_features = g.ndata['feat']
+    edges_features = g.edata['feat']
+    
 
-    in_size = features.shape[1]
-    model = BinaryClassifier(in_size, 32, [3, 3, 3, 6])
+    nodes_in_size = nodes_features.shape[1]
+    edges_in_size = edges_features.shape[1]
+    model = BinaryClassifier(nodes_in_size, edges_in_size, 32, [3, 3, 3, 6])
 
     # model training
 
