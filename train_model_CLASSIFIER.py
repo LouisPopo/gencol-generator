@@ -15,14 +15,32 @@ import torch.nn.functional as F
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+pd.options.mode.chained_assignment = None
+
 class MDEVSPNodesDataParser:
 
     def __call__(self, df: pd.DataFrame):
         parsed = {}
 
+        # Data normalization 3.2
+
+        t_min = df.loc[df['t_s'] > 0, 't_s'].min()
+        df.loc[df['o'] == 1, 't_s'] = t_min
+        df.loc[df['o'] == 1, 't_e'] = t_min
+        df['duration'] = df['t_e'] - df['t_s']
+        df['duration'] = df['duration']/df['duration'].max()
+        
+        df['t_s'] = (df['t_s'] - t_min) / (df['t_s'].max() - t_min)
+        df['t_e'] = (df['t_e'] - t_min) / (df['t_e'].max() - t_min)
+
+        # ==================
         nodes_features = df[[c for c in df.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_10_id', 'nb_fin_10', 'nb_fin_10_id', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
+        
         #nodes_features = df[[c for c in df.columns if c in ['pi_value']]].to_numpy()
-        nodes_features = np.rint(nodes_features)
+        
+        # 3.0 -> 3.1 (Quand on normalise pas)
+        #nodes_features = np.rint(nodes_features)
+
         parsed['feat'] = nodes_features
 
         df['mask'] = torch.zeros(len(df))
@@ -39,7 +57,6 @@ class MDEVSPNodesDataParser:
         
         dt = F.one_hot(dt.to(torch.int64), num_classes=2)
         
-
         parsed['label'] = dt
 
         return parsed
@@ -49,8 +66,17 @@ class MDEVSPEdgesDataParser:
     def __call__(self, df: pd.DataFrame):
         
         parsed = {}
+        
+        # Data Normalization
 
+        df['cost'] = df['cost'] / df['cost'].max()
+        df['energy'] = df['energy'] / df['energy'].max()
+        for t in ['travel', 'waiting', 'delta']:
+            df['{}_time'.format(t)] = df['{}_time'.format(t)] / df['{}_time'.format(t)].max()
+
+        # ======== 
         edges_features = df[['cost', 'energy', 'travel_time', 'waiting_time', 'delta_time', 'rg_id','rg']].to_numpy().squeeze()
+
         parsed['feat'] = edges_features
 
         return parsed
@@ -66,6 +92,8 @@ class BinaryClassifier(nn.Module):
         #self.gat3 = EGATConv(nodes_in_size*heads[1], edges_in_size*heads[1], hid_size, hid_size, heads[2])
         #self.gat4 = EGATConv(nodes_in_size*heads[2], edges_in_size*heads[2], hid_size, hid_size, heads[3])
         
+        # Peut etre moyen de passer d'un a lautre ? Ou sinon plusieurs couches de EGATConv au moins
+
         # self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
         # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
         # self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
@@ -468,7 +496,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    load = False
+    load = True
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
