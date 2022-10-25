@@ -86,18 +86,23 @@ class BinaryClassifier(nn.Module):
         super(BinaryClassifier, self).__init__()
 
         self.hid_size = hid_size
+        
+        # M 3_2
+        #self.gat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        # =====
 
-        self.gat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+
+
         #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
         #self.gat3 = EGATConv(nodes_in_size*heads[1], edges_in_size*heads[1], hid_size, hid_size, heads[2])
         #self.gat4 = EGATConv(nodes_in_size*heads[2], edges_in_size*heads[2], hid_size, hid_size, heads[3])
         
         # Peut etre moyen de passer d'un a lautre ? Ou sinon plusieurs couches de EGATConv au moins
 
-        # self.gat1 = GATConv(in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
+        self.gat1 = GATConv(nodes_in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
+        self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
+        self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
+        self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
         
         #self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
         #self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
@@ -127,8 +132,6 @@ class BinaryClassifier(nn.Module):
 
     def forward(self, graph, inputs):
 
-
-
         is_trip = graph.ndata['mask'].bool()
         num_trip_nodes = torch.sum(is_trip)
 
@@ -137,9 +140,13 @@ class BinaryClassifier(nn.Module):
 
         # 1. GNN
         #h = inputs
-        nodes_feats, edges_feats = self.gat1(graph, nodes_feats, edges_feats)
-        h = nodes_feats.mean(1)
-        #edges_feats = edges_feats.mean(1)
+
+        # v3_2
+        #nodes_feats, edges_feats = self.gat1(graph, nodes_feats, edges_feats)
+        #h = nodes_feats.mean(1)
+        # edges_feats = edges_feats.mean(1)
+
+        # ===== 
 
         # nodes_feats, edges_feats = self.gat2(graph, nodes_feats, edges_feats)
         # nodes_feats = nodes_feats.mean(1)
@@ -153,10 +160,12 @@ class BinaryClassifier(nn.Module):
         # nodes_feats = nodes_feats.mean(1)
         # edges_feats = edges_feats.mean(1)
 
-        # h = self.gat1(graph, h).flatten(1)
-        # h = self.gat2(graph, h).flatten(1)
-        # h = self.gat3(graph, h).flatten(1)
-        # h = self.gat4(graph, h).mean(1)
+        h = inputs
+
+        h = self.gat1(graph, h).flatten(1)
+        h = self.gat2(graph, h).flatten(1)
+        h = self.gat3(graph, h).flatten(1)
+        h = self.gat4(graph, h).mean(1)
 
         # Si on passe dans le mid mlp
         # 2. MID MLP (pour réduire le nb. de features)
@@ -496,7 +505,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    load = True
+    load = False
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
