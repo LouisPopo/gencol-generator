@@ -109,12 +109,14 @@ class BinaryClassifier(nn.Module):
         # self.egat3 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[2])
 
         # v3_7
+        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        # self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
+        # self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
+
+        # v3_8
         self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
         self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
         self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
-
-        
-
 
         #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
         #self.gat3 = EGATConv(nodes_in_size*heads[1], edges_in_size*heads[1], hid_size, hid_size, heads[2])
@@ -139,8 +141,10 @@ class BinaryClassifier(nn.Module):
         # Modele X -> GNN -> H -> MLP -> H' -> CONCAT_H' -> MLP
         # Archi avec un mid_MLP pour réduire le nb de features
         
-        #self.ml1 = nn.Linear(in_size, hid_size)
-        self.ml1 = nn.Linear(hid_size, 2*hid_size)
+        # v3_8 : 
+        self.ml1 = nn.Linear((nodes_in_size + hid_size), 2*hid_size)
+        # =====
+        #self.ml1 = nn.Linear(hid_size, 2*hid_size)
         self.ml2 = nn.Linear(2*hid_size, hid_size)
         self.ml3 = nn.Linear(hid_size, 16)
         
@@ -199,6 +203,19 @@ class BinaryClassifier(nn.Module):
 
         # v3_7
 
+        # nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.flatten(1)
+        # edges_feats = edges_feats.flatten(1)
+
+        # nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.flatten(1)
+        # edges_feats = edges_feats.flatten(1)
+
+        # nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
+        # nodes_feats = torch.max(nodes_feats, 1).values
+        # edges_feats = torch.max(edges_feats, 1).values
+
+        # v3_8
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
         nodes_feats = nodes_feats.flatten(1)
         edges_feats = edges_feats.flatten(1)
@@ -208,11 +225,15 @@ class BinaryClassifier(nn.Module):
         edges_feats = edges_feats.flatten(1)
 
         nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
-        nodes_feats = torch.max(nodes_feats, 1).values
-        edges_feats = torch.max(edges_feats, 1).values
+        nodes_feats = nodes_feats.mean(1)
+        edges_feats = edges_feats.mean(1)
 
 
         h = nodes_feats
+
+        # v3_8 : concat nodes_features + inputs
+
+        h = torch.cat((h, inputs), 1)
 
         # h = self.gat1(graph, h).flatten(1)
         # h = self.gat2(graph, h).flatten(1)
