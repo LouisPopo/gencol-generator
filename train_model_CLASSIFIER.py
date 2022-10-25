@@ -99,10 +99,15 @@ class BinaryClassifier(nn.Module):
         # =====
 
         # M 3_4 
-        self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
-        self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
+        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        # self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
+        # self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
 
+        # v3_6
+        self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        self.egat2 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[1])
+        self.egat3 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[2])
+        
 
 
         #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
@@ -161,18 +166,30 @@ class BinaryClassifier(nn.Module):
 
         # v3_4
 
+        # nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.flatten(1)
+        # edges_feats = edges_feats.flatten(1)
+
+        # nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.flatten(1)
+        # edges_feats = edges_feats.flatten(1)
+
+        # nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
+        # nodes_feats = nodes_feats.mean(1)
+        # edges_feats = edges_feats.mean(1)
+
+        # v3_5
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
-        nodes_feats = nodes_feats.flatten(1)
-        edges_feats = edges_feats.flatten(1)
+        nodes_feats = nodes_feats.max(1)
+        edges_feats = edges_feats.max(1)
 
         nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
-        nodes_feats = nodes_feats.flatten(1)
-        edges_feats = edges_feats.flatten(1)
+        nodes_feats = nodes_feats.max(1)
+        edges_feats = edges_feats.max(1)
 
         nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
-        nodes_feats = nodes_feats.mean(1)
-        edges_feats = edges_feats.mean(1)
-
+        nodes_feats = nodes_feats.max(1)
+        edges_feats = edges_feats.max(1)
 
         h = nodes_feats
 
@@ -519,7 +536,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    load = True
+    load = False
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
