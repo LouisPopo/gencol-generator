@@ -179,17 +179,32 @@ class BinaryClassifier(nn.Module):
         # edges_feats = edges_feats.mean(1)
 
         # v3_5
+        # nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
+        # nodes_feats = torch.max(nodes_feats, 1).values
+        # edges_feats = torch.max(edges_feats, 1).values
+
+        # nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
+        # nodes_feats = torch.max(nodes_feats, 1).values
+        # edges_feats = torch.max(edges_feats, 1).values
+
+        # nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
+        # nodes_feats = torch.max(nodes_feats, 1).values
+        # edges_feats = torch.max(edges_feats, 1).values
+
+        # v3_7
+        
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
-        nodes_feats = torch.max(nodes_feats, 1).values
-        edges_feats = torch.max(edges_feats, 1).values
+        nodes_feats = nodes_feats.flatten(1)
+        edges_feats = edges_feats.flatten(1)
 
         nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
-        nodes_feats = torch.max(nodes_feats, 1).values
-        edges_feats = torch.max(edges_feats, 1).values
+        nodes_feats = nodes_feats.flatten(1)
+        edges_feats = edges_feats.flatten(1)
 
         nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
         nodes_feats = torch.max(nodes_feats, 1).values
         edges_feats = torch.max(edges_feats, 1).values
+
 
         h = nodes_feats
 
