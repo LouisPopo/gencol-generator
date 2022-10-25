@@ -91,6 +91,11 @@ class BinaryClassifier(nn.Module):
         #self.gat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
         # =====
 
+        # M 3_4 
+        self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
+        self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
+
 
 
         #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
@@ -99,10 +104,11 @@ class BinaryClassifier(nn.Module):
         
         # Peut etre moyen de passer d'un a lautre ? Ou sinon plusieurs couches de EGATConv au moins
 
-        self.gat1 = GATConv(nodes_in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
-        self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
-        self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
+        # M 3_3
+        # self.gat1 = GATConv(nodes_in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
+        # self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
         
         #self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
         #self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
@@ -146,26 +152,27 @@ class BinaryClassifier(nn.Module):
         #h = nodes_feats.mean(1)
         # edges_feats = edges_feats.mean(1)
 
-        # ===== 
+        # v3_4
 
-        # nodes_feats, edges_feats = self.gat2(graph, nodes_feats, edges_feats)
-        # nodes_feats = nodes_feats.mean(1)
-        # edges_feats = edges_feats.mean(1)
+        nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
+        nodes_feats = nodes_feats.flatten(1)
+        edges_feats = edges_feats.flatten(1)
 
-        # nodes_feats, edges_feats = self.gat3(graph, nodes_feats, edges_feats)
-        # nodes_feats = nodes_feats.mean(1)
-        # edges_feats = edges_feats.mean(1)
+        nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
+        nodes_feats = nodes_feats.flatten(1)
+        edges_feats = edges_feats.flatten(1)
 
-        # nodes_feats, edges_feats = self.gat4(graph, nodes_feats, edges_feats)
-        # nodes_feats = nodes_feats.mean(1)
-        # edges_feats = edges_feats.mean(1)
+        nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
+        nodes_feats = nodes_feats.mean(1)
+        edges_feats = edges_feats.mean(1)
 
-        h = inputs
 
-        h = self.gat1(graph, h).flatten(1)
-        h = self.gat2(graph, h).flatten(1)
-        h = self.gat3(graph, h).flatten(1)
-        h = self.gat4(graph, h).mean(1)
+        h = nodes_feats
+
+        # h = self.gat1(graph, h).flatten(1)
+        # h = self.gat2(graph, h).flatten(1)
+        # h = self.gat3(graph, h).flatten(1)
+        # h = self.gat4(graph, h).mean(1)
 
         # Si on passe dans le mid mlp
         # 2. MID MLP (pour réduire le nb. de features)
