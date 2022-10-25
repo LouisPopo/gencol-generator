@@ -33,6 +33,11 @@ class MDEVSPNodesDataParser:
         df['t_s'] = (df['t_s'] - t_min) / (df['t_s'].max() - t_min)
         df['t_e'] = (df['t_e'] - t_min) / (df['t_e'].max() - t_min)
 
+        df['nb_dep_10'] = (df['nb_dep_10'] - df['nb_dep_10'].min()) / (df['nb_dep_10'].max() - df['nb_dep_10'].min())
+        df['nb_dep_10_id'] = (df['nb_dep_10_id'] - df['nb_dep_10_id'].min()) / (df['nb_dep_10_id'].max() - df['nb_dep_10_id'].min())
+        df['nb_fin_10'] = (df['nb_fin_10'] - df['nb_fin_10'].min()) / (df['nb_fin_10'].max() - df['nb_fin_10'].min())
+        df['nb_fin_10_id'] = (df['nb_fin_10_id'] - df['nb_fin_10_id'].min()) / (df['nb_fin_10_id'].max() - df['nb_fin_10_id'].min())
+
         # ==================
         nodes_features = df[[c for c in df.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_10_id', 'nb_fin_10', 'nb_fin_10_id', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
         
@@ -68,6 +73,8 @@ class MDEVSPEdgesDataParser:
         parsed = {}
         
         # Data Normalization
+
+        # Min = 0 donc...
 
         df['cost'] = df['cost'] / df['cost'].max()
         df['energy'] = df['energy'] / df['energy'].max()
@@ -416,7 +423,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
     loss_fcn = nn.BCELoss()
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0005, weight_decay=0)
 
     for epoch in range(200):
         
@@ -512,7 +519,7 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    load = False
+    load = True
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
