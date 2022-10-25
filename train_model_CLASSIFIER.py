@@ -34,12 +34,12 @@ class MDEVSPNodesDataParser:
         df['t_e'] = (df['t_e'] - t_min) / (df['t_e'].max() - t_min)
 
         df['nb_dep_10'] = (df['nb_dep_10'] - df['nb_dep_10'].min()) / (df['nb_dep_10'].max() - df['nb_dep_10'].min())
-        df['nb_dep_10_id'] = (df['nb_dep_10_id'] - df['nb_dep_10_id'].min()) / (df['nb_dep_10_id'].max() - df['nb_dep_10_id'].min())
+        df['nb_dep_id_10'] = (df['nb_dep_id_10'] - df['nb_dep_id_10'].min()) / (df['nb_dep_id_10'].max() - df['nb_dep_id_10'].min())
         df['nb_fin_10'] = (df['nb_fin_10'] - df['nb_fin_10'].min()) / (df['nb_fin_10'].max() - df['nb_fin_10'].min())
-        df['nb_fin_10_id'] = (df['nb_fin_10_id'] - df['nb_fin_10_id'].min()) / (df['nb_fin_10_id'].max() - df['nb_fin_10_id'].min())
+        df['nb_fin_id_10'] = (df['nb_fin_id_10'] - df['nb_fin_id_10'].min()) / (df['nb_fin_id_10'].max() - df['nb_fin_id_10'].min())
 
         # ==================
-        nodes_features = df[[c for c in df.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_10_id', 'nb_fin_10', 'nb_fin_10_id', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
+        nodes_features = df[[c for c in df.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_id_10', 'nb_fin_10', 'nb_fin_id_10', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
         
         #nodes_features = df[[c for c in df.columns if c in ['pi_value']]].to_numpy()
         
