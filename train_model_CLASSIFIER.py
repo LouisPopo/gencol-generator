@@ -104,9 +104,15 @@ class BinaryClassifier(nn.Module):
         # self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
 
         # v3_6
+        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        # self.egat2 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[1])
+        # self.egat3 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[2])
+
+        # v3_7
         self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        self.egat2 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[1])
-        self.egat3 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[2])
+        self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
+        self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
+
         
 
 
@@ -192,7 +198,7 @@ class BinaryClassifier(nn.Module):
         # edges_feats = torch.max(edges_feats, 1).values
 
         # v3_7
-        
+
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
         nodes_feats = nodes_feats.flatten(1)
         edges_feats = edges_feats.flatten(1)
