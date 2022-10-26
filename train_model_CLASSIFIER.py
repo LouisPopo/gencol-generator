@@ -453,7 +453,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_minus_first = second - first
             second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
-            second_greater_first.cuda()
+            second_greater_first = second_greater_first.cuda()
 
             batched_graph.to(DEVICE)
 
