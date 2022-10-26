@@ -433,7 +433,6 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 
             # num_nodes = batched_graph.num_nodes()
 
-            batched_graph.to(DEVICE)
 
             batched_graph = dgl.add_self_loop(batched_graph)
 
@@ -450,6 +449,8 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
             second_greater_first.to(DEVICE)
+
+            batched_graph.to(DEVICE)
 
             #batched_graph = batched_graph.to(device)
 
@@ -504,8 +505,10 @@ def train(train_dataloader, val_dataloader, device, model):
         # mini-batch loop
         for batch_id, (batched_graph, _) in enumerate(train_dataloader):
             
-            batched_graph = batched_graph.to(DEVICE)
+            
             batched_graph = dgl.add_self_loop(batched_graph)
+
+            batched_graph = batched_graph.to(DEVICE)
 
             is_trip = batched_graph.ndata['mask'].bool()
             num_trip_nodes = torch.sum(is_trip)
