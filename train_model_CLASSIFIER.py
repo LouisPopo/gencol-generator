@@ -313,7 +313,7 @@ def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
 
     #pi_values = batched_graph.ndata['pi_value'].float()
 
-    print('   IN BATCH LOSS : batched_graph : {}'.format(batched_graph.get_device()))
+    #print('   IN BATCH LOSS : batched_graph : {}'.format(batched_graph.get_device()))
     print('   IN BATCH LOSS : features : {}'.format(features.get_device()))
     
     probs = model(batched_graph, features)
@@ -467,7 +467,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             # print(percent_trips)
             #both_are_trips = both_are_trips.bool()
 
-            print('Batched graph : {}'.format(batched_graph.get_device()))
+            # print('Batched graph : {}'.format(batched_graph.get_device()))
             print('Second greater first : {}'.format(second_greater_first.get_device()))
             
             loss, acc, probs = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
@@ -517,8 +517,6 @@ def train(train_dataloader, val_dataloader, device, model):
             batched_graph = dgl.add_self_loop(batched_graph)
 
             batched_graph = batched_graph.to(DEVICE)
-
-            print('BATCHED GRAPH IN TRAIN : {}'.format(batched_graph.get_device()))
 
             is_trip = batched_graph.ndata['mask'].bool()
             num_trip_nodes = torch.sum(is_trip)
