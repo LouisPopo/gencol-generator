@@ -314,7 +314,7 @@ def batch_loss(model, batched_graph, loss_fnc, second_greater_first, iter):
     #pi_values = batched_graph.ndata['pi_value'].float()
 
     #print('   IN BATCH LOSS : batched_graph : {}'.format(batched_graph.get_device()))
-    print('   IN BATCH LOSS : features : {}'.format(features.get_device()))
+    # print('   IN BATCH LOSS : features : {}'.format(features.get_device()))
     
     probs = model(batched_graph, features)
 
@@ -453,7 +453,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_minus_first = second - first
             second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
-            second_greater_first = second_greater_first.cuda()
+            second_greater_first = second_greater_first.to(DEVICE)
 
             batched_graph = batched_graph.to(DEVICE)
 
@@ -468,7 +468,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             #both_are_trips = both_are_trips.bool()
 
             # print('Batched graph : {}'.format(batched_graph.get_device()))
-            print('Second greater first : {}'.format(second_greater_first.get_device()))
+            #print('Second greater first : {}'.format(second_greater_first.get_device()))
             
             loss, acc, probs = batch_loss(model, batched_graph, loss_fnc, second_greater_first, batch_id)
 
