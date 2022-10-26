@@ -152,9 +152,16 @@ class BinaryClassifier(nn.Module):
         
         # Concat
         self.l1 = nn.Linear(2*16, 32)
-        self.l2 = nn.Linear(32, 32)
-        self.l3 = nn.Linear(32, 16)
-        self.l4 = nn.Linear(16, 1)
+        self.l2 = nn.Linear(32, 64)
+        self.l3 = nn.Linear(64, 128)
+        self.l4 = nn.Linear(128, 256)
+        self.l5 = nn.Linear(256, 256)
+        self.l6 = nn.Linear(256, 256)
+        self.l7 = nn.Linear(256, 128)
+        self.l8 = nn.Linear(128, 64)
+        self.l9 = nn.Linear(64, 32)
+        self.l10 = nn.Linear(32, 16)
+        self.l11 = nn.Linear(16, 1)
 
         #self.l1 = nn.Linear(2, 1)
 
@@ -264,7 +271,14 @@ class BinaryClassifier(nn.Module):
         h = torch.relu(self.l1(h))
         h = torch.relu(self.l2(h))
         h = torch.relu(self.l3(h))
-        h = torch.sigmoid(self.l4(h))
+        h = torch.relu(self.l4(h))
+        h = torch.relu(self.l5(h))
+        h = torch.relu(self.l6(h))
+        h = torch.relu(self.l7(h))
+        h = torch.relu(self.l8(h))
+        h = torch.relu(self.l9(h))
+        h = torch.relu(self.l10(h))
+        h = torch.sigmoid(self.l11(h))
 
 
         # Version juste avec les nodes trips
