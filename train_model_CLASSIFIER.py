@@ -15,6 +15,8 @@ import torch.nn.functional as F
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning)
 
+DEVICE = None
+
 pd.options.mode.chained_assignment = None
 
 class MDEVSPNodesDataParser:
@@ -166,6 +168,9 @@ class BinaryClassifier(nn.Module):
         nodes_feats = inputs
         edges_feats = graph.edata['feat'] 
 
+        nodes_feats.to(DEVICE)
+        edges_feats.to(DEVICE)
+
         # 1. GNN
         #h = inputs
 
@@ -219,6 +224,8 @@ class BinaryClassifier(nn.Module):
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
         nodes_feats = nodes_feats.flatten(1)
         edges_feats = edges_feats.flatten(1)
+
+        print(nodes_feats.is_cuda)
 
         nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
         nodes_feats = nodes_feats.flatten(1)
@@ -426,6 +433,8 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 
             # num_nodes = batched_graph.num_nodes()
 
+            batched_graph.to(DEVICE)
+
             batched_graph = dgl.add_self_loop(batched_graph)
 
             is_trip = batched_graph.ndata['mask'].bool()
@@ -440,7 +449,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_minus_first = second - first
             second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
-            batched_graph = batched_graph.to(device)
+            #batched_graph = batched_graph.to(device)
 
             #trips = batched_graph.ndata['mask'].unsqueeze(1)
             #a = trips.repeat(num_nodes,1)
@@ -493,7 +502,7 @@ def train(train_dataloader, val_dataloader, device, model):
         # mini-batch loop
         for batch_id, (batched_graph, _) in enumerate(train_dataloader):
             
-            batched_graph = batched_graph.to(device)
+            batched_graph = batched_graph.to(DEVICE)
             batched_graph = dgl.add_self_loop(batched_graph)
 
             is_trip = batched_graph.ndata['mask'].bool()
@@ -530,6 +539,12 @@ def train(train_dataloader, val_dataloader, device, model):
             # Memes operations dans le meme sens donc ca vs ce qui sort du forward peuvent etre comparer
             
             loss, acc, probs = batch_loss(model, batched_graph, loss_fcn, second_greater_first, batch_id)
+
+            preds = (probs > 0.5).float()
+            
+            # real_prcnt = torch.sum(second_greater_first, 0) / second_greater_first.shape[0]
+            # pred_prcnt = torch.sum(preds, 0) / preds.shape[0]
+            # print('Real % : {:.4f} | Preds % : {:.4f}'.format(real_prcnt, pred_prcnt))
 
             optimizer.zero_grad()
             loss.backward()
@@ -576,7 +591,9 @@ if __name__ == '__main__':
     if torch.cuda.is_available():
         print('cuda is available')
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    print('USING : {}'.format(DEVICE))
 
     load = False
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
@@ -599,14 +616,16 @@ if __name__ == '__main__':
     edges_in_size = edges_features.shape[1]
     model = BinaryClassifier(nodes_in_size, edges_in_size, 32, [3, 3, 3, 6])
 
+    model.to(DEVICE)
+
     # model training
 
     print('Training ...')
-    best_model = train(train_dataloader, val_dataloader, device, model)
+    best_model = train(train_dataloader, val_dataloader, DEVICE, model)
 
     print('Testing...')
     test_loss_fnc = nn.BCEWithLogitsLoss()
-    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, device, model)
+    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model)
     print("Test Loss {:.4f} | Test Acc {:.4f} | Test Log. Res. {:.4f}".format(test_loss, test_acc, perc_logic_res))
 
 
