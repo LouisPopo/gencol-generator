@@ -149,7 +149,7 @@ class BinaryClassifier(nn.Module):
         #self.ml1 = nn.Linear(hid_size, 2*hid_size)
         self.ml2 = nn.Linear(2*hid_size, 2*hid_size)
         self.ml3 = nn.Linear(2*hid_size, 2*hid_size)
-        self.ml4 = nn.Linear(hid_size, hid_size)
+        self.ml4 = nn.Linear(2*hid_size, hid_size)
         
         # Concat
         self.l1 = nn.Linear(2*hid_size, 32)
