@@ -225,7 +225,7 @@ class BinaryClassifier(nn.Module):
         nodes_feats = nodes_feats.flatten(1)
         edges_feats = edges_feats.flatten(1)
 
-        print(nodes_feats.is_cuda)
+        # print(nodes_feats.is_cuda)
 
         nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
         nodes_feats = nodes_feats.flatten(1)
@@ -449,6 +449,8 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             second_minus_first = second - first
             second_greater_first = (second_minus_first >= 0).float().squeeze(1)
 
+            second_greater_first.to(DEVICE)
+
             #batched_graph = batched_graph.to(device)
 
             #trips = batched_graph.ndata['mask'].unsqueeze(1)
@@ -524,6 +526,8 @@ def train(train_dataloader, val_dataloader, device, model):
             second_minus_first = second - first
 
             second_greater_first = (second_minus_first > 0).float().squeeze(1)
+
+            second_greater_first.to(DEVICE)
 
             # trips = batched_graph.ndata['mask'].unsqueeze(1)
             # a = trips.repeat(num_nodes,1)
