@@ -147,11 +147,12 @@ class BinaryClassifier(nn.Module):
         self.ml1 = nn.Linear((nodes_in_size + hid_size), 2*hid_size)
         # =====
         #self.ml1 = nn.Linear(hid_size, 2*hid_size)
-        self.ml2 = nn.Linear(2*hid_size, hid_size)
-        self.ml3 = nn.Linear(hid_size, 16)
+        self.ml2 = nn.Linear(2*hid_size, 2*hid_size)
+        self.ml3 = nn.Linear(2*hid_size, 2*hid_size)
+        self.ml4 = nn.Linear(hid_size, hid_size)
         
         # Concat
-        self.l1 = nn.Linear(2*16, 32)
+        self.l1 = nn.Linear(2*hid_size, 32)
         self.l2 = nn.Linear(32, 64)
         self.l3 = nn.Linear(64, 128)
         self.l4 = nn.Linear(128, 128)
@@ -256,7 +257,8 @@ class BinaryClassifier(nn.Module):
         h = h[is_trip]
         h = torch.relu(self.ml1(h))
         h = torch.relu(self.ml2(h))
-        h = self.ml3(h) # PAS DE RELU COMME CA ON A UNE VALEUR PAS CONTRAINTES! 
+        h = torch.relu(self.ml3(h))
+        h = self.ml4(h) # PAS DE RELU COMME CA ON A UNE VALEUR PAS CONTRAINTES! 
 
         # 3. Concatene ensemble
         feats_size = h.shape[1]
