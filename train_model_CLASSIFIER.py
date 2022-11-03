@@ -6,6 +6,9 @@ from dgl.nn import GraphConv, GATConv, GATv2Conv, EGATConv
 from dgl.data.utils import split_dataset
 import numpy as np
 
+import os
+from datetime import datetime
+
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score
 import torch
@@ -514,7 +517,7 @@ def train(train_dataloader, val_dataloader, device, model):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 
-    for epoch in range(200):
+    for epoch in range(1):
         
         model.train(True)
 
@@ -647,6 +650,13 @@ if __name__ == '__main__':
 
     print('Training ...')
     best_model = train(train_dataloader, val_dataloader, DEVICE, model)
+
+    # Save the model :
+    
+    dt_string = datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
+    model_folder = 'models/{}'.format(dt_string)
+    os.mkdir(model_folder)
+    torch.save(model.state_dict(), model_folder)
 
     print('Testing...')
     test_loss_fnc = nn.BCEWithLogitsLoss()
