@@ -655,7 +655,7 @@ if __name__ == '__main__':
     
     dt_string = datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
     model_folder = 'models/{}/'.format(dt_string)
-    model_path = 'models/{}/model.txt'
+    model_path = '{}model.txt'.format(model_folder)
     os.mkdir(model_folder)
     torch.save(model.state_dict(), model_path)
 
