@@ -1,6 +1,8 @@
 import math
 import random
 import dgl
+import pickle
+import json
 from dgl.dataloading import GraphDataLoader
 from dgl.nn import GraphConv, GATConv, GATv2Conv, EGATConv
 from dgl.data.utils import split_dataset
@@ -524,6 +526,9 @@ def train(train_dataloader, val_dataloader, device, model):
 
     # MANIPS POUR FAIRE LE LIEN ENTRE GRAPH_ID,NODE_ID -> INSTANCE_INFO, NODE_NAME
     df = pd.read_csv('MDEVSP_dataset/nodes.csv')
+    with open('Networks/instances_id_to_info.pkl', 'rb') as f:
+        graph_id_to_instance = pickle.load(f)
+    #graph_id_to_instance = json.loads(open('Networks/instances_id_to_info.txt'))
     nodes_graphs_infos = df[['name', 'node_id', 'graph_id']]
     #
 
@@ -541,6 +546,9 @@ def train(train_dataloader, val_dataloader, device, model):
 
             # On va chercher le id (instance) du graph, apres on pourra l'utiliser. 
             graph_id = data['id'].item()
+            graph_instance = graph_id_to_instance[graph_id]
+
+            print('Graph {} is {}'.format(graph_id, graph_instance))
 
             batched_graph = batched_graph.to(DEVICE)
 

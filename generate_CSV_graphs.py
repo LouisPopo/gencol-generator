@@ -1,7 +1,7 @@
 # This file takes an instance : voyages.txt, recharges.txt, hlp.txt and depots.txt and creates a graph :
 # Output : nodes.csv and edges.csv with ids and (basics) features
 
-import json
+import pickle
 from cmath import cos
 import enum
 from math import ceil
@@ -19,6 +19,7 @@ df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'id'])
 nb_instances = len(glob('Networks/Network*'))
 
 instances_id_to_info = dict()
+
 
 for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
@@ -324,13 +325,14 @@ for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
     # on devrait avoir un lien entre graph_id et le vrai nom du graph. 
 
-    # df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
-    # df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
+    #df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
+    #df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
 
     print('{}/{} done'.format(instance_id + 1, nb_instances))
 
-with open('Networks/instances_id_to_info.txt', 'w+') as f:
-    f.write(str(instances_id_to_info))
+with open('Networks/instances_id_to_info.pkl', 'wb') as f:
+    pickle.dump(instances_id_to_info, f)
+    #f.write(str(instances_id_to_info))
 
 df_all_graphs.to_csv('MDEVSP_dataset/graphs.csv', sep=',', index=False)
 df_all_nodes.to_csv('MDEVSP_dataset/nodes.csv', sep=',', index=False)
