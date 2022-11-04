@@ -45,11 +45,14 @@ class MDEVSPNodesDataParser:
 
         # ==================
         nodes_features = df[[c for c in df.columns if c in ['o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_id_10', 'nb_fin_10', 'nb_fin_id_10', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
-        
+
         #nodes_features = df[[c for c in df.columns if c in ['pi_value']]].to_numpy()
         
         # 3.0 -> 3.1 (Quand on normalise pas)
         #nodes_features = np.rint(nodes_features)
+
+        #node_names = df['name'].to_numpy()
+        #parsed['name'] = node_names
 
         parsed['feat'] = nodes_features
 
@@ -517,6 +520,13 @@ def train(train_dataloader, val_dataloader, device, model):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 
+
+
+    # MANIPS POUR FAIRE LE LIEN ENTRE GRAPH_ID,NODE_ID -> INSTANCE_INFO, NODE_NAME
+    df = pd.read_csv('MDEVSP_dataset/nodes.csv')
+    nodes_graphs_infos = df[['name', 'node_id', 'graph_id']]
+    #
+
     for epoch in range(1):
         
         model.train(True)
@@ -524,10 +534,13 @@ def train(train_dataloader, val_dataloader, device, model):
         train_total_loss = 0
         train_total_acc = 0
         # mini-batch loop
-        for batch_id, (batched_graph, _) in enumerate(train_dataloader):
+        for batch_id, (batched_graph, data) in enumerate(train_dataloader):
             
             
             batched_graph = dgl.add_self_loop(batched_graph)
+
+            # On va chercher le id (instance) du graph, apres on pourra l'utiliser. 
+            graph_id = data['id'].item()
 
             batched_graph = batched_graph.to(DEVICE)
 
@@ -616,6 +629,11 @@ def train(train_dataloader, val_dataloader, device, model):
 
 if __name__ == '__main__':
 
+    # qqupart on doit lire nodes.csv :
+    # Avoir un lien entre le graph_id, node_id et le name
+    # Comme ca plus tard quand on filtre avec les mask, on peut filtre sur cette structure de données aussi. 
+
+
     if torch.cuda.is_available():
         print('cuda is available')
 
@@ -623,7 +641,7 @@ if __name__ == '__main__':
 
     print('USING : {}'.format(DEVICE))
 
-    load = False
+    load = True
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)

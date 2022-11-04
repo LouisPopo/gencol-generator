@@ -1,6 +1,7 @@
 # This file takes an instance : voyages.txt, recharges.txt, hlp.txt and depots.txt and creates a graph :
 # Output : nodes.csv and edges.csv with ids and (basics) features
 
+import json
 from cmath import cos
 import enum
 from math import ceil
@@ -11,13 +12,19 @@ import os
 
 df_all_nodes = pd.DataFrame()
 df_all_edges = pd.DataFrame()
-df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'label'])
+
+# Il faudrait qqpart storer un dict entre id(dgl graph) -> instance correspondante
+df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'id'])
 
 nb_instances = len(glob('Networks/Network*'))
+
+instances_id_to_info = dict()
 
 for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
     instance_info = instance_folder.split('/')[1].replace('Network', '')
+
+    instances_id_to_info[instance_id] = instance_info
 
     dual_vars_file_path = '{}/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_folder, instance_info)
 
@@ -312,12 +319,18 @@ for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
     df_all_nodes = pd.concat([df_all_nodes, df_nodes], ignore_index=True, axis=0)
     df_all_edges = pd.concat([df_all_edges, df_edges], ignore_index=True, axis=0)
 
-    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, 0]
+    # Dans le graph, son label est le instance info : comme ca on peut retracer l'info de l'instance associée
+    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, instance_id]
+
+    # on devrait avoir un lien entre graph_id et le vrai nom du graph. 
 
     # df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
     # df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
 
     print('{}/{} done'.format(instance_id + 1, nb_instances))
+
+with open('Networks/instances_id_to_info.txt', 'w+') as f:
+    f.write(str(instances_id_to_info))
 
 df_all_graphs.to_csv('MDEVSP_dataset/graphs.csv', sep=',', index=False)
 df_all_nodes.to_csv('MDEVSP_dataset/nodes.csv', sep=',', index=False)
