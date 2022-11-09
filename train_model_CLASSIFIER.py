@@ -510,7 +510,7 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
 
-    for epoch in range(1):
+    for epoch in range(200):
         
         model.train(True)
 
