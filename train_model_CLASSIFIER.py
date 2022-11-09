@@ -7,6 +7,7 @@ from dgl.dataloading import GraphDataLoader
 from dgl.nn import GraphConv, GATConv, GATv2Conv, EGATConv
 from dgl.data.utils import split_dataset
 import numpy as np
+import copy
 
 import os
 from datetime import datetime
@@ -231,6 +232,9 @@ class BinaryClassifier(nn.Module):
         h = self.ml4(h) # PAS DE RELU COMME CA ON A UNE VALEUR PAS CONTRAINTES! 
 
         # 3. Concatene ensemble
+
+        # DEBUG AVEC PLUS DE BATCH POUR VOIR SI CA MARCHE
+
         feats_size = h.shape[1]
         first = h.repeat(num_trip_nodes, 1)
         second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
@@ -505,6 +509,8 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
     last_loss = 1000
     trigger_times = 0 
     patience = 10
+    best_eval_loss = 1000
+    best_model = None
 
     loss_fcn = nn.BCELoss()
 
@@ -594,13 +600,17 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
 
         print("Epoch {:05d} | Train Loss : {:.4f} | Eval Loss : {:.4f} | Train acc : {:.4f} | Eval Acc : {:.4f} | Eval Log. Respected : {:.4f}".format(epoch, train_loss, eval_loss, train_acc, eval_acc, perc_logic_res))
 
+        
+        # sve model with best acc on eval
+
 
         if eval_loss > last_loss:
             trigger_times += 1
             if trigger_times >= patience:
                 print('Early Stopping')
-                return model
+                return best_model
         else:
+            best_model = copy.deepcopy(model)
             trigger_times = 0
             last_loss = eval_loss
 
