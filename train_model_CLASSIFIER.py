@@ -50,6 +50,9 @@ class MDEVSPNodesDataParser:
 
         #nodes_features = df[[c for c in df.columns if c in ['pi_value']]].to_numpy()
         
+        # nodes_ids = df['node_id'].to_numpy()
+        # parsed['ids'] = nodes_ids
+
         # 3.0 -> 3.1 (Quand on normalise pas)
         #nodes_features = np.rint(nodes_features)
 
@@ -104,52 +107,9 @@ class BinaryClassifier(nn.Module):
 
         self.hid_size = hid_size
         
-        # M 3_2
-        #self.gat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        # =====
-
-        # M 3_4 
-        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        # self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
-        # self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
-
-        # v3_6
-        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        # self.egat2 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[1])
-        # self.egat3 = EGATConv(hid_size, hid_size, hid_size, hid_size, heads[2])
-
-        # v3_7
-        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        # self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
-        # self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
-
-        # v3_8
         self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
         self.egat2 = EGATConv(hid_size*heads[0], hid_size*heads[0], hid_size, hid_size, heads[1])
         self.egat3 = EGATConv(hid_size*heads[1], hid_size*heads[1], hid_size, hid_size, heads[2])
-
-        #self.gat2 = EGATConv(nodes_in_size*heads[0], edges_in_size*heads[0], hid_size, hid_size, heads[1])
-        #self.gat3 = EGATConv(nodes_in_size*heads[1], edges_in_size*heads[1], hid_size, hid_size, heads[2])
-        #self.gat4 = EGATConv(nodes_in_size*heads[2], edges_in_size*heads[2], hid_size, hid_size, heads[3])
-        
-        # Peut etre moyen de passer d'un a lautre ? Ou sinon plusieurs couches de EGATConv au moins
-
-        # M 3_3
-        # self.gat1 = GATConv(nodes_in_size, hid_size, heads[0], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat2 = GATConv(hid_size*heads[0], hid_size, heads[1], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat3 = GATConv(hid_size*heads[1], hid_size, heads[2], activation=F.elu, allow_zero_in_degree=True)
-        # self.gat4 = GATConv(hid_size*heads[2], hid_size, heads[3], residual=True, activation=None, allow_zero_in_degree=True)
-        
-        #self.gat1 = GATv2Conv(in_size, hid_size, heads[0], feat_drop=0.1, attn_drop=0.1, allow_zero_in_degree=True)
-        #self.gat2 = GATv2Conv(hid_size*heads[0], hid_size, heads[1], residual=True, allow_zero_in_degree=True)
-
-        # Modele X -> GNN -> H -> CONCAT_H -> MLP
-        # self.l1 = nn.Linear(2*hid_size, hid_size)
-        # self.l2 = nn.Linear(hid_size, hid_size)
-        # self.l3 = nn.Linear(hid_size, 1)
-
-        # Modele X -> GNN -> H -> MLP -> H' -> CONCAT_H' -> MLP
-        # Archi avec un mid_MLP pour réduire le nb de features
         
         # v3_8 : 
         self.ml1 = nn.Linear((nodes_in_size + hid_size), 2*hid_size)
@@ -183,6 +143,8 @@ class BinaryClassifier(nn.Module):
 
         nodes_feats.to(DEVICE)
         edges_feats.to(DEVICE)
+
+        # PAS DE SKIP CONNECTION EN CE MOMENT
 
         # 1. GNN
         #h = inputs
@@ -440,15 +402,20 @@ def validate_logic_predictions(preds, second_greater_first):
     # return logic_respected/n_samples
     
 
-def evaluate_in_batches(dataloader, loss_fnc, device, model):
+def evaluate_in_batches(dataloader, loss_fnc, device, model, df_nodes_graphs_infos=None, graph_id_to_instance=None, print_predictions=False):
     
+    # df_nodes_graphs_infos : df avec le nom du noeud, son id et le graph id correspondant
+    #                         df[['name', 'node_id', 'graph_id']]
+    # graph_id_to_instance : dict qui donne le nom de l'instance en fonction du graph id
+    # print_predictions : si on veut printer les predictions
+     
     total_loss = 0
     total_acc = 0
     percent_logic_respected = []
 
     with torch.no_grad():
 
-        for batch_id, (batched_graph, _) in enumerate(dataloader):
+        for batch_id, (batched_graph, data) in enumerate(dataloader):
 
             # Ici, second greather first pourrait etre fait uniquement avec les trips nodes, pour eviter le deuxieme filtre
 
@@ -456,8 +423,6 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
 
 
             batched_graph = dgl.add_self_loop(batched_graph)
-
-
 
             is_trip = batched_graph.ndata['mask'].bool()
             num_trip_nodes = torch.sum(is_trip)
@@ -497,22 +462,45 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model):
             log_res = validate_logic_predictions(preds, second_greater_first)
             percent_logic_respected.append(log_res)
 
-
             total_loss += loss.item()
             total_acc += acc
             
-            #features = batched_graph.ndata['feat']
-            #labels = batched_graph.ndata['label']
+             # On va chercher le id (instance) du graph, apres on pourra l'utiliser. 
+            if print_predictions:
+                graph_id = data['id'].item()
+                graph_instance = graph_id_to_instance[graph_id]
+                instance_folder = 'Network{}'.format(graph_instance)
+                
+                df_nodes_graph = df_nodes_graphs_infos[df_nodes_graphs_infos["graph_id"] == graph_id]
 
-            #mask = torch.tensor(batched_graph.ndata['mask'], dtype=torch.bool)
+                nodes_ids = df_nodes_graphs_infos.loc[
+                    df['graph_id'] == graph_id, "node_id"
+                ]
 
-            #f1_acc, acc = evaluate(batched_graph, features, labels, mask, model)
-            
-            #total_f1_acc += f1_acc
-            #total_acc += acc
+                trip_nodes_ids = torch.tensor(nodes_ids[is_trip.tolist()].values)
+                
+                trip_nodes_ids = torch.reshape(trip_nodes_ids, (-1,1))
+                first = trip_nodes_ids.repeat(num_trip_nodes, 1)
+                second = trip_nodes_ids.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,1).squeeze(1)
+                all_pair_nodes_ids = torch.cat((second, first), dim=1)
+
+                preds = preds.unsqueeze(1)
+                second_greater_first = second_greater_first.unsqueeze(1)
+
+                results = torch.cat((second, first, preds, second_greater_first), dim=1)
+
+                df_results = pd.DataFrame(results.numpy(), columns=['A', 'B', 'pred', 'real'])
+
+                node_id_to_name_dict = dict(zip(df_nodes_graph.node_id, df_nodes_graph.name))
+
+                df_results_with_names = df_results.replace({'A' : node_id_to_name_dict, 'B' : node_id_to_name_dict})
+
+                df_results_with_names.to_csv('Networks/{}/inequalities_predictions.csv'.format(instance_folder))
+
+
         return (total_loss / (batch_id + 1)), (total_acc / (batch_id + 1)), np.average(percent_logic_respected)
 
-def train(train_dataloader, val_dataloader, device, model):
+def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos, graph_id_to_instance):
 
     last_loss = 1000
     trigger_times = 0 
@@ -521,16 +509,6 @@ def train(train_dataloader, val_dataloader, device, model):
     loss_fcn = nn.BCELoss()
 
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay=0)
-
-
-
-    # MANIPS POUR FAIRE LE LIEN ENTRE GRAPH_ID,NODE_ID -> INSTANCE_INFO, NODE_NAME
-    df = pd.read_csv('MDEVSP_dataset/nodes.csv')
-    with open('Networks/instances_id_to_info.pkl', 'rb') as f:
-        graph_id_to_instance = pickle.load(f)
-    #graph_id_to_instance = json.loads(open('Networks/instances_id_to_info.txt'))
-    nodes_graphs_infos = df[['name', 'node_id', 'graph_id']]
-    #
 
     for epoch in range(1):
         
@@ -543,12 +521,6 @@ def train(train_dataloader, val_dataloader, device, model):
             
             
             batched_graph = dgl.add_self_loop(batched_graph)
-
-            # On va chercher le id (instance) du graph, apres on pourra l'utiliser. 
-            graph_id = data['id'].item()
-            graph_instance = graph_id_to_instance[graph_id]
-
-            print('Graph {} is {}'.format(graph_id, graph_instance))
 
             batched_graph = batched_graph.to(DEVICE)
 
@@ -649,7 +621,7 @@ if __name__ == '__main__':
 
     print('USING : {}'.format(DEVICE))
 
-    load = True
+    load = False
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
@@ -672,22 +644,37 @@ if __name__ == '__main__':
 
     model.to(DEVICE)
 
+
+    # MANIPS POUR FAIRE LE LIEN ENTRE GRAPH_ID,NODE_ID -> INSTANCE_INFO, NODE_NAME
+    df = pd.read_csv('MDEVSP_dataset/nodes.csv')
+    df_nodes_graphs_infos = df[['name', 'node_id', 'graph_id']]
+
+    with open('Networks/instances_id_to_info.pkl', 'rb') as f:
+        graph_id_to_instance = pickle.load(f)
+    #
+
+    test_loss_fnc = nn.BCEWithLogitsLoss()
+    #test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model, df_nodes_graphs_infos, graph_id_to_instance, print_predictions=True)
+
     # model training
 
     print('Training ...')
-    best_model = train(train_dataloader, val_dataloader, DEVICE, model)
+    best_model = train(train_dataloader, val_dataloader, DEVICE, model, df_nodes_graphs_infos, graph_id_to_instance)
 
     # Save the model :
     
     dt_string = datetime.now().strftime("%d_%m_%Y__%H_%M_%S")
     model_folder = 'models/{}/'.format(dt_string)
     model_path = '{}model.pt'.format(model_folder)
+    
     os.mkdir(model_folder)
     torch.save(model.state_dict(), model_path)
 
     print('Testing...')
+    # Ici on voudrait générer un fichier qui nous dit pour chaque graphes, chaque paires de noeuds, la relation prédite.
+    # Avec ça on pourrait tester une résolution. 
     test_loss_fnc = nn.BCEWithLogitsLoss()
-    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model)
+    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model, df_nodes_graphs_infos, graph_id_to_instance, print_predictions=True)
     print("Test Loss {:.4f} | Test Acc {:.4f} | Test Log. Res. {:.4f}".format(test_loss, test_acc, perc_logic_res))
 
 
