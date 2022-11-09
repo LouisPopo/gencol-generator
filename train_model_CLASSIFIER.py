@@ -631,7 +631,7 @@ if __name__ == '__main__':
 
     print('USING : {}'.format(DEVICE))
 
-    load = True
+    load = False
     ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=load)
 
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
