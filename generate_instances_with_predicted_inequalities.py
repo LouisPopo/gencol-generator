@@ -111,7 +111,7 @@ class IneqGraph:
 
 def create_file(network_folder):
 
-    network_name = "3b_4_18"
+    network_name = "3b_3_41"
     network_folder = 'Networks/Network{}'.format(network_name)
 
     trips_file = open(network_folder + "/voyages.txt", "r")
