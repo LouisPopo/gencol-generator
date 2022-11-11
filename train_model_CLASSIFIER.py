@@ -483,13 +483,20 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model, df_nodes_graphs_inf
 
                 trip_nodes_ids = torch.tensor(nodes_ids[is_trip.tolist()].values)
                 
+                trip_nodes_ids.to(DEVICE)
+
                 trip_nodes_ids = torch.reshape(trip_nodes_ids, (-1,1))
                 first = trip_nodes_ids.repeat(num_trip_nodes, 1)
                 second = trip_nodes_ids.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,1).squeeze(1)
                 all_pair_nodes_ids = torch.cat((second, first), dim=1)
-
-                preds = preds.unsqueeze(1)
+        
+                preds = preds.unsqueeze(1).to(DEVICE)
                 second_greater_first = second_greater_first.unsqueeze(1)
+
+                #preds = preds.cpu()
+                preds = preds.cpu()
+                #second_greater_first = second_greater_first.cpu()
+                second_greater_first = second_greater_first.cpu()
 
                 results = torch.cat((second, first, preds, second_greater_first), dim=1)
 
@@ -613,7 +620,7 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
             best_model = copy.deepcopy(model)
             trigger_times = 0
             last_loss = eval_loss
-
+    
     return model
     
 
