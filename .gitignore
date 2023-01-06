@@ -6,7 +6,13 @@
 /MDEVSP_dataset/*.csv
 /MDEVSP_dataset/**/*.bin
 /Networks/**/inequalities_predictions.csv
+#/Networks/**/*
+#/Networks/**/out*
+/Networks/**/dualVars*
+/Networks/**/inputProblem*
 
+/models/*
+/runs/**/*
 ### Python ###
 # Byte-compiled / optimized / DLL files
 code_juliette/*

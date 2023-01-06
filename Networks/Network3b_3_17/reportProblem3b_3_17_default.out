@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time    187.5)
+  Entire solving process        :                           (Time    153.3)
   No feasible solution was found
-  Best relaxation cost          :     47605.17 (Node     0) (Time    187.4)
+  Best relaxation cost          :     47605.17 (Node     0) (Time    153.3)
   Lower bound after cuts        :     47605.17
   End lower bound               :     47605.17
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo5.gerad.lan
 
 Solving process summary
 
@@ -60,19 +60,19 @@ Cpu time per module (seconds)
   Parser                        :        0.0
   Preprocessor                  :        0.0
   Lr solver manager             :        0.1
-  Column generator              :       46.2
-    (Shortest path)             :       38.5
-  Master problem                :      141.1
+  Column generator              :       38.2
+    (Shortest path)             :       34.0
+  Master problem                :      115.0
   -------------------
-  Total (without b&b)           :      187.4
+  Total (without b&b)           :      153.3
 
 Real elapsed time (seconds)
 
   Parser                        :        0.0
   Preprocessor                  :        0.0
   Lr solver manager             :        0.1
-  Column generator              :       46.1
-    (Shortest path)             :       38.2
-  Master problem                :      141.1
+  Column generator              :       38.2
+    (Shortest path)             :       34.4
+  Master problem                :      115.0
   -------------------
-  Total (without b&b)           :      187.4
+  Total (without b&b)           :      153.3

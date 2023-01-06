@@ -1,0 +1,78 @@
+
+Branch and bound
+
+  Entire solving process        :                           (Time     42.0)
+  No feasible solution was found
+  Best relaxation cost          :     36604.75 (Node     0) (Time     42.0)
+  Lower bound after cuts        :     36604.75
+  End lower bound               :     36604.75
+  Deepest level reached         : 0
+  Deepest real level reached    : 0
+  Number of real nodes solved   : 1
+  Stopping condition            : enough nodes explored
+
+Problem identification
+
+  Problem                       : <null>
+  Machine                       : oslo2.gerad.lan
+
+Solving process summary
+
+  Linear relaxations            :        1
+  Column generation iterations  :      104
+  Shortest paths solved         :     5646
+  Columns generated             :    33409
+
+Instance characteristics
+
+  Resources                     : 3
+  Node types                    : no
+  Arc types                     : no
+  Strong resource windows       : no
+  Weak resource windows         : no
+  Resource windows (nodes)      : 3
+  Resource values (arcs)        : 3
+  Values on nodes               : no
+
+  Rows                          : 683
+  Initial columns               : 308
+  Tasks                         : 521
+  Strong tasks                  : 344
+  Weak tasks                    : 4
+  Initial task constraints      : no
+  Nodes                         : 849
+  Arc sets                      : 1
+  Arcs                          : 14369
+  Networks                      : 2
+  Models                        : 1
+
+Memory used per module (Megs)
+
+  Parser (reused)               :      3.277
+  Networks                      :     21.311
+  Column generator              :      4.722
+  Master problem                :      7.100
+  -----------------
+  Total                         :     33.133
+
+Cpu time per module (seconds)
+
+  Parser                        :        0.0
+  Preprocessor                  :        0.0
+  Lr solver manager             :        0.1
+  Column generator              :       12.2
+    (Shortest path)             :       10.1
+  Master problem                :       29.7
+  -------------------
+  Total (without b&b)           :       42.0
+
+Real elapsed time (seconds)
+
+  Parser                        :        0.0
+  Preprocessor                  :        0.0
+  Lr solver manager             :        0.1
+  Column generator              :       12.3
+    (Shortest path)             :       10.4
+  Master problem                :       29.7
+  -------------------
+  Total (without b&b)           :       42.1

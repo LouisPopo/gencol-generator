@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time   1202.4)
+  Entire solving process        :                           (Time    877.2)
   No feasible solution was found
-  Best relaxation cost          :     72855.61 (Node     0) (Time   1202.4)
+  Best relaxation cost          :     72855.61 (Node     0) (Time    877.2)
   Lower bound after cuts        :     72855.61
   End lower bound               :     72855.61
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo5.gerad.lan
 
 Solving process summary
 
@@ -57,22 +57,22 @@ Memory used per module (Megs)
 
 Cpu time per module (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.3
-  Column generator              :      105.1
-    (Shortest path)             :       87.1
-  Master problem                :     1097.0
+  Lr solver manager             :        0.2
+  Column generator              :       89.5
+    (Shortest path)             :       78.9
+  Master problem                :      787.5
   -------------------
-  Total (without b&b)           :     1202.4
+  Total (without b&b)           :      877.2
 
 Real elapsed time (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.3
-  Column generator              :      105.0
-    (Shortest path)             :       87.2
-  Master problem                :     1097.1
+  Lr solver manager             :        0.2
+  Column generator              :       89.5
+    (Shortest path)             :       78.3
+  Master problem                :      787.5
   -------------------
-  Total (without b&b)           :     1202.5
+  Total (without b&b)           :      877.2
