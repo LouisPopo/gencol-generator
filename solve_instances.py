@@ -10,15 +10,20 @@ import time
 
 # 2. executer gencol
 
-def solve_instances(list_instances):
+def solve_instances(list_instances, cpu_int):
 
-    nb_cpu = 4
-    out_file = open("out", "w")
+    nb_cpu = 2
+
+    out_file_name = "out_{}".format(cpu_int)
+    out_file = open(out_file_name, "w")
     out_file.close()
 
     list_process = []
     idx_active = []
-    for i, pb in enumerate(list_instances) :
+
+    pb_names = [f.split('/')[-1].replace('inputProblem', '').replace('.in', '') for f in list_instances]
+
+    for i, pb in enumerate(pb_names) :
         #cpu_free -= 1
         idx_active.append(i)
         with open('out'+pb, 'w') as f:
@@ -30,7 +35,7 @@ def solve_instances(list_instances):
                 if done is not None:
                     idx_active.remove(j)
                     #cpu_free += 1
-                    with open('out', 'a') as out:
+                    with open(out_file_name, 'a') as out:
                         out.write(f'Done Problem{list_instances[j]} ({len(list_process)-len(idx_active)}/{len(list_instances)})\n')
 
     while len(idx_active)>0:
@@ -39,11 +44,11 @@ def solve_instances(list_instances):
             done = list_process[j].poll()
             if done is not None:
                 idx_active.remove(j)
-                with open('out', 'a') as out:
+                with open(out_file_name, 'a') as out:
                     out.write(f'Done Problem{list_instances[j]} ({len(list_process)-len(idx_active)}/{len(list_instances)})\n') 
 
 
-def copy_files(suffix): 
+def copy_files(suffix, cpu_int, nb_cpus): 
 
     files_to_run = []
 
@@ -56,16 +61,21 @@ def copy_files(suffix):
 
         for file in os.listdir('Networks/{}'.format(folder)):
 
-            if suffix in file:
+            if suffix in file and 'inputProblem' in file:
 
-                shutil.copy('Networks/{}/{}'.format(folder, file), '../MdevspGencolTest/')
-
-                pb_name = file.replace('inputProblem', '').replace('.in', '')
-
-                files_to_run.append(pb_name)
+                files_to_run.append('Networks/{}/{}'.format(folder, file))
 
                 continue
-    return files_to_run
+    
+    # files_to_run = sorted(files_to_run, key= lambda f: (
+    #     f.split('/')[1].split('_')[1], 
+    #     int(f.split('/')[1].split('_')[2])))
+    files_to_run_on_cpu = files_to_run[(cpu_int - 1)::nb_cpus]
+
+    for f in files_to_run_on_cpu:
+        shutil.copy(f, '../MdevspGencolTest/')
+
+    return files_to_run_on_cpu
 
 # change le working directtory pour execute
 
@@ -76,16 +86,19 @@ def copy_files(suffix):
 if __name__ == '__main__':
 
 
-    if len(sys.argv) <= 1:
-        print('Missing suffix')
+    if len(sys.argv) <= 2:
+        print('Missing arguments : suffix, cpu_int, nb_cpus.')
         sys.exit()
 
     suffix = sys.argv[1]
+    cpu_int = int(sys.argv[2])
+    nb_cpus = int(sys.argv[3])
 
-    files_to_run = copy_files(suffix=suffix)
+    files_to_run = copy_files(suffix=suffix, cpu_int=cpu_int, nb_cpus=nb_cpus)
 
+    print(len(files_to_run))
     print(files_to_run)
 
     os.chdir('/home/popoloui/MdevspGencol/MdevspGencolTest')
 
-    solve_instances(files_to_run)
+    solve_instances(files_to_run, cpu_int = cpu_int)

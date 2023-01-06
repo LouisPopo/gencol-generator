@@ -14,12 +14,11 @@ df_all_nodes = pd.DataFrame()
 df_all_edges = pd.DataFrame()
 
 # Il faudrait qqpart storer un dict entre id(dgl graph) -> instance correspondante
-df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'id'])
+df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'id', 'nb_trip'])
 
 nb_instances = len(glob('Networks/Network*'))
 
 instances_id_to_info = dict()
-
 
 for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
@@ -321,7 +320,7 @@ for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
     df_all_edges = pd.concat([df_all_edges, df_edges], ignore_index=True, axis=0)
 
     # Dans le graph, son label est le instance info : comme ca on peut retracer l'info de l'instance associée
-    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, instance_id]
+    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, instance_id, nb_trip]
 
     # on devrait avoir un lien entre graph_id et le vrai nom du graph. 
 
@@ -330,9 +329,21 @@ for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
     print('{}/{} done'.format(instance_id + 1, nb_instances))
 
+
+
 with open('Networks/instances_id_to_info.pkl', 'wb') as f:
     pickle.dump(instances_id_to_info, f)
     #f.write(str(instances_id_to_info))
+
+# xs_graphs_ids = list(df_all_graphs.loc[df_all_graphs['nb_trip'] <= 600, 'graph_id'])
+# s_graphs_ids = list(df_all_graphs.loc[(df_all_graphs['nb_trip'] > 600) & (df_all_graphs['nb_trip'] <= 800), 'graph_id'])
+# m_graphs_ids = list(df_all_graphs.loc[(df_all_graphs['nb_trip'] > 800) & (df_all_graphs['nb_trip'] <= 1000), 'graph_id'])
+# l_graphs_ids = list(df_all_graphs.loc[df_all_graphs['nb_trip'] > 1000, 'graph_id'])
+
+
+# if STOP == 0:
+
+df_all_graphs.drop(['nb_trip'], axis=1, inplace=True)
 
 df_all_graphs.to_csv('MDEVSP_dataset/graphs.csv', sep=',', index=False)
 df_all_nodes.to_csv('MDEVSP_dataset/nodes.csv', sep=',', index=False)

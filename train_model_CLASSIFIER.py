@@ -40,16 +40,25 @@ class MDEVSPNodesDataParser:
         t_min = df.loc[df['t_s'] > 0, 't_s'].min()
         df.loc[df['o'] == 1, 't_s'] = t_min
         df.loc[df['o'] == 1, 't_e'] = t_min
-        df['duration'] = df['t_e'] - df['t_s']
-        df['duration'] = df['duration']/df['duration'].max()
-        
-        df['t_s'] = (df['t_s'] - t_min) / (df['t_s'].max() - t_min)
-        df['t_e'] = (df['t_e'] - t_min) / (df['t_e'].max() - t_min)
 
-        df['nb_dep_10'] = (df['nb_dep_10'] - df['nb_dep_10'].min()) / (df['nb_dep_10'].max() - df['nb_dep_10'].min())
-        df['nb_dep_id_10'] = (df['nb_dep_id_10'] - df['nb_dep_id_10'].min()) / (df['nb_dep_id_10'].max() - df['nb_dep_id_10'].min())
-        df['nb_fin_10'] = (df['nb_fin_10'] - df['nb_fin_10'].min()) / (df['nb_fin_10'].max() - df['nb_fin_10'].min())
-        df['nb_fin_id_10'] = (df['nb_fin_id_10'] - df['nb_fin_id_10'].min()) / (df['nb_fin_id_10'].max() - df['nb_fin_id_10'].min())
+        df['duration'] = df['t_e'] - df['t_s']
+        
+        df['duration'] = (df['duration'] - df['duration'].mean())/df['duration'].std()
+        df['t_s'] = (df['t_s'] - df['t_s'].mean())/df['t_s'].std()
+        df['t_e'] = (df['t_e'] - df['t_e'].mean())/df['t_e'].std()
+        # df['duration'] = df['duration']/df['duration'].max()
+        # df['t_s'] = (df['t_s'] - t_min) / (df['t_s'].max() - t_min)
+        # df['t_e'] = (df['t_e'] - t_min) / (df['t_e'].max() - t_min)
+
+        # df['nb_dep_10'] = (df['nb_dep_10'] - df['nb_dep_10'].min()) / (df['nb_dep_10'].max() - df['nb_dep_10'].min())
+        # df['nb_dep_id_10'] = (df['nb_dep_id_10'] - df['nb_dep_id_10'].min()) / (df['nb_dep_id_10'].max() - df['nb_dep_id_10'].min())
+        # df['nb_fin_10'] = (df['nb_fin_10'] - df['nb_fin_10'].min()) / (df['nb_fin_10'].max() - df['nb_fin_10'].min())
+        # df['nb_fin_id_10'] = (df['nb_fin_id_10'] - df['nb_fin_id_10'].min()) / (df['nb_fin_id_10'].max() - df['nb_fin_id_10'].min())
+
+        df['nb_dep_10'] = (df['nb_dep_10'] - df['nb_dep_10'].mean()) / df['nb_dep_10'].std()
+        df['nb_dep_id_10'] = (df['nb_dep_id_10'] - df['nb_dep_id_10'].mean()) / df['nb_dep_id_10'].std()
+        df['nb_fin_10'] = (df['nb_fin_10'] - df['nb_fin_10'].mean()) / df['nb_fin_10'].std()
+        df['nb_fin_id_10'] = (df['nb_fin_id_10'] - df['nb_fin_id_10'].mean()) / df['nb_fin_id_10'].std()
 
         # ==================
         nodes_features = df[[c for c in df.columns if c in ['duration', 'o', 'k', 'n', 'w', 'c', 'd', 'nb_dep_10', 'nb_dep_id_10', 'nb_fin_10', 'nb_fin_id_10', 't_s', 't_e'] or 's_' in c or 'e_' in c]].to_numpy()
@@ -95,11 +104,15 @@ class MDEVSPEdgesDataParser:
 
         # Min = 0 donc...
 
-        df['cost'] = df['cost'] / df['cost'].max()
-        df['energy'] = df['energy'] / df['energy'].max()
-        for t in ['travel', 'waiting', 'delta']:
-            df['{}_time'.format(t)] = df['{}_time'.format(t)] / df['{}_time'.format(t)].max()
+        # df['cost'] = df['cost'] / df['cost'].max()
+        # df['energy'] = df['energy'] / df['energy'].max()
+        # for t in ['travel', 'waiting', 'delta']:
+        #     df['{}_time'.format(t)] = df['{}_time'.format(t)] / df['{}_time'.format(t)].max()
 
+        df['cost'] = (df['cost'] - df['cost'].mean()) / df['cost'].std()
+        df['energy'] = (df['energy'] - df['energy'].mean()) / df['energy'].std()
+        for t in ['travel', 'waiting', 'delta']:
+            df['{}_time'.format(t)] = (df['{}_time'.format(t)] - df['{}_time'.format(t)].mean()) / df['{}_time'.format(t)].std()
         # ======== 
         edges_features = df[['cost', 'energy', 'travel_time', 'waiting_time', 'delta_time', 'rg_id','rg']].to_numpy().squeeze()
 
@@ -111,38 +124,45 @@ class BinaryClassifier(nn.Module):
     def __init__(self, nodes_in_size, edges_in_size, hid_sizes, heads, nb_hid_layers) -> None:
         super(BinaryClassifier, self).__init__()
 
-        # self.hid_size = hid_size
+        hid_size = 32
+
+        self.hid_size = hid_size
         
-        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
-        # self.egat2 = EGATConv(hid_size*heads[0] + nodes_in_size, hid_size*heads[0] + edges_in_size, hid_size, hid_size, heads[1])
-        # self.egat3 = EGATConv(hid_size*heads[1] + nodes_in_size, hid_size*heads[1] + edges_in_size, hid_size, hid_size, heads[2])
+        self.egat1 = EGATConv(nodes_in_size, edges_in_size, hid_size, hid_size, heads[0])
+        self.egat2 = EGATConv(hid_size*heads[0] + nodes_in_size, hid_size*heads[0] + edges_in_size, hid_size, hid_size, heads[1])
+        self.egat3 = EGATConv(hid_size*heads[1] + nodes_in_size, hid_size*heads[1] + edges_in_size, hid_size, hid_size, heads[2])
 
-        # # Concat
-        # self.l1 = nn.Linear(2*hid_size, 32)
-        # self.l2 = nn.Linear(32, 64)
-        # self.l3 = nn.Linear(64, 128)
-        # self.l4 = nn.Linear(128, 128)
-        # self.l5 = nn.Linear(128, 64)
-        # self.l6 = nn.Linear(64, 32)
-        # self.l7 = nn.Linear(32, 16)
-        # self.l8 = nn.Linear(16, 1)
-        self.heads = heads
-
-        self.egat_hid_size_nodes = hid_sizes[0][0]
-        self.egat_hid_size_edges = hid_sizes[0][1]
+        # Concat
+        self.l1 = nn.Linear(2*hid_size, 32)
+        self.l2 = nn.Linear(32, 64)
+        self.l3 = nn.Linear(64, 128)
+        self.l4 = nn.Linear(128, 128)
+        self.l5 = nn.Linear(128, 64)
+        self.l6 = nn.Linear(64, 32)
+        self.l7 = nn.Linear(32, 16)
+        self.l8 = nn.Linear(16, 1)
         
-        self.egat1 = EGATConv(nodes_in_size, edges_in_size, self.egat_hid_size_nodes, self.egat_hid_size_edges, heads[0])
-        self.egat2 = EGATConv(self.egat_hid_size_nodes*heads[0], self.egat_hid_size_edges*heads[0], self.egat_hid_size_nodes, self.egat_hid_size_edges, heads[1])
-        self.egat3 = EGATConv(self.egat_hid_size_nodes*heads[1], self.egat_hid_size_edges*heads[1], 10, 1, heads[2])
-
-        self.mlp_hid_size_nodes = hid_sizes[1][0]
-
-        self.in_layer = nn.Linear(20, self.mlp_hid_size_nodes)
-
-        for l in range(nb_hid_layers):
-            self.add_module('mid_layer_{}'.format(l), nn.Linear(self.mlp_hid_size_nodes, self.mlp_hid_size_nodes))
         
-        self.out_layer = nn.Linear(self.mlp_hid_size_nodes, 1)
+        
+        # v7
+        
+        # self.heads = heads
+
+        # self.egat_hid_size_nodes = hid_sizes[0][0]
+        # self.egat_hid_size_edges = hid_sizes[0][1]
+        
+        # self.egat1 = EGATConv(nodes_in_size, edges_in_size, self.egat_hid_size_nodes, self.egat_hid_size_edges, heads[0])
+        # self.egat2 = EGATConv(self.egat_hid_size_nodes*heads[0], self.egat_hid_size_edges*heads[0], self.egat_hid_size_nodes, self.egat_hid_size_edges, heads[1])
+        # self.egat3 = EGATConv(self.egat_hid_size_nodes*heads[1], self.egat_hid_size_edges*heads[1], 10, 1, heads[2])
+
+        # self.mlp_hid_size_nodes = hid_sizes[1][0]
+
+        # self.in_layer = nn.Linear(20, self.mlp_hid_size_nodes)
+
+        # for l in range(nb_hid_layers):
+        #     self.add_module('mid_layer_{}'.format(l), nn.Linear(self.mlp_hid_size_nodes, self.mlp_hid_size_nodes))
+        
+        # self.out_layer = nn.Linear(self.mlp_hid_size_nodes, 1)
 
 
 
@@ -162,81 +182,88 @@ class BinaryClassifier(nn.Module):
         initial_nodes_feats = initial_nodes_feats.to(DEVICE)
         initial_edges_feats = initial_edges_feats.to(DEVICE)
 
+        # V6
+
+        # Ancienne version
+
         nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
-        nodes_feats = torch.add(nodes_feats.flatten(1), initial_nodes_feats.repeat(1, self.heads[0]))
-        edges_feats = torch.add(edges_feats.flatten(1), initial_edges_feats.repeat(1, self.heads[0]))
-       
+        nodes_feats = torch.cat((nodes_feats.flatten(1), initial_nodes_feats), dim=1)
+        edges_feats = torch.cat((edges_feats.flatten(1), initial_edges_feats), dim=1)
+        #nodes_feats = nodes_feats.flatten(1)
+        #edges_feats = edges_feats.flatten(1)
+
         nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
-        nodes_feats = torch.add(nodes_feats.flatten(1), initial_nodes_feats.repeat(1, self.heads[1]))
-        edges_feats = torch.add(edges_feats.flatten(1), initial_edges_feats.repeat(1, self.heads[1]))
+        nodes_feats = torch.cat((nodes_feats.flatten(1), initial_nodes_feats), dim=1)
+        edges_feats = torch.cat((edges_feats.flatten(1), initial_edges_feats), dim=1)
+        #nodes_feats = nodes_feats.flatten(1)
+        #edges_feats = edges_feats.flatten(1)
 
         nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
-        h = nodes_feats.mean(1)
+        nodes_feats = nodes_feats.mean(1)
+        edges_feats = edges_feats.mean(1)
 
+
+        # 1st FCN WITHOUT skip connections
+        h = nodes_feats
         h = h[is_trip]
+        #h = torch.relu(self.ml1(h))
+        #h = torch.relu(self.ml2(h))
+        #h = torch.relu(self.ml3(h))
+        #h = self.ml4(h) 
 
-        # Concat
+        # 3. Concatene ensemble
+
+        # DEBUG AVEC PLUS DE BATCH POUR VOIR SI CA MARCHE
+
         feats_size = h.shape[1]
         first = h.repeat(num_trip_nodes, 1)
         second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
         h = torch.cat((second, first), dim=1)
 
-        h = torch.relu(self.in_layer(h))
+        # 4. MLP pour prédiction 
+        h = torch.relu(self.l1(h))
+        h = torch.relu(self.l2(h))
+        h = torch.relu(self.l3(h))
+        h = torch.relu(self.l4(h))
+        h = torch.relu(self.l5(h))
+        h = torch.relu(self.l6(h))
+        h = torch.relu(self.l7(h))
+        h = torch.sigmoid(self.l8(h))
 
-        for n, layer in self.named_children():
-            if 'mid_layer' in n:
-                h = torch.relu(layer(h))
-        h = torch.sigmoid(self.out_layer(h))
-        
         return h.squeeze(1)
 
-        # Ancienne version
+
+        # v7
 
         # nodes_feats, edges_feats = self.egat1(graph, nodes_feats, edges_feats)
-        # nodes_feats = torch.cat((nodes_feats.flatten(1), initial_nodes_feats), dim=1)
-        # edges_feats = torch.cat((edges_feats.flatten(1), initial_edges_feats), dim=1)
-        # #nodes_feats = nodes_feats.flatten(1)
-        # #edges_feats = edges_feats.flatten(1)
-
+        # nodes_feats = torch.add(nodes_feats.flatten(1), initial_nodes_feats.repeat(1, self.heads[0]))
+        # edges_feats = torch.add(edges_feats.flatten(1), initial_edges_feats.repeat(1, self.heads[0]))
+       
         # nodes_feats, edges_feats = self.egat2(graph, nodes_feats, edges_feats)
-        # nodes_feats = torch.cat((nodes_feats.flatten(1), initial_nodes_feats), dim=1)
-        # edges_feats = torch.cat((edges_feats.flatten(1), initial_edges_feats), dim=1)
-        # #nodes_feats = nodes_feats.flatten(1)
-        # #edges_feats = edges_feats.flatten(1)
+        # nodes_feats = torch.add(nodes_feats.flatten(1), initial_nodes_feats.repeat(1, self.heads[1]))
+        # edges_feats = torch.add(edges_feats.flatten(1), initial_edges_feats.repeat(1, self.heads[1]))
 
         # nodes_feats, edges_feats = self.egat3(graph, nodes_feats, edges_feats)
-        # nodes_feats = nodes_feats.mean(1)
-        # edges_feats = edges_feats.mean(1)
+        # h = nodes_feats.mean(1)
 
-
-        # # 1st FCN WITHOUT skip connections
-        # h = nodes_feats
         # h = h[is_trip]
-        # #h = torch.relu(self.ml1(h))
-        # #h = torch.relu(self.ml2(h))
-        # #h = torch.relu(self.ml3(h))
-        # #h = self.ml4(h) 
 
-        # # 3. Concatene ensemble
-
-        # # DEBUG AVEC PLUS DE BATCH POUR VOIR SI CA MARCHE
-
+        # # Concat
         # feats_size = h.shape[1]
         # first = h.repeat(num_trip_nodes, 1)
         # second = h.unsqueeze(1).repeat(1,1,num_trip_nodes).view(num_trip_nodes*num_trip_nodes,-1,feats_size).squeeze(1)
         # h = torch.cat((second, first), dim=1)
 
-        # # 4. MLP pour prédiction 
-        # h = torch.relu(self.l1(h))
-        # h = torch.relu(self.l2(h))
-        # h = torch.relu(self.l3(h))
-        # h = torch.relu(self.l4(h))
-        # h = torch.relu(self.l5(h))
-        # h = torch.relu(self.l6(h))
-        # h = torch.relu(self.l7(h))
-        # h = torch.sigmoid(self.l8(h))
+        # h = torch.relu(self.in_layer(h))
 
+        # for n, layer in self.named_children():
+        #     if 'mid_layer' in n:
+        #         h = torch.relu(layer(h))
+        # h = torch.sigmoid(self.out_layer(h))
+        
         # return h.squeeze(1)
+
+        
 
 def evaluate(g, features, labels, mask, model):
 
@@ -446,6 +473,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model, df_nodes_graphs_inf
                 
                 df_nodes_graph = df_nodes_graphs_infos[df_nodes_graphs_infos["graph_id"] == graph_id]
 
+                # HERE DF SHOULD BE DF_NODES
                 nodes_ids = df_nodes_graphs_infos.loc[
                     df['graph_id'] == graph_id, "node_id"
                 ]
@@ -480,7 +508,7 @@ def evaluate_in_batches(dataloader, loss_fnc, device, model, df_nodes_graphs_inf
 
         return (total_loss / (batch_id + 1)), (total_acc / (batch_id + 1)), np.average(percent_logic_respected)
 
-def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos, graph_id_to_instance):
+def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos, graph_id_to_instance):    
 
     last_loss = 1000
     trigger_times = 0 
@@ -502,8 +530,8 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
         train_total_acc = 0
         # mini-batch loop
         for batch_id, (batched_graph, data) in enumerate(train_dataloader):
-            
-            
+        
+
             batched_graphs = dgl.unbatch(batched_graph)
             nb_graphs = len(batched_graphs)
 
@@ -610,15 +638,15 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
         # sve model with best acc on eval
 
 
-        if eval_loss > last_loss:
-            trigger_times += 1
-            if trigger_times >= patience:
-                print('Early Stopping')
-                return best_model
-        else:
-            best_model = copy.deepcopy(model)
-            trigger_times = 0
-            last_loss = eval_loss
+        # if eval_loss > last_loss:
+        #     trigger_times += 1
+        #     if trigger_times >= patience:
+        #         print('Early Stopping')
+        #         return best_model
+        # else:
+        #     best_model = copy.deepcopy(model)
+        #     trigger_times = 0
+        #     last_loss = eval_loss
     
     return model
     
@@ -672,7 +700,7 @@ if __name__ == '__main__':
     
     train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
 
-    train_batch_size = 2
+    train_batch_size = 1
     val_test_batch_size = 1
 
     train_dataloader = GraphDataLoader(train_ds, batch_size=train_batch_size, shuffle=True)
@@ -687,7 +715,7 @@ if __name__ == '__main__':
     nodes_in_size = nodes_features.shape[1]
     edges_in_size = edges_features.shape[1]
 
-    model = BinaryClassifier(nodes_in_size, edges_in_size, [(nodes_in_size,edges_in_size), (32,0)], [3, 3, 3, 6], 10)
+    model = BinaryClassifier(nodes_in_size, edges_in_size, [(nodes_in_size,edges_in_size), (32,0)], [3, 3, 3, 6], 15)
     #model = torch.nn.DistributedDataParallel(model)
 
     model.to(DEVICE)

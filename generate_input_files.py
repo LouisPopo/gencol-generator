@@ -16,8 +16,14 @@ from math import ceil
 
 for folder in os.listdir('Networks'):
 
-    if 'Network' not in folder:
+    if '9999' not in folder:
         continue
+
+    #
+    instance_seed = int(folder.split('_')[-1])
+    if instance_seed < 100:
+        continue
+    #
 
     print(folder)
 
@@ -41,7 +47,6 @@ for folder in os.listdir('Networks'):
     output_file_name = "inputProblem{}_default.in".format(instance_name)       
     
     output_file = open("Networks/{}/{}".format(folder, output_file_name), "w")
-        
     
 
     # Get le nb de periodes necessaires

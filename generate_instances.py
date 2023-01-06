@@ -24,13 +24,29 @@ from code_juliette.dataset_trip_shifting.dataset4b_variables import d_time_table
 
 # nb_instances_per_max_min = 3
 
-for max_minute in max_minutes:
-    seed_list = [x for x in range(nb_instances_per_max_min)]
-    create_network_data(
-        seed_list=seed_list,
+# for max_minute in max_minutes:
+#     seed_list = [(100 + x) for x in range(nb_instances_per_max_min)]
+#     create_network_data(
+#         seed_list=seed_list,
+#         network_num=network_num,
+#         lines=lines,
+#         max_minute=max_minute,
+#         list_depot=list_depot,
+#         d_time_table=d_time_table,
+#         list_recharge=list_recharge,
+#         nb_borne=nb_bornes,
+#         dict_length=dict_length,
+#         dict_length_hlp=dict_length_hlp,
+#         dict_lines=dict_lines,
+#         var_modif=var_modif
+#     )
+
+
+create_network_data(
+        seed_list=[9999],
         network_num=network_num,
         lines=lines,
-        max_minute=max_minute,
+        max_minute=8,
         list_depot=list_depot,
         d_time_table=d_time_table,
         list_recharge=list_recharge,
@@ -40,6 +56,4 @@ for max_minute in max_minutes:
         dict_lines=dict_lines,
         var_modif=var_modif
     )
-
-
 

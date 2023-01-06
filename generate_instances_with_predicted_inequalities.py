@@ -1,25 +1,13 @@
 import pandas as pd
 import os
 import networkx as nx
+from glob import glob
 
 from math import ceil
 
 from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, has_path
 
-fixed_cost = 1000       # Cout d'un vehicule
-nb_veh = 20             # Nb. de vehicules disponibles a un depot
-
-sigma_max = 363000      # En Wh
-speed = 18/60           # en km/min (en moyenne, sans compter les arrets)
-enrgy_km = 1050         # Energie consommee en Wh par km parcouru
-enrgy_w = 11000/60      # Energie consommee en Wh par minute passee a l'arret
-
-cost_w = 2              # Cout d'attente par min.
-cost_t = 4              # Cout voyage a vide par min.
-delta = 45              # Temps. max entre la fin d'un trajet et le debut d'un autre
-
-p = 15                  # Nb. de periodes d'echantillonage pour la recharge
-recharge=15
+from instances_params import *
 
 # given a folder name (for now)
 # which has all the network information
@@ -88,19 +76,18 @@ class IneqGraph:
 
         return False, path
 
-    def get_ineq_series(self, nb_series=3):
+    def get_ineq_series(self, nb_series=10):
         ineq_series = []
         while(True):
             
             has_neg, path = self.bellman_ford()
-
             if not has_neg:
                 if len(path) <= 3:
                     break
                 serie = path[1:-1]
-                for i in range(len(serie)):
-                    u = path[i]
-                    v = path[i+1]
+                for i in range(len(serie) - 1):
+                    u = serie[i]
+                    v = serie[i+1]
                     self.graph.remove_edge(u,v)
                 ineq_series.append(serie)
 
@@ -109,10 +96,13 @@ class IneqGraph:
 
         return ineq_series
 
-def create_file(network_folder):
+def create_file(instance_id):
 
-    network_name = "3b_3_41"
-    network_folder = 'Networks/Network{}'.format(network_name)
+    network_folder = 'Networks/Network{}'.format(instance_id)
+
+    # check if have predictions : 
+    if not os.path.exists('{}/inequalities_predictions.csv'.format(network_folder)):
+        return
 
     trips_file = open(network_folder + "/voyages.txt", "r")
     trips_list = trips_file.readlines()
@@ -128,6 +118,7 @@ def create_file(network_folder):
 
     df_predictions = pd.read_csv(network_folder + '/inequalities_predictions.csv', index_col=[0])
     #df_predictions.drop(columns=['0'], inplace=True)
+    # 'A', 'B', 'pred', 'real', 'A_pi', 'B_pi'
 
     tasks_in_new_inequalities = set()
     inequalities = []
@@ -139,7 +130,7 @@ def create_file(network_folder):
 
     ineq_graph = IneqGraph()
 
-    print("Adding basic nodes and edges")
+    #print("Adding basic nodes and edges")
 
     # Source -> n_i
     ineq_graph.add_node('Source')
@@ -153,59 +144,135 @@ def create_file(network_folder):
     for n in nodes:
         ineq_graph.add_edge(n, 'Sink', 0, 1)
 
-    print("Adding pairwise inequalities edges")
+    #print("Adding pairwise inequalities edges")
 
     # Pairwise inequalities
     df_pairwise_inequalities = df_predictions[df_predictions['pred'] > 0.65]
+
+    #print('predictions : {}'.format(df_pairwise_inequalities.shape[0]))
+
+    good_ineq = 0
+    added_ineq = 0
+
     for i, row in df_pairwise_inequalities.iterrows():
         #pi_i >= pi_j
-        pi_i = row['A'].replace('n', 'Cover')
-        pi_j = row['B'].replace('n', 'Cover')
-        ineq_graph.add_edge(pi_i, pi_j, edge_value, 1)
+        A = row['A']
+        B = row['B']
+        Cover_A = A.replace('n', 'Cover')
+        Cover_B = B.replace('n', 'Cover')
 
-    print("Establishing degrees")
+        A_real_val = float(row['A_pi'])
+        B_real_val = float(row['B_pi'])
+
+        if A_real_val >= B_real_val:
+            good_ineq += 1
+        added_ineq += 1
+        
+        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
+
+    df_pairwise_zeroes = df_predictions[df_predictions['pred'] < 0.35] # Ceux qu'on est SUR qui sont =0
+    df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
+    possible_pairs = set(df_pairwise_zeroes['A_B'].unique())
+    found = set()
+    for p in possible_pairs:
+        A, B = p.split('-')
+        
+        rev = B + '-' + A
+        if (rev not in found) and (A != B) and (rev in possible_pairs):
+            found.add(p)
+            Cover_A = A.replace('n', 'Cover')
+            Cover_B = B.replace('n', 'Cover')
+            ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
+
+    #print('Good ineq added : {}'.format(good_ineq/added_ineq))
+
+    #print("Establishing degrees")
     
     # Establishing degrees
     ineq_graph.establish_degrees()
 
-    print("Validating edges")
+    # print("Validating edges")
 
     # Validating node degrees
     ineq_graph.validate_edges()
 
-    print("Removing cycles")
+    #print("Removing cycles")
 
     # Removing cycles
     ineq_graph.remove_cycles()
 
-    print("Getting ineq series")
+    #print("Getting ineq series")
+
+    #print('Edges : {}'.format(ineq_graph.graph.number_of_edges()))
+    #print('Nodes : {}'.format(ineq_graph.graph.number_of_nodes()))
 
     # Getting series ineq
     ineq_series = ineq_graph.get_ineq_series()
 
+    # # Verifie l'accuracy des inégalités
+    # print('Counting')
+    # nb_good_1 = len(df_predictions[(df_predictions.real == 1.0) & (df_predictions.pred == 1.0)])
+    # nb_good_0 = len(df_predictions[(df_predictions.real == 0.0) & (df_predictions.pred == 0.0)])
+    # tot_good = nb_good_0 + nb_good_1
+    # tot_rows = df_predictions.shape[0]
+    # model_acc = tot_good/tot_rows
+    # #model_acc = df_predictions[df_predictions['pred'] == df_predictions['real']].sum() / df_predictions.shape[0]
+
+    # nb_ineq = 0
+    # nb_good = 0
+
+    # pi_values = df_predictions.drop_duplicates(subset=['A'])
+
+    # for serie in ineq_series:
+
+    #     ineq = []
+
+    #     for i in range(len(serie) - 1):
+
+    #         A = serie[i].replace('Cover_', 'n_')
+    #         B = serie[i+1].replace('Cover_', 'n_')
+
+    #         A_pi = pi_values.loc[pi_values['A'] == A, 'A_pi'].values[0]
+    #         B_pi = pi_values.loc[pi_values['A'] == B, 'A_pi'].values[0]
+
+    #         ineq.append((A, A_pi))
+
+    #         if A_pi >= B_pi:
+    #             nb_good += 1
+            
+    #         nb_ineq += 1
+        
+    #     ineq.append((B, B_pi))
+
+    #     print(ineq)
+
+    # after_review_acc = nb_good / nb_ineq
+
+    # print('Before : {} - After : {}'.format(model_acc, after_review_acc))
+
+    # Dessine un graph
+    #print(ineq_series)
     for s in ineq_series:
 
-        for i in range(1, len(s) - 2):
-            
-            # pi_i >= pi_j
+        for i in range(len(s) - 1):
+
             pi_i = s[i]
             pi_j = s[i+1]
-
+            
             tasks_in_new_inequalities.add(pi_i)
             tasks_in_new_inequalities.add(pi_j)
 
             inequalities.append((pi_i, pi_j, 0))
 
-    print("Writing output file")
+    # print("Writing output file")
 
-    output_file_path = "gencol_files/" + network_name
-    if not os.path.exists(output_file_path):
-        os.mkdir(output_file_path)
+    output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_P_{}".format(network_name, len(inequalities))
-    output_file = open(output_file_path + "/" + output_file_name + ".in", "w")
+    output_file_name = "inputProblem{}_{}_P_v2_inequalities".format(instance_id, len(inequalities))
+
     
-
+    output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
+    
 
     # Get le nb de periodes necessaires
 
@@ -451,4 +518,18 @@ def create_file(network_folder):
     output_file.write(networks_string)
 
 if __name__ == '__main__':
-    create_file('a')
+
+    nb_instances = len(glob('Networks/*')) - 1
+
+    nb = 1
+    for instance in glob('Networks/*'):
+
+        if '.pkl' in instance:
+            continue
+
+        instance_id = instance.replace('Networks/Network','')
+
+        create_file(instance_id)
+
+        print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
+        nb += 1
