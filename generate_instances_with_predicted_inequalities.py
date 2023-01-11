@@ -154,12 +154,19 @@ def create_file(instance_id):
     good_ineq = 0
     added_ineq = 0
 
+    ineq_probs = dict()
+
     for i, row in df_pairwise_inequalities.iterrows():
         #pi_i >= pi_j
         A = row['A']
         B = row['B']
         Cover_A = A.replace('n', 'Cover')
         Cover_B = B.replace('n', 'Cover')
+
+        pred = row['pred']
+
+        key = '{}-{}'.format(Cover_A, Cover_B)
+        ineq_probs[key] = pred
 
         A_real_val = float(row['A_pi'])
         B_real_val = float(row['B_pi'])
@@ -168,7 +175,7 @@ def create_file(instance_id):
             good_ineq += 1
         added_ineq += 1
         
-        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
+        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, pred)
 
     df_pairwise_zeroes = df_predictions[df_predictions['pred'] < 0.35] # Ceux qu'on est SUR qui sont =0
     df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
@@ -182,7 +189,15 @@ def create_file(instance_id):
             found.add(p)
             Cover_A = A.replace('n', 'Cover')
             Cover_B = B.replace('n', 'Cover')
-            ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
+
+            prob = df_pairwise_zeroes.loc[df_pairwise_zeroes['A_B'] == p, 'pred'].values[0]
+
+            key = '{}-{}'.format(Cover_A, Cover_B)
+            ineq_probs[key] = prob
+
+            # On doit trouver la valeur de la probabilite P(A,B)
+
+            ineq_graph.add_edge(Cover_A, Cover_B, edge_value, prob)
 
     #print('Good ineq added : {}'.format(good_ineq/added_ineq))
 
@@ -258,17 +273,34 @@ def create_file(instance_id):
 
             pi_i = s[i]
             pi_j = s[i+1]
+
+            # ici sont n_{}, mais dans le graphe sont : Cover_{}
+            # u = pi_i.replace('Cover', 'n')
+            # v = pi_j.replace('Cover', 'n')
+
+            key = '{}-{}'.format(pi_i, pi_j)
+            pred_prob = ineq_probs[key]
+
+            # given a pre_prob, add a coef. weight : more sure, less weight, less sure more weight:
+            # 0.5 = 50% sure, it's the worst
+            # 1 or 0 = 100% sure
+            sure_level = 0.5 + abs(pred_prob - 0.5)
+
+            coef = int((1 - sure_level)/0.5 * 15)
+
+            # sure = 95 : 0.1 * 15 = 1.5
+            # sure = 75 :          = 7.5
             
             tasks_in_new_inequalities.add(pi_i)
             tasks_in_new_inequalities.add(pi_j)
 
-            inequalities.append((pi_i, pi_j, 0))
+            inequalities.append((pi_i, pi_j, coef))
 
     # print("Writing output file")
 
     output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_{}_P_v2_inequalities".format(instance_id, len(inequalities))
+    output_file_name = "inputProblem{}_{}_P_v4_inequalities".format(instance_id, len(inequalities))
 
     
     output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
@@ -395,11 +427,12 @@ def create_file(instance_id):
     for i, ineq in enumerate(inequalities):
         pi_1 = ineq[0]
         pi_2 = ineq[1]
+        coef = ineq[2]
         # pi_1 >= pi_2
 
         obj_val_coef = 0
 
-        cols_string += "Y_{} {} ({} -1) ({} 1);\n".format(i, obj_val_coef, pi_1, pi_2)
+        cols_string += "Y_{} {} ({} -1) ({} 1);\n".format(i, coef, pi_1, pi_2)
         #cols_string += "Y_" + str(i) + " 0 (" + pi_1 + " -1) (" + pi_2 + " 1);\n"
     
     

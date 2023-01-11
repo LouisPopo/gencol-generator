@@ -31,7 +31,7 @@ edges_features = g.edata['feat']
 nodes_in_size = nodes_features.shape[1]
 edges_in_size = edges_features.shape[1]
 
-model_name = '  '
+model_name = '21_11_2022__03_14_08'
 
 model = BinaryClassifier(nodes_in_size, edges_in_size, [(nodes_in_size,edges_in_size), (32,0)], [3, 3, 3, 6], 15)
 
@@ -103,9 +103,6 @@ for batch_id, (batched_graph, data) in enumerate(all_dataloader):
         goods = torch.eq(preds, second_greater_first).float()
         acc = (torch.sum(goods) / goods.shape[0]).item()
 
-
-
-        
 
         df_nodes_graph = df_nodes_graphs_infos[df_nodes_graphs_infos["graph_id"] == graph_id]
 
