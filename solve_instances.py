@@ -48,16 +48,19 @@ def solve_instances(list_instances, cpu_int):
                     out.write(f'Done Problem{list_instances[j]} ({len(list_process)-len(idx_active)}/{len(list_instances)})\n') 
 
 
-def copy_files(suffix, cpu_int, nb_cpus): 
+def copy_files(suffix, min_seed, cpu_int, nb_cpus): 
 
     files_to_run = []
-
-    suffix = sys.argv[1]
 
     for folder in os.listdir('Networks'):
 
         if 'Network' not in folder:
             continue
+
+        instance_seed = int(folder.split('_')[-1])
+        if instance_seed < min_seed:
+            continue
+    #
 
         for file in os.listdir('Networks/{}'.format(folder)):
 
@@ -87,14 +90,15 @@ if __name__ == '__main__':
 
 
     if len(sys.argv) <= 2:
-        print('Missing arguments : suffix, cpu_int, nb_cpus.')
+        print('Missing arguments : suffix, min_seed, cpu_int, nb_cpus')
         sys.exit()
 
     suffix = sys.argv[1]
-    cpu_int = int(sys.argv[2])
-    nb_cpus = int(sys.argv[3])
+    min_seed = int(sys.argv[2])
+    cpu_int = int(sys.argv[3])
+    nb_cpus = int(sys.argv[4])
 
-    files_to_run = copy_files(suffix=suffix, cpu_int=cpu_int, nb_cpus=nb_cpus)
+    files_to_run = copy_files(suffix=suffix, min_seed=min_seed, cpu_int=cpu_int, nb_cpus=nb_cpus)
 
     print(len(files_to_run))
     print(files_to_run)
