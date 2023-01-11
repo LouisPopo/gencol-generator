@@ -10,6 +10,7 @@
 #/Networks/**/out*
 /Networks/**/dualVars*
 /Networks/**/inputProblem*
+/Networks/**
 
 /models/*
 /runs/**/*
