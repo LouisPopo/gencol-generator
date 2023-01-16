@@ -64,7 +64,6 @@ class IneqGraph:
         while(True):
             try:
                 cycle = find_cycle(self.graph, source='Source')
-
                 self.graph.remove_edges_from(cycle)
                 
             except NetworkXNoCycle:
@@ -146,62 +145,99 @@ def create_file(instance_id):
 
     #print("Adding pairwise inequalities edges")
 
+    pi_vals = df_predictions.set_index('A')['A_pi'].to_dict()
+
     # Pairwise inequalities
     df_pairwise_inequalities = df_predictions[df_predictions['pred'] > 0.65]
+    df_pairwise_inequalities.loc[:, 'A_B'] = df_pairwise_inequalities['A'] + '-' + df_pairwise_inequalities['B']
+    ineq_pairs = list(df_pairwise_inequalities['A_B'].unique())
 
     #print('predictions : {}'.format(df_pairwise_inequalities.shape[0]))
 
     good_ineq = 0
     added_ineq = 0
 
-    ineq_probs = dict()
+    found_ineq = set()
 
-    for i, row in df_pairwise_inequalities.iterrows():
+    for p in ineq_pairs:
         #pi_i >= pi_j
-        A = row['A']
-        B = row['B']
+        A, B = p.split('-')
         Cover_A = A.replace('n', 'Cover')
         Cover_B = B.replace('n', 'Cover')
 
-        pred = row['pred']
+        #pred = row['pred']
 
-        key = '{}-{}'.format(Cover_A, Cover_B)
-        ineq_probs[key] = pred
+        key = '{}-{}'.format(A, B)
+        found_ineq.add(p)
 
-        A_real_val = float(row['A_pi'])
-        B_real_val = float(row['B_pi'])
+        # A_real_val = pi_vals[A]
+        # B_real_val = pi_vals[B]
 
-        if A_real_val >= B_real_val:
-            good_ineq += 1
-        added_ineq += 1
+        # if A_real_val >= B_real_val:
+        #     good_ineq += 1
+        # added_ineq += 1
         
-        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, pred)
+        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
 
     df_pairwise_zeroes = df_predictions[df_predictions['pred'] < 0.35] # Ceux qu'on est SUR qui sont =0
     df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
-    possible_pairs = set(df_pairwise_zeroes['A_B'].unique())
-    found = set()
-    for p in possible_pairs:
+    ineq_pairs = set(df_pairwise_zeroes['A_B'].unique())
+
+    # pour les paires A,B t.q. pred(A,B) < 0.35, on ajoute B->A
+    for p in ineq_pairs:
         A, B = p.split('-')
-        
         rev = B + '-' + A
-        if (rev not in found) and (A != B) and (rev in possible_pairs):
-            found.add(p)
+
+        if A == B:
+            continue
+
+        # MAINTENANT : 
+        if rev not in found_ineq:
+
+            # on l'ajoute direct
+
+            # A_real_val = pi_vals[A]
+            # B_real_val = pi_vals[B]
+
+            # if B_real_val >= A_real_val:
+            #     good_ineq += 1
+
+            found_ineq.add(rev)
+
             Cover_A = A.replace('n', 'Cover')
             Cover_B = B.replace('n', 'Cover')
 
-            prob = df_pairwise_zeroes.loc[df_pairwise_zeroes['A_B'] == p, 'pred'].values[0]
+            ineq_graph.add_edge(Cover_B, Cover_A, edge_value, 1)
 
-            key = '{}-{}'.format(Cover_A, Cover_B)
-            ineq_probs[key] = prob
+            # added_ineq += 1
 
-            # On doit trouver la valeur de la probabilite P(A,B)
+        # AVANT :
+        # if (rev not in found) and (A != B) and (rev in possible_pairs):
+        #     found.add(p)
+        #     Cover_A = A.replace('n', 'Cover')
+        #     Cover_B = B.replace('n', 'Cover')
 
-            ineq_graph.add_edge(Cover_A, Cover_B, edge_value, prob)
+        #     A_real_val = df_pairwise_zeroes.loc[df_pairwise_zeroes['A_B'] == p, 'A_pi'].values[0]
+        #     B_real_val = df_pairwise_zeroes.loc[df_pairwise_zeroes['A_B'] == p, 'B_pi'].values[0]
+
+        #     if A_real_val >= B_real_val:
+        #         good_ineq += 1
+
+        #     prob = df_pairwise_zeroes.loc[df_pairwise_zeroes['A_B'] == p, 'pred'].values[0]
+
+        #     key = '{}-{}'.format(Cover_A, Cover_B)
+        #     ineq_probs[key] = prob
+
+        #     # On doit trouver la valeur de la probabilite P(A,B)
+        #     added_ineq += 1
+        #     ineq_graph.add_edge(Cover_A, Cover_B, edge_value, prob)
+
+    # Juste pour tester
+    #return
 
     #print('Good ineq added : {}'.format(good_ineq/added_ineq))
 
-    #print("Establishing degrees")
+    # print("Establishing degrees")
     
     # Establishing degrees
     ineq_graph.establish_degrees()
@@ -211,12 +247,12 @@ def create_file(instance_id):
     # Validating node degrees
     ineq_graph.validate_edges()
 
-    #print("Removing cycles")
+    # print("Removing cycles")
 
     # Removing cycles
     ineq_graph.remove_cycles()
 
-    #print("Getting ineq series")
+    # print("Getting ineq series")
 
     #print('Edges : {}'.format(ineq_graph.graph.number_of_edges()))
     #print('Nodes : {}'.format(ineq_graph.graph.number_of_nodes()))
@@ -278,15 +314,17 @@ def create_file(instance_id):
             # u = pi_i.replace('Cover', 'n')
             # v = pi_j.replace('Cover', 'n')
 
-            key = '{}-{}'.format(pi_i, pi_j)
-            pred_prob = ineq_probs[key]
+            #key = '{}-{}'.format(pi_i, pi_j)
+            #pred_prob = ineq_probs[key]
 
             # given a pre_prob, add a coef. weight : more sure, less weight, less sure more weight:
             # 0.5 = 50% sure, it's the worst
             # 1 or 0 = 100% sure
-            sure_level = 0.5 + abs(pred_prob - 0.5)
-
-            coef = int((1 - sure_level)/0.5 * 15)
+            
+            #sure_level = 0.5 + abs(pred_prob - 0.5)
+            #coef = int((1 - sure_level)/0.5 * 15)
+            # No coef. impact
+            coef = 0
 
             # sure = 95 : 0.1 * 15 = 1.5
             # sure = 75 :          = 7.5
@@ -300,7 +338,7 @@ def create_file(instance_id):
 
     output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_{}_P_v4_inequalities".format(instance_id, len(inequalities))
+    output_file_name = "inputProblem{}_{}_P_validation_v2_inequalities".format(instance_id, len(inequalities))
 
     
     output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
@@ -552,7 +590,9 @@ def create_file(instance_id):
 
 if __name__ == '__main__':
 
-    nb_instances = len(glob('Networks/*')) - 1
+    #nb_instances = len(glob('Networks/*')) - 1
+    # Pour la validation
+    nb_instances = 100
 
     nb = 1
     for instance in glob('Networks/*'):
@@ -561,6 +601,9 @@ if __name__ == '__main__':
             continue
 
         instance_id = instance.replace('Networks/Network','')
+        instance_seed = int(instance_id.split('_')[-1])
+        if instance_seed < 175:
+            continue
 
         create_file(instance_id)
 
