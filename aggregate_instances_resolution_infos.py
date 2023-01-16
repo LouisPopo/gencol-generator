@@ -56,14 +56,14 @@ def get_out_file_infos(file_path):
                 break
     return nb_Veh_D0, nb_Veh_D1
 
-def create_analysis_csv(suffix, output_name):
+def create_analysis_csv(suffix, output_name): 
     results = []
     for instance_folder in glob('Networks/Network*'):
 
         # instance_info = instance_folder.split('/')[1].replace('Network', '')
         ineq_problem_name = None
         for file in glob('{}/*'.format(instance_folder)):
-            if suffix in file:
+            if suffix in file and 'input' in file:
                 ineq_problem_name = file.split('/')[2].replace('input', '').replace('.in', '')
         if ineq_problem_name == None:
             continue
