@@ -11,6 +11,9 @@
 /Networks/**/dualVars*
 /Networks/**/inputProblem*
 /Networks/**
+/MDEVSP_VAL_dataset/*.csv
+/MDEVSP_VAL_dataset/**/*.bin
+
 
 /models/*
 /runs/**/*
