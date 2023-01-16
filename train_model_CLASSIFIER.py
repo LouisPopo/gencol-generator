@@ -638,17 +638,17 @@ def train(train_dataloader, val_dataloader, device, model, df_nodes_graphs_infos
         # sve model with best acc on eval
 
 
-        # if eval_loss > last_loss:
-        #     trigger_times += 1
-        #     if trigger_times >= patience:
-        #         print('Early Stopping')
-        #         return best_model
-        # else:
-        #     best_model = copy.deepcopy(model)
-        #     trigger_times = 0
-        #     last_loss = eval_loss
+        if eval_loss > last_loss:
+            trigger_times += 1
+            if trigger_times >= patience:
+                print('Early Stopping')
+                return best_model
+        else:
+            best_model = copy.deepcopy(model)
+            trigger_times = 0
+            last_loss = eval_loss
     
-    return model
+    return best_model
     
 
 if __name__ == '__main__':
@@ -698,14 +698,14 @@ if __name__ == '__main__':
 
     # train_ds, val_ds, test_ds = [Subset(ds, xs_idx[offset - length:offset]) for offset, length in zip(accumulate(lengths), lengths)]
     
-    train_ds, val_ds, test_ds = split_dataset(ds, [0.8,0.1,0.1], shuffle=True)
+    train_ds, val_ds = split_dataset(ds, [0.9,0.1], shuffle=True)
 
     train_batch_size = 1
     val_test_batch_size = 1
 
     train_dataloader = GraphDataLoader(train_ds, batch_size=train_batch_size, shuffle=True)
     val_dataloader = GraphDataLoader(val_ds, batch_size=val_test_batch_size, shuffle=True)
-    test_dataloader = GraphDataLoader(test_ds, batch_size=val_test_batch_size, shuffle=True)
+    # test_dataloader = GraphDataLoader(test_ds, batch_size=val_test_batch_size, shuffle=True)
 
     g,_ = train_ds[0]
     nodes_features = g.ndata['feat']
@@ -748,11 +748,12 @@ if __name__ == '__main__':
     os.mkdir(model_folder)
     torch.save(model.state_dict(), model_path)
 
-    print('Testing...')
+    X = 0
+    #print('Testing...')
     # Ici on voudrait générer un fichier qui nous dit pour chaque graphes, chaque paires de noeuds, la relation prédite.
     # Avec ça on pourrait tester une résolution. 
-    test_loss_fnc = nn.BCEWithLogitsLoss()
-    test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model, df_nodes_graphs_infos, graph_id_to_instance, print_predictions=False)
-    print("Test Loss {:.4f} | Test Acc {:.4f} | Test Log. Res. {:.4f}".format(test_loss, test_acc, perc_logic_res))
+    #test_loss_fnc = nn.BCEWithLogitsLoss()
+    #test_loss, test_acc, perc_logic_res = evaluate_in_batches(test_dataloader, test_loss_fnc, DEVICE, model, df_nodes_graphs_infos, graph_id_to_instance, print_predictions=False)
+    #print("Test Loss {:.4f} | Test Acc {:.4f} | Test Log. Res. {:.4f}".format(test_loss, test_acc, perc_logic_res))
 
 

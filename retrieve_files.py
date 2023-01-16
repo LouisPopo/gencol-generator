@@ -6,7 +6,7 @@ from glob import glob
 import os
 import shutil
 
-def retrieve(suffix):
+def retrieve(suffix, min_id):
 
     unsolved = []
     nb = 0
@@ -20,10 +20,10 @@ def retrieve(suffix):
         nb+=1
 
         # instance id > 100
-        #instance_id = int(instance_folder.split('_')[-1])
+        instance_id = int(instance_folder.split('_')[-1])
         
-        #if instance_id < 100:
-        #    continue
+        if instance_id < min_id:
+            continue
 
         ineq_pb_name = None
         for file in glob('{}/*'.format(instance_folder)):
@@ -55,13 +55,14 @@ def retrieve(suffix):
 
 if __name__ == '__main__':
 
-    if len(sys.argv) <= 1:
-        print('Missing arguments : suffix')
+    if len(sys.argv) <= 2:
+        print('Missing arguments : suffix, min_id')
         sys.exit()
     
     suffix = sys.argv[1]
+    min_id = int(sys.argv[2])
 
-    retrieve(suffix)
+    retrieve(suffix, min_id)
           
 
 # for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):

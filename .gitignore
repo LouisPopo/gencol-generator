@@ -13,7 +13,7 @@
 /Networks/**
 /MDEVSP_VAL_dataset/*.csv
 /MDEVSP_VAL_dataset/**/*.bin
-
+/MDEVSP_VAL_dataset/meta.yaml
 
 /models/*
 /runs/**/*

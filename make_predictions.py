@@ -15,13 +15,22 @@ if torch.cuda.is_available():
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-with open('Networks/instances_id_to_info.pkl', 'rb') as f:
+
+
+# THIS IS FOR TRAINING
+# with open('Networks/instances_id_to_info.pkl', 'rb') as f:
+#     graph_id_to_instance = pickle.load(f)
+# df_nodes = pd.read_csv('MDEVSP_dataset/nodes.csv')
+# ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=False)
+
+
+# THIS IS FOR VALIDATION
+with open('Networks/instances_id_to_info_validation.pkl', 'rb') as f:
     graph_id_to_instance = pickle.load(f)
+df_nodes = pd.read_csv('MDEVSP_VAL_dataset/nodes.csv')
+ds = dgl.data.CSVDataset('./MDEVSP_VAL_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=True)
 
-df_nodes = pd.read_csv('MDEVSP_dataset/nodes.csv')
 df_nodes_graphs_infos = df_nodes[['name', 'node_id', 'graph_id']]
-
-ds = dgl.data.CSVDataset('./MDEVSP_dataset',ndata_parser=MDEVSPNodesDataParser(),edata_parser=MDEVSPEdgesDataParser(), force_reload=False)
 
 all_dataloader = GraphDataLoader(ds, batch_size=1, shuffle=True)
 
@@ -31,7 +40,7 @@ edges_features = g.edata['feat']
 nodes_in_size = nodes_features.shape[1]
 edges_in_size = edges_features.shape[1]
 
-model_name = '21_11_2022__03_14_08'
+model_name = '12_01_2023__13_26_46'
 
 model = BinaryClassifier(nodes_in_size, edges_in_size, [(nodes_in_size,edges_in_size), (32,0)], [3, 3, 3, 6], 15)
 
