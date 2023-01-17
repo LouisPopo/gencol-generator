@@ -698,6 +698,10 @@ if __name__ == '__main__':
 
     # train_ds, val_ds, test_ds = [Subset(ds, xs_idx[offset - length:offset]) for offset, length in zip(accumulate(lengths), lengths)]
     
+    # ICI, test_ds = l'autre dataset
+    # on fait le training comme d'hab, et à la fin dans la phase de test, on passe l'autre dataset. 
+
+
     train_ds, val_ds = split_dataset(ds, [0.9,0.1], shuffle=True)
 
     train_batch_size = 1

@@ -152,12 +152,15 @@ def create_file(instance_id):
     df_pairwise_inequalities.loc[:, 'A_B'] = df_pairwise_inequalities['A'] + '-' + df_pairwise_inequalities['B']
     ineq_pairs = list(df_pairwise_inequalities['A_B'].unique())
 
+    pair_probs = df_pairwise_inequalities.set_index('A_B')['pred'].to_dict()
+
     #print('predictions : {}'.format(df_pairwise_inequalities.shape[0]))
 
     good_ineq = 0
     added_ineq = 0
 
     found_ineq = set()
+    ineq_probs = dict()
 
     for p in ineq_pairs:
         #pi_i >= pi_j
@@ -165,10 +168,9 @@ def create_file(instance_id):
         Cover_A = A.replace('n', 'Cover')
         Cover_B = B.replace('n', 'Cover')
 
-        #pred = row['pred']
-
-        key = '{}-{}'.format(A, B)
         found_ineq.add(p)
+
+        prob = pair_probs[p]
 
         # A_real_val = pi_vals[A]
         # B_real_val = pi_vals[B]
@@ -176,12 +178,16 @@ def create_file(instance_id):
         # if A_real_val >= B_real_val:
         #     good_ineq += 1
         # added_ineq += 1
+
+        key = Cover_A + '-' + Cover_B
+        ineq_probs[key] = prob
         
-        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, 1)
+        ineq_graph.add_edge(Cover_A, Cover_B, edge_value, p)
 
     df_pairwise_zeroes = df_predictions[df_predictions['pred'] < 0.35] # Ceux qu'on est SUR qui sont =0
     df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
     ineq_pairs = set(df_pairwise_zeroes['A_B'].unique())
+    pair_probs = df_pairwise_zeroes.set_index('A_B')['pred'].to_dict()
 
     # pour les paires A,B t.q. pred(A,B) < 0.35, on ajoute B->A
     for p in ineq_pairs:
@@ -207,7 +213,11 @@ def create_file(instance_id):
             Cover_A = A.replace('n', 'Cover')
             Cover_B = B.replace('n', 'Cover')
 
-            ineq_graph.add_edge(Cover_B, Cover_A, edge_value, 1)
+            prob = 1 - pair_probs[p]
+            key = Cover_B + '-' + Cover_A
+            ineq_probs[key] = prob
+
+            ineq_graph.add_edge(Cover_B, Cover_A, edge_value, prob)
 
             # added_ineq += 1
 
@@ -303,6 +313,8 @@ def create_file(instance_id):
 
     # Dessine un graph
     #print(ineq_series)
+    wrong_ineq = 0
+    total_ineq = 0
     for s in ineq_series:
 
         for i in range(len(s) - 1):
@@ -314,31 +326,40 @@ def create_file(instance_id):
             # u = pi_i.replace('Cover', 'n')
             # v = pi_j.replace('Cover', 'n')
 
-            #key = '{}-{}'.format(pi_i, pi_j)
-            #pred_prob = ineq_probs[key]
+            key = '{}-{}'.format(pi_i, pi_j)
+            pred_prob = ineq_probs[key]
 
             # given a pre_prob, add a coef. weight : more sure, less weight, less sure more weight:
             # 0.5 = 50% sure, it's the worst
             # 1 or 0 = 100% sure
             
-            #sure_level = 0.5 + abs(pred_prob - 0.5)
-            #coef = int((1 - sure_level)/0.5 * 15)
+            sure_level = 0.5 + abs(pred_prob - 0.5)
+            coef = int((1 - sure_level)/0.5 * 15)
             # No coef. impact
-            coef = 0
+            #coef = 0
 
             # sure = 95 : 0.1 * 15 = 1.5
             # sure = 75 :          = 7.5
+            A = pi_i.replace('Cover', 'n')
+            B = pi_j.replace('Cover', 'n')
+            A_val = pi_vals[A]
+            B_val = pi_vals[B]
+            if A_val < B_val:
+                wrong_ineq += 1
+            total_ineq += 1
+
             
             tasks_in_new_inequalities.add(pi_i)
             tasks_in_new_inequalities.add(pi_j)
 
             inequalities.append((pi_i, pi_j, coef))
+    #print('{}/{} WRONG INEQ ({})'.format(wrong_ineq, total_ineq, wrong_ineq/total_ineq))
 
     # print("Writing output file")
 
     output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_{}_P_validation_v2_inequalities".format(instance_id, len(inequalities))
+    output_file_name = "inputProblem{}_{}_P_validation_V3_inequalities".format(instance_id, len(inequalities))
 
     
     output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
