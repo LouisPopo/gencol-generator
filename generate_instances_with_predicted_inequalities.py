@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import networkx as nx
 from glob import glob
+import sys
 
 from math import ceil
 
@@ -95,7 +96,7 @@ class IneqGraph:
 
         return ineq_series
 
-def create_file(instance_id):
+def create_file(instance_id, out_suffix):
 
     network_folder = 'Networks/Network{}'.format(instance_id)
 
@@ -334,7 +335,7 @@ def create_file(instance_id):
             # 1 or 0 = 100% sure
             
             sure_level = 0.5 + abs(pred_prob - 0.5)
-            coef = int((1 - sure_level)/0.5 * 15)
+            coef = int((1 - sure_level)/0.5 * 25)
             # No coef. impact
             #coef = 0
 
@@ -359,7 +360,7 @@ def create_file(instance_id):
 
     output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_{}_P_validation_V3_inequalities".format(instance_id, len(inequalities))
+    output_file_name = "inputProblem{}_{}_P_{}_inequalities".format(instance_id, len(inequalities), out_suffix)
 
     
     output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
@@ -486,12 +487,13 @@ def create_file(instance_id):
     for i, ineq in enumerate(inequalities):
         pi_1 = ineq[0]
         pi_2 = ineq[1]
+
+        # if on met le coef
         coef = ineq[2]
-        # pi_1 >= pi_2
+        # else
+        # coef = 0
 
-        obj_val_coef = 0
-
-        cols_string += "Y_{} {} ({} -1) ({} 1);\n".format(i, coef, pi_1, pi_2)
+        cols_string += "Y_{} {} [0 0.1] ({} -1) ({} 1);\n".format(i, coef, pi_1, pi_2)
         #cols_string += "Y_" + str(i) + " 0 (" + pi_1 + " -1) (" + pi_2 + " 1);\n"
     
     
@@ -615,6 +617,12 @@ if __name__ == '__main__':
     # Pour la validation
     nb_instances = 100
 
+    if len(sys.argv) <= 1:
+        print('Missing arguments : suffix for output')
+        sys.exit()
+
+    out_suffix = sys.argv[1]
+
     nb = 1
     for instance in glob('Networks/*'):
 
@@ -626,7 +634,7 @@ if __name__ == '__main__':
         if instance_seed < 175:
             continue
 
-        create_file(instance_id)
+        create_file(instance_id, out_suffix)
 
         print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
         nb += 1
