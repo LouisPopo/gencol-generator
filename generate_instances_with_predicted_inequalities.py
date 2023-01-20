@@ -96,7 +96,7 @@ class IneqGraph:
 
         return ineq_series
 
-def create_file(instance_id, out_suffix):
+def create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne):
 
     network_folder = 'Networks/Network{}'.format(instance_id)
 
@@ -149,7 +149,7 @@ def create_file(instance_id, out_suffix):
     pi_vals = df_predictions.set_index('A')['A_pi'].to_dict()
 
     # Pairwise inequalities
-    df_pairwise_inequalities = df_predictions[df_predictions['pred'] > 0.65]
+    df_pairwise_inequalities = df_predictions[df_predictions['pred'] > u_tresh]
     df_pairwise_inequalities.loc[:, 'A_B'] = df_pairwise_inequalities['A'] + '-' + df_pairwise_inequalities['B']
     ineq_pairs = list(df_pairwise_inequalities['A_B'].unique())
 
@@ -185,7 +185,7 @@ def create_file(instance_id, out_suffix):
         
         ineq_graph.add_edge(Cover_A, Cover_B, edge_value, p)
 
-    df_pairwise_zeroes = df_predictions[df_predictions['pred'] < 0.35] # Ceux qu'on est SUR qui sont =0
+    df_pairwise_zeroes = df_predictions[df_predictions['pred'] < l_tresh] # Ceux qu'on est SUR qui sont =0
     df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
     ineq_pairs = set(df_pairwise_zeroes['A_B'].unique())
     pair_probs = df_pairwise_zeroes.set_index('A_B')['pred'].to_dict()
@@ -333,9 +333,12 @@ def create_file(instance_id, out_suffix):
             # given a pre_prob, add a coef. weight : more sure, less weight, less sure more weight:
             # 0.5 = 50% sure, it's the worst
             # 1 or 0 = 100% sure
-            
-            sure_level = 0.5 + abs(pred_prob - 0.5)
-            coef = int((1 - sure_level)/0.5 * 25)
+            if max_coef > 0:
+                sure_level = 0.5 + abs(pred_prob - 0.5)
+                coef = (1 - sure_level)/0.5 * max_coef
+                coef = max(coef, 0.1) # so min coef = 0.1
+            else:
+                coef = 0
             # No coef. impact
             #coef = 0
 
@@ -493,7 +496,12 @@ def create_file(instance_id, out_suffix):
         # else
         # coef = 0
 
-        cols_string += "Y_{} {} [0 0.1] ({} -1) ({} 1);\n".format(i, coef, pi_1, pi_2)
+        if max_borne > 0:
+            borne = '[0 {}]'.format(max_borne)
+        else:
+            borne = ''
+
+        cols_string += "Y_{} {} {} ({} -1) ({} 1);\n".format(i, coef, borne, pi_1, pi_2)
         #cols_string += "Y_" + str(i) + " 0 (" + pi_1 + " -1) (" + pi_2 + " 1);\n"
     
     
@@ -618,10 +626,14 @@ if __name__ == '__main__':
     nb_instances = 100
 
     if len(sys.argv) <= 1:
-        print('Missing arguments : suffix for output')
+        print('Missing arguments : suffix for output, lower_tresh, upper_tresh, max_coef (0 if no coef), max_borne 0 if no borne),')
         sys.exit()
 
     out_suffix = sys.argv[1]
+    l_tresh = float(sys.argv[2])
+    u_tresh = float(sys.argv[3])
+    max_coef = float(sys.argv[4])
+    max_borne = float(sys.argv[5])
 
     nb = 1
     for instance in glob('Networks/*'):
@@ -634,7 +646,7 @@ if __name__ == '__main__':
         if instance_seed < 175:
             continue
 
-        create_file(instance_id, out_suffix)
+        create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne)
 
         print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
         nb += 1
