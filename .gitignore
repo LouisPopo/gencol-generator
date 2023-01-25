@@ -2,6 +2,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,visualstudiocode
 
+*.csv
 /venv_mdevsp/*
 /MDEVSP_dataset/*.csv
 /MDEVSP_dataset/**/*.bin
