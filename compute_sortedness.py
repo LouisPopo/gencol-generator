@@ -4,8 +4,8 @@ import pandas as pd
 def compute(file):
 
     instance_name = '3b_2p5_187'
-    nb_ineq = '929'
-    input_file_name = 'Networks/Network{}/inputProblem{}_{}_P_validation_v2_inequalities.in'.format(instance_name, instance_name, nb_ineq)
+    nb_ineq = '690'
+    input_file_name = 'Networks/Network{}/inputProblem{}_{}_P_TEST_3_inequalities.in'.format(instance_name, instance_name, nb_ineq)
     dual_vars_file_name = 'Networks/Network{}/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_name, instance_name)
 
     # 1. READ LE INPUT PROBLEM FILE
