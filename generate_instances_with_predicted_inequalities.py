@@ -96,7 +96,7 @@ class IneqGraph:
 
         return ineq_series
 
-def create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne):
+def create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, max_borne):
 
     network_folder = 'Networks/Network{}'.format(instance_id)
 
@@ -173,16 +173,18 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne):
 
         prob = pair_probs[p]
 
-        # A_real_val = pi_vals[A]
-        # B_real_val = pi_vals[B]
+        A_real_val = pi_vals[A]
+        B_real_val = pi_vals[B]
 
-        # if A_real_val >= B_real_val:
-        #     good_ineq += 1
-        # added_ineq += 1
+        if A_real_val >= B_real_val:
+            good_ineq += 1
+        added_ineq += 1
+
+            ### JUSTE POUR TESTER, ICI ON MET JUSTE DES VRAIS INEG.
 
         key = Cover_A + '-' + Cover_B
         ineq_probs[key] = prob
-        
+    
         ineq_graph.add_edge(Cover_A, Cover_B, edge_value, p)
 
     df_pairwise_zeroes = df_predictions[df_predictions['pred'] < l_tresh] # Ceux qu'on est SUR qui sont =0
@@ -203,12 +205,13 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne):
 
             # on l'ajoute direct
 
-            # A_real_val = pi_vals[A]
-            # B_real_val = pi_vals[B]
+            A_real_val = pi_vals[A]
+            B_real_val = pi_vals[B]
 
-            # if B_real_val >= A_real_val:
-            #     good_ineq += 1
+            if B_real_val >= A_real_val:
+                good_ineq += 1
 
+                ### JUSTE POUR TESTER, ICI ON MET JUSTE DES VRAIS PREDS
             found_ineq.add(rev)
 
             Cover_A = A.replace('n', 'Cover')
@@ -333,10 +336,10 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne):
             # given a pre_prob, add a coef. weight : more sure, less weight, less sure more weight:
             # 0.5 = 50% sure, it's the worst
             # 1 or 0 = 100% sure
-            if max_coef > 0:
+            if min_coef > 0 and max_coef > 0:
                 sure_level = 0.5 + abs(pred_prob - 0.5)
                 coef = (1 - sure_level)/0.5 * max_coef
-                coef = max(coef, 0.1) # so min coef = 0.1
+                coef = max(coef, min_coef) # so min coef = 0.1
             else:
                 coef = 0
             # No coef. impact
@@ -626,14 +629,15 @@ if __name__ == '__main__':
     nb_instances = 100
 
     if len(sys.argv) <= 1:
-        print('Missing arguments : suffix for output, lower_tresh, upper_tresh, max_coef (0 if no coef), max_borne 0 if no borne),')
+        print('Missing arguments : suffix for output, lower_tresh, upper_tresh, min_coef (0 if no coef), max_coef (0 if no coef), max_borne 0 if no borne),')
         sys.exit()
 
     out_suffix = sys.argv[1]
     l_tresh = float(sys.argv[2])
     u_tresh = float(sys.argv[3])
-    max_coef = float(sys.argv[4])
-    max_borne = float(sys.argv[5])
+    min_coef = float(sys.argv[4])
+    max_coef = float(sys.argv[5])
+    max_borne = float(sys.argv[6])
 
     nb = 1
     for instance in glob('Networks/*'):
@@ -646,7 +650,7 @@ if __name__ == '__main__':
         if instance_seed < 175:
             continue
 
-        create_file(instance_id, out_suffix, l_tresh, u_tresh, max_coef, max_borne)
+        create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, max_borne)
 
         print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
         nb += 1
