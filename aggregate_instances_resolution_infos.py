@@ -67,7 +67,7 @@ def create_analysis_csv(suffix, output_name):
                 ineq_problem_name = file.split('/')[2].replace('input', '').replace('.in', '')
         if ineq_problem_name == None:
             continue
-        #print(ineq_problem_name)
+           
         
         instance_info = ineq_problem_name.replace('Problem', '').split('_')
         network = instance_info[0]
@@ -87,28 +87,28 @@ def create_analysis_csv(suffix, output_name):
 
         trips_file_path = '{}/voyages.txt'.format(instance_folder)
 
-        df_preds = pd.read_csv('{}/inequalities_predictions.csv'.format(instance_folder))
+        # df_preds = pd.read_csv('{}/inequalities_predictions.csv'.format(instance_folder))
 
-        good_sure_predictions = len(df_preds[
-            (
-                (df_preds['pred'] >= 0.65) &
-                (df_preds['real'] == 1.0)
-            ) 
-            |
-            (
-                (df_preds['pred'] <= 0.35) &
-                (df_preds['real'] == 0.0)
-            )
-        ])
+        # good_sure_predictions = len(df_preds[
+        #     (
+        #         (df_preds['pred'] >= 0.65) &
+        #         (df_preds['real'] == 1.0)
+        #     ) 
+        #     |
+        #     (
+        #         (df_preds['pred'] <= 0.35) &
+        #         (df_preds['real'] == 0.0)
+        #     )
+        # ])
         
-        nb_sure_predictions = len(df_preds[
-            (df_preds['pred'] >= 0.65)
-            |
-            (df_preds['pred'] <= 0.35)
-        ]
-        )
+        # nb_sure_predictions = len(df_preds[
+        #     (df_preds['pred'] >= 0.65)
+        #     |
+        #     (df_preds['pred'] <= 0.35)
+        # ]
+        # )
 
-        model_acc = good_sure_predictions/nb_sure_predictions
+        # model_acc = good_sure_predictions/nb_sure_predictions
 
         #def_report_file_path = '{}/reportProblem{}_{}_{}_default.out'.format(instance_folder, network, max_min, seed)
 
@@ -144,10 +144,10 @@ def create_analysis_csv(suffix, output_name):
                 ineq_obj_val,
                 ineq_time,
                 ineq_col_gen_iterations,
-                ineq_tot_mem_use,
-                model_acc
+                ineq_tot_mem_use
             ])
-
+        else:
+            print('no exists')
     df_results = pd.DataFrame(
         results,
         columns=[
@@ -167,14 +167,13 @@ def create_analysis_csv(suffix, output_name):
             'ineq_obj_val', 
             'ineq_sol_time', 
             'ineq_col_gen_iter', 
-            'ineq_tot_mem_use',
-            'model_acc'
+            'ineq_tot_mem_use'
             ]
         ) 
 
     df_results.sort_values(['max_min', 'seed'], inplace=True)
 
-    df_results.to_csv('instances_stats_with_ineq_{}.csv'.format(output_name), index=False)       
+    df_results.to_csv('instances_resolutions_metrics_{}.csv'.format(output_name), index=False)       
     
 if __name__ == '__main__':
 

@@ -10,6 +10,8 @@ from networkx import bellman_ford_path, find_cycle, NetworkXNoCycle, has_path
 
 from instances_params import *
 
+pd.options.mode.chained_assignment = None  # default='warn'
+
 # given a folder name (for now)
 # which has all the network information
 # create a new gencol input file with the predicted inequalities
@@ -96,7 +98,7 @@ class IneqGraph:
 
         return ineq_series
 
-def create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, max_borne):
+def create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne):
 
     network_folder = 'Networks/Network{}'.format(instance_id)
 
@@ -149,7 +151,7 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, m
     pi_vals = df_predictions.set_index('A')['A_pi'].to_dict()
 
     # Pairwise inequalities
-    df_pairwise_inequalities = df_predictions[df_predictions['pred'] > u_tresh]
+    df_pairwise_inequalities = df_predictions[df_predictions['pred'] > (1 - tresh)]
     df_pairwise_inequalities.loc[:, 'A_B'] = df_pairwise_inequalities['A'] + '-' + df_pairwise_inequalities['B']
     ineq_pairs = list(df_pairwise_inequalities['A_B'].unique())
 
@@ -187,7 +189,7 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, m
     
         ineq_graph.add_edge(Cover_A, Cover_B, edge_value, p)
 
-    df_pairwise_zeroes = df_predictions[df_predictions['pred'] < l_tresh] # Ceux qu'on est SUR qui sont =0
+    df_pairwise_zeroes = df_predictions[df_predictions['pred'] < tresh] # Ceux qu'on est SUR qui sont =0
     df_pairwise_zeroes.loc[:,'A_B'] = df_pairwise_zeroes['A'] + '-' + df_pairwise_zeroes['B']
     ineq_pairs = set(df_pairwise_zeroes['A_B'].unique())
     pair_probs = df_pairwise_zeroes.set_index('A_B')['pred'].to_dict()
@@ -366,7 +368,7 @@ def create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, m
 
     output_file_path = network_folder
 
-    output_file_name = "inputProblem{}_{}_P_{}_inequalities".format(instance_id, len(inequalities), out_suffix)
+    output_file_name = "inputProblem{}_P_{}".format(instance_id, out_suffix)
 
     
     output_file = open('{}/{}.in'.format(network_folder, output_file_name), "w")
@@ -629,15 +631,21 @@ if __name__ == '__main__':
     nb_instances = 100
 
     if len(sys.argv) <= 1:
-        print('Missing arguments : suffix for output, lower_tresh, upper_tresh, min_coef (0 if no coef), max_coef (0 if no coef), max_borne 0 if no borne),')
+        print('Missing arguments : treshold, min_coef (0 if no coef), max_coef (0 if no coef), max_borne 0 if no borne),')
         sys.exit()
 
-    out_suffix = sys.argv[1]
-    l_tresh = float(sys.argv[2])
-    u_tresh = float(sys.argv[3])
-    min_coef = float(sys.argv[4])
-    max_coef = float(sys.argv[5])
-    max_borne = float(sys.argv[6])
+    tresh = float(sys.argv[1])
+    min_coef = float(sys.argv[2])
+    max_coef = float(sys.argv[3])
+    max_borne = float(sys.argv[4])
+
+    coef_str = 'NaN' if min_coef == 0 and max_coef == 0 else '{}t{}'.format(str(min_coef).replace('.', 'p'), str(max_coef).replace('.', 'p'))
+    range_str = 'NaN' if max_borne == 0 else '0t{}'.format(str(max_borne).replace('.', 'p'))
+    tresh_str = '{}'.format(str(tresh).replace('.', 'p'))
+
+    out_suffix = 'COEF{}_RANGE{}_TRESH{}'.format(coef_str, range_str, tresh_str)
+
+    print(out_suffix)
 
     nb = 1
     for instance in glob('Networks/*'):
@@ -649,8 +657,8 @@ if __name__ == '__main__':
         instance_seed = int(instance_id.split('_')[-1])
         if instance_seed < 175:
             continue
-
-        create_file(instance_id, out_suffix, l_tresh, u_tresh, min_coef, max_coef, max_borne)
+        
+        create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne)
 
         print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
         nb += 1
