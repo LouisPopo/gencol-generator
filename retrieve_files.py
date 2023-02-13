@@ -1,36 +1,68 @@
 # Get all dualVars... files in MdevspGencol and store them in their respective Network folders
 # and report files : so we can analyze time
-
+import sys
 
 from glob import glob
 import os
 import shutil
 
-unsolved = []
-nb = 0
+def retrieve(suffix, min_id):
 
-for instance_folder in glob('Networks/Network*'):
+    unsolved = []
+    nb = 0
+    tot= 0
 
-    nb+=1
+    # retrieving inequalities
 
-    instance_info = instance_folder.split('/')[1].replace('Network', '')
 
-    dual_vars_path = '../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_info)
-    report_path = '../MdevspGencolTest/reportProblem{}_default.out'.format(instance_info)
-    out_path = '../MdevspGencolTest/out{}_default'.format(instance_info)
+    for instance_folder in glob('Networks/Network*'):
 
-    if os.path.exists(dual_vars_path):
+        nb+=1
 
-        shutil.copy(dual_vars_path, instance_folder)
-        shutil.copy(report_path, instance_folder)
-        shutil.copy(out_path, instance_folder)
+        # instance id > 100
+        instance_id = int(instance_folder.split('_')[-1])
+        
+        if instance_id < min_id:
+            continue
 
-    else:
+        ineq_pb_name = None
+        for file in glob('{}/*'.format(instance_folder)):
+            if suffix in file and 'inputProblem' in file:
+                ineq_pb_name = file.split('/')[2].replace('input', '').replace('.in', '')
+        print(ineq_pb_name)
 
-        unsolved.append(instance_info)
+        if ineq_pb_name == None:
+            continue
 
-print('{}/{} instances were unsolved : {}'.format(len(unsolved), nb, unsolved))
+        instance_info = instance_folder.split('/')[1].replace('Network', '')
 
+        #dual_vars_path = '../MdevspGencolTest/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_info)
+        ineq_dual_vars_path = '../MdevspGencolTest/dualVarsFirstLinearRelax{}.out'.format(ineq_pb_name)
+        ineq_report_path = '../MdevspGencolTest/report{}.out'.format(ineq_pb_name)
+        ineq_out_path = '../MdevspGencolTest/out{}'.format(ineq_pb_name.replace('Problem', ''))
+
+        if os.path.exists(ineq_dual_vars_path) and os.path.exists(ineq_out_path):
+
+            shutil.copy(ineq_dual_vars_path, instance_folder)
+            shutil.copy(ineq_report_path, instance_folder)
+            shutil.copy(ineq_out_path, instance_folder)
+
+        else:
+
+            unsolved.append(instance_info)
+
+    print('{}/{} instances were unsolved : {}'.format(len(unsolved), nb, unsolved))
+
+if __name__ == '__main__':
+
+    if len(sys.argv) <= 2:
+        print('Missing arguments : suffix, min_id')
+        sys.exit()
+    
+    suffix = sys.argv[1]
+    min_id = int(sys.argv[2])
+
+    retrieve(suffix, min_id)
           
 
 # for file in glob('../MdevspGencolTest/dualVarsFirstLinearRelax*'):

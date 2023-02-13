@@ -1,10 +1,10 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time  21740.7)
+  Entire solving process        :                           (Time  26737.6)
   No feasible solution was found
-  Best relaxation cost          :     68969.90 (Node     0) (Time  21740.7)
-  Lower bound after cuts        :     68969.90
+  Best relaxation cost          :     68969.72 (Node     0) (Time  26737.6)
+  Lower bound after cuts        :     68969.72
   End lower bound               : -inf
   Deepest level reached         : 0
   Deepest real level reached    : 0
@@ -19,9 +19,9 @@ Problem identification
 Solving process summary
 
   Linear relaxations            :        1
-  Column generation iterations  :      543
-  Shortest paths solved         :    10316
-  Columns generated             :   121169
+  Column generation iterations  :      573
+  Shortest paths solved         :    10786
+  Columns generated             :   126382
 
 Instance characteristics
 
@@ -59,20 +59,20 @@ Cpu time per module (seconds)
 
   Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        1.0
-  Column generator              :      678.9
-    (Shortest path)             :      624.6
-  Master problem                :    21060.7
+  Lr solver manager             :        0.5
+  Column generator              :      615.3
+    (Shortest path)             :      581.2
+  Master problem                :    26121.7
   -------------------
-  Total (without b&b)           :    21740.7
+  Total (without b&b)           :    26737.6
 
 Real elapsed time (seconds)
 
   Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.8
-  Column generator              :      678.8
-    (Shortest path)             :      624.6
-  Master problem                :    21061.1
+  Lr solver manager             :        0.5
+  Column generator              :      615.4
+    (Shortest path)             :      582.4
+  Master problem                :    26121.8
   -------------------
-  Total (without b&b)           :    21740.8
+  Total (without b&b)           :    26737.7

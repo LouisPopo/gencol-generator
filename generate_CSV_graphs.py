@@ -1,6 +1,7 @@
 # This file takes an instance : voyages.txt, recharges.txt, hlp.txt and depots.txt and creates a graph :
 # Output : nodes.csv and edges.csv with ids and (basics) features
 
+import pickle
 from cmath import cos
 import enum
 from math import ceil
@@ -9,9 +10,21 @@ import pandas as pd
 from glob import glob
 import os
 
-for instance_folder in glob('Networks/Network*'):
+df_all_nodes = pd.DataFrame()
+df_all_edges = pd.DataFrame()
+
+# Il faudrait qqpart storer un dict entre id(dgl graph) -> instance correspondante
+df_all_graphs = pd.DataFrame(columns=['graph_id', 'feat', 'id', 'nb_trip'])
+
+nb_instances = len(glob('Networks/Network*'))
+
+instances_id_to_info = dict()
+
+for instance_id, instance_folder in enumerate(glob('Networks/Network*')):
 
     instance_info = instance_folder.split('/')[1].replace('Network', '')
+
+    instances_id_to_info[instance_id] = instance_info
 
     dual_vars_file_path = '{}/dualVarsFirstLinearRelaxProblem{}_default.out'.format(instance_folder, instance_info)
 
@@ -207,8 +220,8 @@ for instance_folder in glob('Networks/Network*'):
     name_idxn = dict(df_nodes.reset_index().set_index('name')['index'])
 
     # Mets les IDS unique des noeuds sur les edges
-    df_edges['idx_src'] = df_edges['src'].apply(lambda x : name_idxn[x])
-    df_edges['idx_dst'] = df_edges['dst'].apply(lambda x : name_idxn[x])
+    df_edges['src_id'] = df_edges['src'].apply(lambda x : name_idxn[x])
+    df_edges['dst_id'] = df_edges['dst'].apply(lambda x : name_idxn[x])
     df_edges = df_edges.astype({'cost' : float, 'energy' : float})
 
     # Relative cost 1 = max, 0.5 = half max cost
@@ -298,8 +311,40 @@ for instance_folder in glob('Networks/Network*'):
 
     df_nodes['class'] = df_nodes['pi_value'].apply(lambda x : int(x > 0))
 
+    df_nodes['node_id'] = df_nodes.index
 
-    df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
-    df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
+    df_nodes['graph_id'] = instance_id
+    df_edges['graph_id'] = instance_id
 
-    print('{} done'.format(instance_info))
+    df_all_nodes = pd.concat([df_all_nodes, df_nodes], ignore_index=True, axis=0)
+    df_all_edges = pd.concat([df_all_edges, df_edges], ignore_index=True, axis=0)
+
+    # Dans le graph, son label est le instance info : comme ca on peut retracer l'info de l'instance associée
+    df_all_graphs.loc[len(df_all_graphs)] = [instance_id, 0, instance_id, nb_trip]
+
+    # on devrait avoir un lien entre graph_id et le vrai nom du graph. 
+
+    #df_nodes.to_csv('Networks/Network{}/graph_nodes.csv'.format(instance_info), sep=';')
+    #df_edges.to_csv('Networks/Network{}/graph_edges.csv'.format(instance_info), sep=';')
+
+    print('{}/{} done'.format(instance_id + 1, nb_instances))
+
+
+
+with open('Networks/instances_id_to_info.pkl', 'wb') as f:
+    pickle.dump(instances_id_to_info, f)
+    #f.write(str(instances_id_to_info))
+
+# xs_graphs_ids = list(df_all_graphs.loc[df_all_graphs['nb_trip'] <= 600, 'graph_id'])
+# s_graphs_ids = list(df_all_graphs.loc[(df_all_graphs['nb_trip'] > 600) & (df_all_graphs['nb_trip'] <= 800), 'graph_id'])
+# m_graphs_ids = list(df_all_graphs.loc[(df_all_graphs['nb_trip'] > 800) & (df_all_graphs['nb_trip'] <= 1000), 'graph_id'])
+# l_graphs_ids = list(df_all_graphs.loc[df_all_graphs['nb_trip'] > 1000, 'graph_id'])
+
+
+# if STOP == 0:
+
+df_all_graphs.drop(['nb_trip'], axis=1, inplace=True)
+
+df_all_graphs.to_csv('MDEVSP_dataset/graphs.csv', sep=',', index=False)
+df_all_nodes.to_csv('MDEVSP_dataset/nodes.csv', sep=',', index=False)
+df_all_edges.to_csv('MDEVSP_dataset/edges.csv', sep=',', index=False)

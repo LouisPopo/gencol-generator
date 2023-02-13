@@ -9,7 +9,7 @@ var_modif = 1
 nb_bornes = 3
 nb_veh = 100                            # Nb. de vehicules disponibles a un depot
 
-nb_instances_per_max_min = 100
+nb_instances_per_max_min = 75
 
 fixed_cost = 1000                       # Cout d'un vehicule
 nb_veh = 100             

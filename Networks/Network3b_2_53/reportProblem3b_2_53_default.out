@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time   2504.4)
+  Entire solving process        :                           (Time   1898.7)
   No feasible solution was found
-  Best relaxation cost          :     71645.42 (Node     0) (Time   2504.4)
+  Best relaxation cost          :     71645.42 (Node     0) (Time   1898.7)
   Lower bound after cuts        :     71645.42
   End lower bound               :     71645.42
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo4.gerad.lan
 
 Solving process summary
 
@@ -57,22 +57,22 @@ Memory used per module (Megs)
 
 Cpu time per module (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.4
-  Column generator              :      329.3
-    (Shortest path)             :      302.2
-  Master problem                :     2174.6
+  Lr solver manager             :        0.2
+  Column generator              :      287.1
+    (Shortest path)             :      269.0
+  Master problem                :     1611.2
   -------------------
-  Total (without b&b)           :     2504.4
+  Total (without b&b)           :     1898.7
 
 Real elapsed time (seconds)
 
   Parser                        :        0.1
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.4
-  Column generator              :      329.3
-    (Shortest path)             :      301.8
-  Master problem                :     2174.6
+  Lr solver manager             :        0.2
+  Column generator              :      287.2
+    (Shortest path)             :      268.3
+  Master problem                :     1611.2
   -------------------
-  Total (without b&b)           :     2504.4
+  Total (without b&b)           :     1898.7

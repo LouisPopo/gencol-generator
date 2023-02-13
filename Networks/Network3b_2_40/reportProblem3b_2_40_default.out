@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time   2965.6)
+  Entire solving process        :                           (Time   2207.4)
   No feasible solution was found
-  Best relaxation cost          :     71481.49 (Node     0) (Time   2965.6)
+  Best relaxation cost          :     71481.49 (Node     0) (Time   2207.4)
   Lower bound after cuts        :     71481.49
   End lower bound               :     71481.49
   Deepest level reached         : 0
@@ -59,20 +59,20 @@ Cpu time per module (seconds)
 
   Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.4
-  Column generator              :      246.4
-    (Shortest path)             :      217.7
-  Master problem                :     2718.7
+  Lr solver manager             :        0.2
+  Column generator              :      210.3
+    (Shortest path)             :      192.2
+  Master problem                :     1996.9
   -------------------
-  Total (without b&b)           :     2965.6
+  Total (without b&b)           :     2207.4
 
 Real elapsed time (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.4
-  Column generator              :      246.4
-    (Shortest path)             :      217.7
-  Master problem                :     2718.8
+  Lr solver manager             :        0.3
+  Column generator              :      210.2
+    (Shortest path)             :      192.2
+  Master problem                :     1997.0
   -------------------
-  Total (without b&b)           :     2965.6
+  Total (without b&b)           :     2207.4

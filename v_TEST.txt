@@ -1,0 +1,20 @@
+cuda is available
+USING : cuda
+Done loading data from cached files.
+Training ...
+     Batch 000 | Loss : 0.6979 | Acc : 0.4892
+     Batch 025 | Loss : 0.6916 | Acc : 0.5120
+     Batch 050 | Loss : 0.5818 | Acc : 0.7470
+     Batch 075 | Loss : 0.5144 | Acc : 0.7756
+     Batch 100 | Loss : 0.4101 | Acc : 0.8148
+     Batch 125 | Loss : 0.4144 | Acc : 0.8016
+     Batch 150 | Loss : 0.3672 | Acc : 0.8340
+     Batch 175 | Loss : 0.4490 | Acc : 0.7916
+     Batch 200 | Loss : 0.3825 | Acc : 0.8178
+     Batch 225 | Loss : 0.4028 | Acc : 0.8119
+     Batch 250 | Loss : 0.4374 | Acc : 0.7849
+     Batch 275 | Loss : 0.3545 | Acc : 0.8378
+     Batch 300 | Loss : 0.4240 | Acc : 0.7976
+Epoch 00000 | Train Loss : 0.4742 | Eval Loss : 0.4235 | Train acc : 0.7553 | Eval Acc : 0.7928 | Eval Log. Respected : 0.9814
+Testing...
+Test Loss 0.6221 | Test Acc 0.7905 | Test Log. Res. 0.9867

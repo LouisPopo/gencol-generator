@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time    605.1)
+  Entire solving process        :                           (Time    497.4)
   No feasible solution was found
-  Best relaxation cost          :     71577.48 (Node     0) (Time    605.0)
+  Best relaxation cost          :     71577.48 (Node     0) (Time    497.4)
   Lower bound after cuts        :     71577.48
   End lower bound               :     71577.48
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo3.gerad.lan
 
 Solving process summary
 
@@ -57,22 +57,22 @@ Memory used per module (Megs)
 
 Cpu time per module (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.2
-  Column generator              :      195.5
-    (Shortest path)             :      172.7
-  Master problem                :      409.3
+  Lr solver manager             :        0.1
+  Column generator              :      175.9
+    (Shortest path)             :      159.5
+  Master problem                :      321.4
   -------------------
-  Total (without b&b)           :      605.0
+  Total (without b&b)           :      497.4
 
 Real elapsed time (seconds)
 
   Parser                        :        0.1
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.3
-  Column generator              :      195.5
-    (Shortest path)             :      172.5
-  Master problem                :      409.2
+  Lr solver manager             :        0.1
+  Column generator              :      175.8
+    (Shortest path)             :      159.9
+  Master problem                :      321.4
   -------------------
-  Total (without b&b)           :      605.0
+  Total (without b&b)           :      497.4

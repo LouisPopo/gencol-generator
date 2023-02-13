@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time    836.2)
+  Entire solving process        :                           (Time    648.2)
   No feasible solution was found
-  Best relaxation cost          :     75925.46 (Node     0) (Time    836.1)
+  Best relaxation cost          :     75925.46 (Node     0) (Time    648.1)
   Lower bound after cuts        :     75925.46
   End lower bound               :     75925.46
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo3.gerad.lan
 
 Solving process summary
 
@@ -57,22 +57,22 @@ Memory used per module (Megs)
 
 Cpu time per module (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.3
-  Column generator              :       85.0
-    (Shortest path)             :       66.8
-  Master problem                :      750.8
+  Lr solver manager             :        0.1
+  Column generator              :       70.1
+    (Shortest path)             :       59.1
+  Master problem                :      577.9
   -------------------
-  Total (without b&b)           :      836.1
+  Total (without b&b)           :      648.1
 
 Real elapsed time (seconds)
 
   Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.2
-  Column generator              :       85.0
-    (Shortest path)             :       66.4
-  Master problem                :      750.9
+  Lr solver manager             :        0.1
+  Column generator              :       70.2
+    (Shortest path)             :       59.3
+  Master problem                :      577.8
   -------------------
-  Total (without b&b)           :      836.1
+  Total (without b&b)           :      648.1

@@ -1,9 +1,9 @@
 
 Branch and bound
 
-  Entire solving process        :                           (Time   6401.3)
+  Entire solving process        :                           (Time   4816.7)
   No feasible solution was found
-  Best relaxation cost          :     71645.22 (Node     0) (Time   6401.2)
+  Best relaxation cost          :     71645.22 (Node     0) (Time   4816.7)
   Lower bound after cuts        :     71645.22
   End lower bound               :     71645.22
   Deepest level reached         : 0
@@ -14,7 +14,7 @@ Branch and bound
 Problem identification
 
   Problem                       : <null>
-  Machine                       : oslo1.gerad.lan
+  Machine                       : oslo2.gerad.lan
 
 Solving process summary
 
@@ -57,22 +57,22 @@ Memory used per module (Megs)
 
 Cpu time per module (seconds)
 
-  Parser                        :        0.1
+  Parser                        :        0.0
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.6
-  Column generator              :      538.8
-    (Shortest path)             :      503.8
-  Master problem                :     5861.8
+  Lr solver manager             :        0.2
+  Column generator              :      482.8
+    (Shortest path)             :      456.3
+  Master problem                :     4333.6
   -------------------
-  Total (without b&b)           :     6401.2
+  Total (without b&b)           :     4816.7
 
 Real elapsed time (seconds)
 
   Parser                        :        0.1
   Preprocessor                  :        0.0
-  Lr solver manager             :        0.5
-  Column generator              :      538.9
-    (Shortest path)             :      504.1
-  Master problem                :     5861.9
+  Lr solver manager             :        0.3
+  Column generator              :      483.3
+    (Shortest path)             :      456.4
+  Master problem                :     4340.3
   -------------------
-  Total (without b&b)           :     6401.3
+  Total (without b&b)           :     4824.0
