@@ -64,16 +64,21 @@ def create_analysis_csv(suffix, output_name):
         ineq_problem_name = None
         for file in glob('{}/*'.format(instance_folder)):
             if suffix in file and 'input' in file:
+                ineq_file_name = file
                 ineq_problem_name = file.split('/')[2].replace('input', '').replace('.in', '')
         if ineq_problem_name == None:
             continue
            
         
+
+        inequalities = open(ineq_file_name).read().count('Y_')
+        print(inequalities)
+
         instance_info = ineq_problem_name.replace('Problem', '').split('_')
         network = instance_info[0]
         max_min = instance_info[1]
         seed = instance_info[2]
-        inequalities = instance_info[3]
+        #inequalities = instance_info[3]
 
         def_problem_name = 'Problem{}_{}_{}_default'.format(network, max_min, seed)
 
@@ -173,7 +178,7 @@ def create_analysis_csv(suffix, output_name):
 
     df_results.sort_values(['max_min', 'seed'], inplace=True)
 
-    df_results.to_csv('instances_resolutions_metrics_{}.csv'.format(output_name), index=False)       
+    df_results.to_csv('instances_solutions_metrics_{}.csv'.format(output_name), index=False)       
     
 if __name__ == '__main__':
 

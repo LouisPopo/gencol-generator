@@ -27,7 +27,7 @@ def retrieve(suffix, min_id):
 
         ineq_pb_name = None
         for file in glob('{}/*'.format(instance_folder)):
-            if suffix in file:
+            if suffix in file and 'inputProblem' in file:
                 ineq_pb_name = file.split('/')[2].replace('input', '').replace('.in', '')
         print(ineq_pb_name)
 

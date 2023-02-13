@@ -78,7 +78,7 @@ class IneqGraph:
 
         return False, path
 
-    def get_ineq_series(self, nb_series=10):
+    def get_ineq_series(self, nb_series=20):
         ineq_series = []
         while(True):
             
@@ -180,13 +180,13 @@ def create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne):
 
         if A_real_val >= B_real_val:
             good_ineq += 1
-        added_ineq += 1
+            added_ineq += 1
 
             ### JUSTE POUR TESTER, ICI ON MET JUSTE DES VRAIS INEG.
 
         key = Cover_A + '-' + Cover_B
         ineq_probs[key] = prob
-    
+
         ineq_graph.add_edge(Cover_A, Cover_B, edge_value, p)
 
     df_pairwise_zeroes = df_predictions[df_predictions['pred'] < tresh] # Ceux qu'on est SUR qui sont =0
@@ -448,8 +448,14 @@ def create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne):
         row_name = "Cover_T" + str(trip)
 
         rows_string += row_name + " =1"
-        if row_name not in tasks_in_new_inequalities:
-            rows_string += " TaskStrong"
+        
+        # if row_name not in tasks_in_new_inequalities:
+        
+        rows_string += " TaskStrong"
+
+        # else : 
+
+        #     rows_string += " TSTSTS"
         
         rows_string += ";\n"
 
@@ -473,8 +479,10 @@ def create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne):
         tasks_string += "t_T" + str(trip) + " " + row_name
         
         # TEST NO STRONG
-        if row_name not in tasks_in_new_inequalities:
-            tasks_string += " Strong"
+        #if row_name not in tasks_in_new_inequalities:
+        tasks_string += " Strong"
+        # else:
+        #     tasks_string += "SSSSSS"
         
         tasks_string += ";\n"
 
@@ -631,7 +639,7 @@ if __name__ == '__main__':
     nb_instances = 100
 
     if len(sys.argv) <= 1:
-        print('Missing arguments : treshold, min_coef (0 if no coef), max_coef (0 if no coef), max_borne 0 if no borne),')
+        print('Missing arguments : treshold, min_coef (0 if no coef), max_coef (0 if no coef), max_borne 0 if no borne)')
         sys.exit()
 
     tresh = float(sys.argv[1])
@@ -643,7 +651,7 @@ if __name__ == '__main__':
     range_str = 'NaN' if max_borne == 0 else '0t{}'.format(str(max_borne).replace('.', 'p'))
     tresh_str = '{}'.format(str(tresh).replace('.', 'p'))
 
-    out_suffix = 'COEF{}_RANGE{}_TRESH{}'.format(coef_str, range_str, tresh_str)
+    out_suffix = 'ST_COEF{}_RANGE{}_TRESH{}_2REOPT'.format(coef_str, range_str, tresh_str)
 
     print(out_suffix)
 
@@ -654,11 +662,20 @@ if __name__ == '__main__':
             continue
 
         instance_id = instance.replace('Networks/Network','')
-        instance_seed = int(instance_id.split('_')[-1])
-        if instance_seed < 175:
+        net, max_min, instance_seed = instance_id.split('_')
+
+        print('net : {}, max_min : {}, inst : {}'.format(net, max_min, instance_seed))
+        
+        if max_min != '2' and max_min != '2p5':
             continue
+
+        if int(instance_seed) < 175:
+            continue 
+        
+        #print('max : {} - instance seed : {}'.format(max_min, instance_seed))
         
         create_file(instance_id, out_suffix, tresh, min_coef, max_coef, max_borne)
 
         print('{}/{} done : {}'.format(nb, nb_instances, instance_id))
+
         nb += 1
